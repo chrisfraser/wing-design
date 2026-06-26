@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Glossary — Wing & Airfoil Design</title>
+<link rel="stylesheet" href="../assets/lesson.css">
+<style>
+  .term { margin: 1.1rem 0; }
+  .term .name { font-weight: 600; color: var(--ink); }
+  .term .sym { color: var(--sky); font-style: italic; margin-left: 0.3rem; }
+  .term .def { margin: 0.15rem 0 0; }
+  .term .avoid { color: var(--muted); font-size: 0.88rem; font-style: italic; }
+  .grow { color: var(--muted); font-size: 0.86rem; }
+</style>
+</head>
+<body>
+  <div class="eyebrow">Reference · Living Document</div>
+  <h1>Glossary</h1>
+  <p class="subtitle">The canonical language for this workspace. Every lesson uses these terms.</p>
+  <p class="grow">Grows as you learn — terms are added once you can use them correctly. Last updated: Lesson 0001.</p>
+
+  <hr>
+
+  <h2>Forces & Efficiency</h2>
+
+  <div class="term">
+    <span class="name">Lift</span><span class="sym">L</span>
+    <p class="def">The aerodynamic force perpendicular to the oncoming airflow. It holds the aircraft up by deflecting air downward (Newton) — which is the same event as the low pressure on the upper surface (Bernoulli).</p>
+    <p class="avoid">Avoid: "suck", "the wing pushing up on air"</p>
+  </div>
+
+  <div class="term">
+    <span class="name">Drag</span><span class="sym">D</span>
+    <p class="def">The aerodynamic force parallel to the airflow, opposing motion. The engine must spend energy to overcome it; less drag for the same lift means longer flight.</p>
+  </div>
+
+  <div class="term">
+    <span class="name">Lift coefficient</span><span class="sym">C<span class="sub">L</span></span>
+    <p class="def">A dimensionless number capturing how much lift a wing makes for its size and speed, stripped of air density, area, and velocity. Rises with angle of attack until stall.</p>
+    <p class="avoid">Avoid: "lift number", "lift factor"</p>
+  </div>
+
+  <div class="term">
+    <span class="name">Drag coefficient</span><span class="sym">C<span class="sub">D</span></span>
+    <p class="def">The dimensionless counterpart for drag. For a whole wing it splits into <em>parasitic</em> (friction + shape) and <em>induced</em> (the price of making lift) parts.</p>
+  </div>
+
+  <div class="term">
+    <span class="name">Lift-to-drag ratio</span><span class="sym">L/D = C<span class="sub">L</span>/C<span class="sub">D</span></span>
+    <p class="def">The master efficiency number: lift produced per unit of drag paid. Maximum L/D gives the flattest glide and the best <em>range</em>. A 1–2 m model wing peaks around L/D ≈ 10–20.</p>
+    <p class="avoid">Avoid: "glide number" (glide ratio is a <em>consequence</em> of L/D, not a synonym in design)</p>
+  </div>
+
+  <div class="term">
+    <span class="name">Angle of attack</span><span class="sym">α (alpha)</span>
+    <p class="def">The angle between the wing's chord line and the oncoming airflow. The pilot/autopilot's main lever on C<span class="sub">L</span>. Too high → stall.</p>
+    <p class="avoid">Avoid: "pitch angle" (pitch is relative to the ground, not the airflow)</p>
+  </div>
+
+  <h2>Endurance (our north star)</h2>
+
+  <div class="term">
+    <span class="name">Endurance</span>
+    <p class="def">Time aloft. For our battery-electric drone, maximised by minimising <em>power</em> required — distinct from range, which minimises drag-per-distance.</p>
+  </div>
+
+  <div class="term">
+    <span class="name">Endurance parameter</span><span class="sym">C<span class="sub">L</span><span class="sup">1.5</span>/C<span class="sub">D</span></span>
+    <p class="def">The quantity a propeller aircraft must <em>maximise</em> for longest flight time. Because it weights lift more heavily than L/D does, peak endurance happens <em>slower</em> and at a <em>higher</em> C<span class="sub">L</span> than peak L/D. The recurring target of this whole course.</p>
+    <p class="avoid">Avoid: confusing with L/D — they peak at different speeds.</p>
+  </div>
+
+  <div class="term">
+    <span class="name">Drag polar</span>
+    <p class="def">A plot of C<span class="sub">L</span> (vertical) against C<span class="sub">D</span> (horizontal) as angle of attack sweeps. The single most useful chart in airfoil/wing design — every "best" operating point is a geometric construction on this curve.</p>
+  </div>
+
+  <p class="grow" style="margin-top:2rem">Coming in later lessons: Reynolds number, laminar separation bubble, aspect ratio, induced drag, wing loading, camber, chord, span efficiency, XFOIL, panel method.</p>
+
+  <div class="lesson-nav">
+    <a href="../lessons/0001-lift-drag-and-the-endurance-number.html">← Lesson 0001</a>
+    <a href="../MISSION.md">Mission</a>
+  </div>
+</body>
+</html>

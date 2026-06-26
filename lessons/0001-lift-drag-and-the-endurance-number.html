@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 1 — Lift, Drag & the Number That Decides Endurance</title>
+<link rel="stylesheet" href="../assets/lesson.css">
+<style>
+  .sim { border: 1px solid var(--rule); border-radius: 6px; background: #fff; padding: 1.1rem 1.2rem 1.4rem; margin: 1.6rem 0; }
+  .sim h3 { margin-top: 0.3rem; }
+  .readouts { display: flex; flex-wrap: wrap; gap: 0.5rem 1.4rem; margin: 0.6rem 0 0.2rem; font-size: 0.95rem; }
+  .readouts b { color: var(--sky); font-variant-numeric: tabular-nums; }
+  .slider-row { display: flex; align-items: center; gap: 0.8rem; margin: 0.9rem 0 0.2rem; }
+  .slider-row input[type=range] { flex: 1; accent-color: var(--accent); }
+  .slider-row label { font-size: 0.9rem; color: var(--muted); white-space: nowrap; }
+  .status { min-height: 1.4rem; margin-top: 0.6rem; font-size: 0.95rem; font-weight: 600; }
+  .status.win { color: var(--good); }
+  .status.hint { color: var(--muted); font-weight: 400; font-style: italic; }
+  .sim button { font: inherit; font-size: 0.88rem; padding: 0.4rem 0.8rem; border: 1px solid var(--rule);
+    background: var(--paper); border-radius: 3px; cursor: pointer; margin-right: 0.5rem; }
+  .sim button:hover { background: var(--accent-soft); }
+  .sim button.active { border-color: var(--accent); color: var(--accent); font-weight: 600; }
+</style>
+</head>
+<body>
+  <div class="eyebrow">Lesson 0001 · Foundations</div>
+  <h1>Lift, Drag &amp; the Number That Decides Endurance</h1>
+  <p class="subtitle">What does it actually mean for a wing to be “optimal”?</p>
+
+  <div class="mission">
+    <span class="label">Why this, first</span><br>
+    Your goal is a 1–2 m battery-electric drone that <em>stays up as long as possible</em>.
+    Before we can design a wing, we need a single, measurable definition of “better.”
+    This lesson hands you that number — and shows you the surprise hiding inside it.
+  </div>
+
+  <p class="lead">A wing is a machine for trading air into an upward force. It is never free:
+  every gram of lift comes with a tax called <strong>drag</strong>, and your battery pays that tax
+  the entire flight. The whole game of endurance is buying the most lift for the least drag.</p>
+
+  <h2>Two forces, made comparable</h2>
+  <p>A wing produces <strong>lift</strong> (perpendicular to the airflow, holding you up) and
+  <strong>drag</strong> (along the airflow, holding you back). Lift exists because the wing turns
+  air <em>downward</em>; by Newton's third law the air pushes the wing up — the very same event as
+  the lower pressure over the wing's top surface.<span class="note">If you've heard “air travels
+  farther over the top so it must go faster” — that's the <em>equal-transit-time</em> myth, and it's
+  wrong. <a href="https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/bernoulli-and-newton/">NASA
+  Glenn debunks it here.</a> We'll get the real story in Lesson 2.</span></p>
+
+  <p>Raw lift in newtons isn't useful for <em>comparing</em> wings — it depends on how fast you fly,
+  how dense the air is, and how big the wing is. Engineers strip those out to get dimensionless
+  <strong>coefficients</strong>:</p>
+
+  <div class="eq">
+    <span class="var">L</span> = ½ ρ <span class="var">V</span><span class="sup">2</span> <span class="var">S</span> <span class="var">C<span class="sub">L</span></span>
+    &nbsp;&nbsp;&nbsp;&nbsp;
+    <span class="var">D</span> = ½ ρ <span class="var">V</span><span class="sup">2</span> <span class="var">S</span> <span class="var">C<span class="sub">D</span></span>
+  </div>
+
+  <p class="note">ρ = air density, V = airspeed, S = wing area. The coefficients
+  <span class="var">C<span class="sub">L</span></span> and <span class="var">C<span class="sub">D</span></span>
+  are the wing's “character” — independent of how fast or how big. Two wings with the same
+  <span class="var">C<span class="sub">L</span></span>/<span class="var">C<span class="sub">D</span></span>
+  are equally efficient, period.</p>
+
+  <div class="key">
+    <span class="label">The master number</span>
+    <p style="margin:0.3rem 0 0">Divide them and the messy physics cancels:
+    <strong>L/D = C<span class="sub">L</span> / C<span class="sub">D</span></strong> — lift produced per unit of drag paid.
+    This is the headline efficiency of any wing. A good 1–2 m model wing reaches L/D ≈ 12–18.
+    Maximum L/D gives the flattest glide and the best <em>range</em>.</p>
+  </div>
+
+  <h2>The lever: angle of attack</h2>
+  <p>You don't change a wing's coefficients by wishing — you change them with the
+  <strong>angle of attack</strong> (α), the tilt between the wing and the oncoming air. Raise α and
+  <span class="var">C<span class="sub">L</span></span> climbs… but <span class="var">C<span class="sub">D</span></span>
+  climbs faster, because drag grows roughly with lift <em>squared</em>. So L/D rises, peaks, then falls.
+  Somewhere there is a single sweet-spot angle. Let's go find it.</p>
+
+  <!-- ===================== INTERACTIVE ===================== -->
+  <div class="sim">
+    <h3>Find the sweet spot</h3>
+    <p style="margin:0.2rem 0 0;font-size:0.94rem;color:var(--muted)">
+      Below is a <strong>drag polar</strong> — C<span class="sub">L</span> up, C<span class="sub">D</span> across —
+      for a representative low-Reynolds wing. The slanted line runs from the origin to your operating point;
+      <em>its steepness IS your L/D</em>. Drag the slider to make that line as steep as possible.</p>
+
+    <div class="slider-row">
+      <label>Angle of attack α</label>
+      <input id="alpha" type="range" min="-2" max="14" step="0.25" value="1">
+      <label><span id="alphaVal">1.0</span>°</label>
+    </div>
+
+    <div class="readouts">
+      <span>C<span class="sub">L</span> = <b id="clVal">–</b></span>
+      <span>C<span class="sub">D</span> = <b id="cdVal">–</b></span>
+      <span>L/D = <b id="ldVal">–</b></span>
+      <span>C<span class="sub">L</span><sup>1.5</sup>/C<span class="sub">D</span> = <b id="enVal">–</b></span>
+    </div>
+
+    <figure style="margin:0.8rem 0 0">
+      <svg id="polar" viewBox="0 0 480 320" role="img" aria-label="Drag polar plot"></svg>
+    </figure>
+
+    <div>
+      <button id="goalLD" class="active">🎯 Goal A: max L/D</button>
+      <button id="goalEN">🎯 Goal B: max endurance</button>
+      <button id="reveal">Reveal both peaks</button>
+    </div>
+    <div id="status" class="status hint">Drag the slider to make the efficiency line as steep as you can…</div>
+  </div>
+
+  <h2>The surprise: endurance is <em>not</em> max L/D</h2>
+  <p>Switch the simulator to <strong>Goal B</strong>. Notice the best point moves <em>up and to the
+  right</em> — to a higher angle of attack, a higher <span class="var">C<span class="sub">L</span></span>,
+  and a <em>slower</em> flight speed. That's because staying aloft longest isn't about minimum drag;
+  it's about minimum <strong>power</strong>, and power is drag × speed. Flying slower cuts the power
+  bill even though drag-per-lift is slightly worse.</p>
+
+  <div class="key">
+    <span class="label">Your north star</span>
+    <p style="margin:0.3rem 0 0">For a propeller aircraft, <strong>endurance is maximised at maximum
+    C<span class="sub">L</span><sup>1.5</sup>/C<span class="sub">D</span></strong>, not maximum L/D.
+    <span class="note" style="display:inline;border:none;padding:0">(Range = max L/D; endurance = max C<span class="sub">L</span><sup>1.5</sup>/C<span class="sub">D</span>. Derived in
+    <a href="https://pressbooks.lib.vt.edu/aerodynamics/chapter/chapter-6-range-and-endurance/">Marchman Ch. 6</a>.)</span>
+    Every airfoil and wing choice from here on will be judged against this one quantity.</p>
+  </div>
+
+  <h2>Check yourself</h2>
+  <p>Answer from memory — that effort is what makes it stick.</p>
+
+  <div class="quiz" data-answer="1">
+    <p class="q">For your battery-electric endurance drone, the wing should be tuned to maximise…</p>
+    <button data-i="0">the lift coefficient alone</button>
+    <button data-i="1">C<span class="sub">L</span><sup>1.5</sup> divided by C<span class="sub">D</span></button>
+    <button data-i="2">the raw lift force value</button>
+    <p class="explain">Endurance for a prop aircraft peaks at max C<span class="sub">L</span><sup>1.5</sup>/C<span class="sub">D</span> — it minimises <em>power</em>, which is what drains a battery over time. Max L/D would instead give best range (distance).</p>
+  </div>
+
+  <div class="quiz" data-answer="2">
+    <p class="q">Compared with the best-L/D point, the best-endurance point flies at a…</p>
+    <button data-i="0">lower angle, much faster speed</button>
+    <button data-i="1">same angle and same airspeed</button>
+    <button data-i="2">higher angle, slower airspeed</button>
+    <p class="explain">Endurance favours flying slower at a higher C<span class="sub">L</span> (higher α). Slower flight cuts power required, even though drag-per-lift is slightly worse than at max L/D.</p>
+  </div>
+
+  <div class="quiz" data-answer="0">
+    <p class="q">Why do engineers use C<span class="sub">L</span> and C<span class="sub">D</span> instead of raw lift and drag in newtons?</p>
+    <button data-i="0">they remove speed, size and density</button>
+    <button data-i="1">they are much simpler to measure</button>
+    <button data-i="2">newtons cannot describe a wing</button>
+    <p class="explain">The coefficients are dimensionless: they factor out air density, airspeed and wing area, so two different wings can be compared on equal terms.</p>
+  </div>
+
+  <div class="source">
+    <span class="label">Primary source for this lesson</span><br>
+    <a href="https://pressbooks.lib.vt.edu/aerodynamics/chapter/chapter-6-range-and-endurance/">Marchman,
+    <em>Aerodynamics and Aircraft Performance</em> — Ch. 6, “Range and Endurance.”</a>
+    The clearest free derivation of why prop endurance lives at max C<span class="sub">L</span><sup>1.5</sup>/C<span class="sub">D</span>.
+    Read §6 up to the endurance result — skim the equations, focus on the two tangent constructions on the polar.
+  </div>
+
+  <div class="ask">
+    <span class="label">Your teacher is on call</span> — Stuck on why power = drag × speed, or want the
+    C<span class="sub">L</span><sup>1.5</sup>/C<span class="sub">D</span> result derived step by step?
+    Ask me. That's what I'm here for, between lessons.
+  </div>
+
+  <div class="lesson-nav">
+    <a href="../reference/glossary.html">📖 Glossary</a>
+    <span>Next: Lesson 2 — How a wing really makes lift →</span>
+  </div>
+
+  <script src="../assets/quiz.js"></script>
+  <script>
+  (function () {
+    // ---- Aerodynamic model: CD = CD0 + k*CL^2, CL linear in alpha (pre-stall) ----
+    var CD0 = 0.018, k = 0.045;
+    var aMin = -2, aMax = 14;
+    function CL(a) { return 0.11 * (a + 2); }          // CL = 0 at a=-2
+    function CD(cl) { return CD0 + k * cl * cl; }
+    // Analytic optima:
+    var clBestLD = Math.sqrt(CD0 / k);                  // ~0.632
+    var clBestEN = Math.sqrt(3 * CD0 / k);              // ~1.095
+    function alphaFor(cl) { return cl / 0.11 - 2; }
+    var aBestLD = alphaFor(clBestLD);                   // ~3.7°
+    var aBestEN = alphaFor(clBestEN);                   // ~7.9°
+
+    // ---- SVG plot setup ----
+    var svg = document.getElementById('polar');
+    var W = 480, H = 320, ml = 56, mr = 18, mt = 14, mb = 40;
+    var xMax = 0.14, yMax = 1.8;
+    function px(cd) { return ml + (cd / xMax) * (W - ml - mr); }
+    function py(cl) { return (H - mb) - (cl / yMax) * (H - mt - mb); }
+    var NS = 'http://www.w3.org/2000/svg';
+    function el(t, attrs) { var e = document.createElementNS(NS, t); for (var a in attrs) e.setAttribute(a, attrs[a]); return e; }
+
+    // axes
+    svg.appendChild(el('line', {x1: ml, y1: H-mb, x2: W-mr, y2: H-mb, stroke:'#444', 'stroke-width':1}));
+    svg.appendChild(el('line', {x1: ml, y1: H-mb, x2: ml, y2: mt, stroke:'#444', 'stroke-width':1}));
+    // gridlines + labels
+    for (var gx = 0.02; gx <= xMax + 1e-9; gx += 0.02) {
+      svg.appendChild(el('line', {x1: px(gx), y1: H-mb, x2: px(gx), y2: mt, stroke:'#eee', 'stroke-width':1}));
+      var tx = el('text', {x: px(gx), y: H-mb+15, 'text-anchor':'middle', 'font-size':10, fill:'#888'}); tx.textContent = gx.toFixed(2); svg.appendChild(tx);
+    }
+    for (var gy = 0.3; gy <= yMax + 1e-9; gy += 0.3) {
+      svg.appendChild(el('line', {x1: ml, y1: py(gy), x2: W-mr, y2: py(gy), stroke:'#eee', 'stroke-width':1}));
+      var ty = el('text', {x: ml-8, y: py(gy)+3, 'text-anchor':'end', 'font-size':10, fill:'#888'}); ty.textContent = gy.toFixed(1); svg.appendChild(ty);
+    }
+    // axis titles
+    var axx = el('text', {x:(ml+W-mr)/2, y:H-6, 'text-anchor':'middle','font-size':11, fill:'#555'}); axx.textContent='Drag coefficient  C_D'; svg.appendChild(axx);
+    var axy = el('text', {x:14, y:(mt+H-mb)/2, 'text-anchor':'middle','font-size':11, fill:'#555', transform:'rotate(-90 14 '+((mt+H-mb)/2)+')'}); axy.textContent='Lift coefficient  C_L'; svg.appendChild(axy);
+
+    // polar curve
+    var d = '';
+    for (var a = aMin; a <= aMax + 1e-9; a += 0.2) {
+      var cl = CL(a), cd = CD(cl);
+      d += (d === '' ? 'M' : 'L') + px(cd).toFixed(1) + ',' + py(cl).toFixed(1) + ' ';
+    }
+    svg.appendChild(el('path', {d: d, fill:'none', stroke:'#1c4f6b', 'stroke-width':2.2}));
+
+    // ghost peak markers (hidden initially)
+    function peak(cl, color, label) {
+      var g = el('g', {opacity:0});
+      var cd = CD(cl);
+      g.appendChild(el('circle', {cx:px(cd), cy:py(cl), r:5, fill:'none', stroke:color, 'stroke-width':2}));
+      var t = el('text', {x:px(cd)+8, y:py(cl)-6, 'font-size':10, fill:color, 'font-weight':600}); t.textContent=label; g.appendChild(t);
+      svg.appendChild(g); return g;
+    }
+    var gLD = peak(clBestLD, '#7a1705', 'max L/D');
+    var gEN = peak(clBestEN, '#2e6e3f', 'max endurance');
+
+    // efficiency line (origin -> point) + operating point
+    var effLine = el('line', {x1:px(0), y1:py(0), x2:px(0), y2:py(0), stroke:'#b58', 'stroke-width':1.4, 'stroke-dasharray':'4 3'});
+    svg.appendChild(effLine);
+    var pt = el('circle', {cx:0, cy:0, r:6, fill:'#7a1705'}); svg.appendChild(pt);
+
+    // ---- interactivity ----
+    var slider = document.getElementById('alpha');
+    var status = document.getElementById('status');
+    var bLD = document.getElementById('goalLD'), bEN = document.getElementById('goalEN'), bRev = document.getElementById('reveal');
+    var goal = 'LD', revealed = false, wonLD = false, wonEN = false;
+
+    function fmt(x, n) { return x.toFixed(n); }
+    function update() {
+      var a = parseFloat(slider.value);
+      var cl = CL(a), cd = CD(cl), ld = cl / cd, en = Math.pow(cl, 1.5) / cd;
+      document.getElementById('alphaVal').textContent = fmt(a,1);
+      document.getElementById('clVal').textContent = fmt(cl,3);
+      document.getElementById('cdVal').textContent = fmt(cd,4);
+      document.getElementById('ldVal').textContent = fmt(ld,1);
+      document.getElementById('enVal').textContent = fmt(en,2);
+      pt.setAttribute('cx', px(cd)); pt.setAttribute('cy', py(cl));
+      effLine.setAttribute('x2', px(cd)); effLine.setAttribute('y2', py(cl));
+
+      var target = goal === 'LD' ? aBestLD : aBestEN;
+      var near = Math.abs(a - target) <= 0.4;
+      if (goal === 'LD') {
+        if (near) {
+          status.className = 'status win';
+          status.textContent = '✓ That’s max L/D (≈'+fmt(ld,1)+'). Steepest possible line from the origin. Now try Goal B.';
+          if (!wonLD) { wonLD = true; }
+        } else {
+          status.className = 'status hint';
+          status.textContent = a < target ? 'Steeper line possible — raise α a little…' : 'Too far — the line is tipping back. Lower α a little…';
+        }
+      } else {
+        if (near) {
+          status.className = 'status win';
+          status.textContent = '✓ Max endurance (C_L^1.5/C_D ≈ '+fmt(en,1)+') — note it’s a HIGHER α and SLOWER flight than max L/D.';
+          if (!wonEN) { wonEN = true; }
+        } else {
+          status.className = 'status hint';
+          status.textContent = a < target ? 'Endurance wants to fly slower — raise α more…' : 'Past the endurance peak — ease α back down…';
+        }
+      }
+    }
+    function setGoal(g) {
+      goal = g;
+      bLD.classList.toggle('active', g === 'LD');
+      bEN.classList.toggle('active', g === 'EN');
+      update();
+    }
+    slider.addEventListener('input', update);
+    bLD.addEventListener('click', function(){ setGoal('LD'); });
+    bEN.addEventListener('click', function(){ setGoal('EN'); });
+    bRev.addEventListener('click', function(){
+      revealed = !revealed;
+      gLD.setAttribute('opacity', revealed ? 1 : 0);
+      gEN.setAttribute('opacity', revealed ? 1 : 0);
+      bRev.classList.toggle('active', revealed);
+    });
+    update();
+  })();
+  </script>
+</body>
+</html>
