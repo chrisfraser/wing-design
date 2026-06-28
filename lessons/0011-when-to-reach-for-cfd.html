@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>D2 · When to Reach for CFD</title>
+<link rel="stylesheet" href="../assets/styles.css">
+<script defer src="../assets/widgets.js"></script>
+<style>
+  /* Lesson-D2-specific: the tool-chooser */
+  canvas { width:100%; display:block; border-radius:8px; background:var(--night); }
+  .chooser { display:grid; gap:.6rem; }
+  .q-row { display:flex; align-items:center; gap:1rem; justify-content:space-between;
+           font-family:var(--sans); font-size:.92rem; color:var(--ink); background:var(--paper);
+           border:1.5px solid var(--rule); border-radius:8px; padding:.6rem .8rem; }
+  .q-row .q-lbl { line-height:1.35; }
+  .q-row .simbtn { min-width:3.4rem; text-align:center; }
+  .q-row .simbtn.yes { border-color:var(--kelp); background:#eef7ef; color:#245c30; }
+  .rec-line { font-family:var(--mono); font-size:1.05rem; color:#d8ecf5; margin-top:.7rem; }
+  .rec-line b { color:#ffd479; }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap-wide">
+    <a class="brand" href="../index.html"><span class="dot">✈</span> Wing Design</a>
+    <nav>
+      <a href="../index.html">Lessons</a>
+      <a href="../reference/glossary.html">Glossary</a>
+      <a href="https://github.com/chrisfraser/wing-design">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <p class="kicker">Phase 4 · Design Synthesis &amp; CFD · D2</p>
+  <h1 class="lesson-title">When to Reach for CFD</h1>
+  <p class="lesson-sub">The last skill of a wing designer isn't running the fanciest solver — it's
+  knowing which solver the question actually deserves, and where the cheap ones lie to you.</p>
+  <div class="lesson-meta">
+    <span>⏱ ~14 minutes</span><span class="sep">•</span>
+    <span>🧠 Knowledge-heavy — judgement, not math</span><span class="sep">•</span>
+    <span class="tag sky">Final lesson · ties the course together</span>
+  </div>
+
+  <div class="callout mission">
+    <div class="callout-label">◎ Why this lesson</div>
+    <p>In <a href="0010-synthesize-the-endurance-wing.html">D1</a> you synthesised a whole wing and
+    read its endurance figure of merit off panel-method numbers. Sooner or later someone will ask the
+    obvious question: <em>“shouldn't you run real CFD?”</em> The honest answer is <strong>sometimes</strong> —
+    and reaching for a million-cell mesh when XFOIL would do is as much a mistake as trusting a naive
+    CFD run that quietly over-predicts your drag. This lesson hands you the decision rule, and the one
+    caution that bites every low-Reynolds beginner.</p>
+  </div>
+
+  <p class="lead">Every analysis tool is a bargain: more physics for more effort. The art is spending
+  the least effort that still answers your question honestly. So before you mesh anything, climb the
+  <strong>fidelity ladder</strong> and stop on the lowest rung that tells the truth.</p>
+
+  <h2><span class="num">1</span>The fidelity ladder</h2>
+  <p>The tools you've met sit on a ladder from cheap-and-approximate to costly-and-complete. Each rung
+  buys more of the real flow physics — and charges you in setup time, compute, and the number of ways
+  you can get it wrong.<span class="cite"><a href="#r-su2">1</a></span></p>
+
+  <div class="formula">
+<span class="var">XFOIL</span> <span class="op">≪</span> <span class="var">XFLR5</span> <span class="op">≪</span> <span class="var">RANS&nbsp;CFD</span>
+<small>2-D viscous panel  →  3-D panel + lifting-line/VLM with 2-D viscous strips  →  full 3-D viscous, meshed. Cost climbs by roughly an order of magnitude at every step; so does the effort to get a trustworthy answer.</small>
+  </div>
+
+  <ul>
+    <li><strong><a href="../reference/glossary.html#xfoil">XFOIL</a></strong> — a 2-D
+    <a href="../reference/glossary.html#panel-method">panel method</a> coupled to a viscous
+    boundary-layer model (Drela, MIT). It gives you an airfoil's C<sub>L</sub>, C<sub>D</sub> and the
+    drag bucket at <em>your</em> Reynolds number in seconds. It knows nothing about the third dimension.</li>
+    <li><strong>XFLR5</strong> — wraps XFOIL's 2-D polars and stacks them across a finite wing using
+    <a href="../reference/glossary.html#lifting-line">lifting-line</a> or a vortex-lattice method (VLM).
+    You get whole-wing lift distribution, induced drag, span efficiency and the wing's
+    C<sub>L</sub><sup>1.5</sup>/C<sub>D</sub> — minutes of work, still on a laptop.</li>
+    <li><strong>RANS CFD</strong> — <a href="../reference/glossary.html#cfd">computational fluid
+    dynamics</a> that solves the Reynolds-averaged Navier–Stokes equations on a
+    <a href="../reference/glossary.html#mesh">mesh</a> of the actual 3-D geometry
+    (<a href="https://www.openfoam.com/" target="_blank" rel="noopener">OpenFOAM</a>,
+    <a href="https://su2code.github.io/" target="_blank" rel="noopener">SU2</a>). It can capture
+    separation, vortices, and bodies interacting — at the price of meshing, hours of compute, and a
+    long list of modelling choices that each change the answer.<span class="cite"><a href="#r-openfoam">2</a></span></li>
+  </ul>
+
+  <table>
+    <caption>The three rungs at a glance — match the tool to the question, not to your ambition.</caption>
+    <thead>
+      <tr><th>Tool</th><th>What it models</th><th>Cost / effort</th><th>When to use</th><th>Key limitation</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>XFOIL</strong></td>
+        <td>2-D airfoil section, viscous boundary layer, transition built in</td>
+        <td>Seconds; trivial setup</td>
+        <td>Airfoil polars at your Re; preliminary design</td>
+        <td>No 3-D effects; struggles past deep stall / large separation</td>
+      </tr>
+      <tr>
+        <td><strong>XFLR5</strong></td>
+        <td>Finite wing: induced drag, span loading, from 2-D viscous strips</td>
+        <td>Minutes; geometry + polars</td>
+        <td>Whole-wing polars, AR &amp; taper trades, attached flow</td>
+        <td>Inviscid-ish 3-D; assumes attached, mild flow; no fuselage/prop</td>
+      </tr>
+      <tr>
+        <td><strong>RANS CFD</strong></td>
+        <td>Full 3-D viscous flow on a mesh; separation, junctions, wakes</td>
+        <td>Hours–days; meshing + turbulence model</td>
+        <td>Genuine 3-D/separated flow, prop–wing, shape optimisation</td>
+        <td>Expensive; many knobs; <strong>over-predicts low-Re drag without a transition model</strong></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2><span class="num">2</span>When panel methods are enough — and when they aren't</h2>
+  <p>For the wing you designed in this course, the cheap rungs are usually <em>enough</em>. Reach no
+  higher than XFOIL / XFLR5 when the flow is well-behaved:</p>
+
+  <div class="callout note">
+    <div class="callout-label">✓ XFOIL / XFLR5 is enough when…</div>
+    <p>the flow is <strong>attached</strong> (no big separation), the geometry is a clean wing or
+    airfoil whose flow is <strong>mildly 2-D</strong>, and you're doing <strong>preliminary design</strong>:
+    sweeping airfoils, aspect ratios, taper, and reading off polars and
+    C<sub>L</sub><sup>1.5</sup>/C<sub>D</sub> at your Reynolds number. This covers the vast majority of
+    the decisions in Phases 1–4.</p>
+  </div>
+
+  <p>Climb to RANS CFD only when the question contains physics the lower rungs structurally cannot see:</p>
+
+  <div class="callout key">
+    <div class="callout-label">★ Escalate to CFD when…</div>
+    <p>the flow is genuinely <strong>three-dimensional or separated</strong> (post-stall behaviour, a
+    laminar bubble bursting, blunt bodies); there is <strong>propeller–wing interaction</strong> or
+    slipstream to capture; <strong>fuselage / wing-root junction</strong> effects matter; or you want
+    <strong>shape optimisation</strong> driven by a high-fidelity gradient (SU2's adjoint solver). These
+    are exactly the things a panel method has no equation for.</p>
+  </div>
+
+  <h2><span class="num">3</span>The low-Reynolds trap</h2>
+  <p>Here is the single most important caution in this lesson — the one that quietly ruins beginners'
+  first CFD studies of model-scale wings.</p>
+
+  <div class="callout warning">
+    <div class="callout-label">⚠ Naive RANS over-predicts low-Re drag</div>
+    <p>Standard turbulence models (Spalart–Allmaras, k-ω SST, …) assume the boundary layer is
+    <strong>fully turbulent everywhere</strong>. At our Reynolds numbers (~10<sup>5</sup>) a large part
+    of the airfoil actually runs <strong>laminar</strong>, with a
+    <a href="../reference/glossary.html#laminar-separation-bubble">laminar separation bubble</a> near
+    the leading edge. A fully-turbulent model misses both — it paints turbulent skin friction over the
+    laminar runs and smears the bubble — so it <strong>over-predicts C<sub>D</sub></strong>, sometimes
+    badly, and mis-locates stall. The fix is a
+    <a href="../reference/glossary.html#transition-model">transition model</a> (e.g. the
+    <strong>γ–Re<sub>θ</sub> Langtry–Menter</strong> model) that lets the solver predict where laminar
+    flow turns turbulent.<span class="cite"><a href="#r-trans">3</a></span></p>
+  </div>
+
+  <div class="formula">
+<span class="var">C<sub>D</sub></span><sup>(naive RANS, fully turbulent)</sup>  <span class="op">&gt;</span>  <span class="var">C<sub>D</sub></span><sup>(real)</sup>     at low Re
+<small>Add a transition model — the laminar runs and the separation bubble reappear, and C<sub>D</sub> drops back toward measured values. This is precisely why XFOIL (which models transition by design) often <b>beats</b> a carelessly-run RANS case at low Reynolds number.</small>
+  </div>
+
+  <p>The irony is worth sitting with: an expensive solver, set up naively, can be <em>less</em> accurate
+  than the cheap one. Fidelity is only potential accuracy — it has to be earned with the right physics
+  switched on.</p>
+
+  <h2><span class="num">4</span>Which tool should I use?</h2>
+  <p>Answer three questions about your problem and the chooser names the right rung. Toggle each to
+  <strong>Yes</strong> or <strong>No</strong> and watch the recommendation update.</p>
+
+  <div class="calc">
+    <div class="calc-title">🧮 Tool chooser — pick the lowest rung that tells the truth</div>
+    <div class="chooser">
+      <div class="q-row">
+        <span class="q-lbl">Is the flow <strong>attached</strong> and roughly <strong>2-D</strong> — essentially a single airfoil section?</span>
+        <button class="simbtn" id="t1" data-on="false">No</button>
+      </div>
+      <div class="q-row">
+        <span class="q-lbl">Do you need <strong>hard 3-D effects</strong> — separation, propeller wash, fuselage / junction flow?</span>
+        <button class="simbtn" id="t2" data-on="false">No</button>
+      </div>
+      <div class="q-row">
+        <span class="q-lbl">Do you have the tools to do CFD <strong>right</strong> — meshing time <em>and</em> a transition model?</span>
+        <button class="simbtn" id="t3" data-on="false">No</button>
+      </div>
+    </div>
+    <div class="readout">
+      <canvas id="ladderCanvas" width="720" height="196" aria-label="Fidelity and cost ladder with the recommended tool highlighted"></canvas>
+      <div class="rec-line">Recommended: <b id="recTool">—</b></div>
+    </div>
+    <div class="status hint" id="recStatus">Toggle the three questions above…</div>
+  </div>
+
+  <h2><span class="num">5</span>A sane validation workflow</h2>
+  <p>If you do climb to CFD, you only get to trust the absolute numbers after you've earned them. The
+  order matters:</p>
+
+  <ol class="steps">
+    <li>
+      <div class="step-title">Start cheap — XFOIL / XFLR5 first</div>
+      <div class="step-detail">Get a baseline polar and a feel for the answer before any meshing. If the
+      cheap rung already settles your question, stop here. Most of the time it does.</div>
+    </li>
+    <li>
+      <div class="step-title">Only escalate for a reason</div>
+      <div class="step-detail">Move to RANS CFD when — and only when — your question contains 3-D /
+      separated physics the panel methods can't see (§2). Write down what the cheap tools <em>couldn't</em> tell you.</div>
+    </li>
+    <li>
+      <div class="step-title">Prove mesh independence</div>
+      <div class="step-detail">Refine the <a href="../reference/glossary.html#mesh">mesh</a> until the
+      forces stop changing. A result that shifts when you add cells isn't a result — it's a mesh
+      artefact. Check y⁺ is in range for your turbulence model.</div>
+    </li>
+    <li>
+      <div class="step-title">Switch on a transition model at low Re</div>
+      <div class="step-detail">Use γ–Re<sub>θ</sub> (Langtry–Menter) or equivalent so the laminar runs
+      and the separation bubble are captured. Without it your low-Re drag is wrong by construction (§3).</div>
+    </li>
+    <li>
+      <div class="step-title">Validate against data before you believe a number</div>
+      <div class="step-detail">Compare against measured UIUC polars or your XFOIL baseline at the same
+      Re. Trust <em>trends</em> early; trust <em>absolute</em> drag only after it matches something real.</div>
+    </li>
+  </ol>
+
+  <h2><span class="num">6</span>Check yourself</h2>
+  <p>Answer from memory — that effort is what turns a fact you just read into one you'll keep.</p>
+
+  <div class="quiz"
+       data-explain-right="Attached, mild, preliminary flow is exactly the panel-method sweet spot."
+       data-explain-wrong="Re-read §2 — escalate only for physics the cheap rungs can't see.">
+    <div class="q-kicker">Question 1 of 3</div>
+    <div class="q-text">You need an airfoil's polar at Re ≈ 200k for a clean, attached wing in preliminary
+    design. The right tool is…</div>
+    <div class="q-options">
+      <button class="opt" data-correct data-feedback="Right. Attached, mild, 2-D, preliminary — XFOIL/XFLR5 give the answer in seconds and model transition by design.">XFOIL or XFLR5 — cheap, fast, and accurate here</button>
+      <button class="opt" data-feedback="Higher fidelity isn't automatically better. A million-cell mesh for attached 2-D flow wastes hours and adds error.">a fine RANS mesh, because higher fidelity wins</button>
+      <button class="opt" data-feedback="False — XFOIL couples a viscous boundary-layer model to the panel solution, so it does include the boundary layer.">RANS CFD, since panel codes ignore the boundary layer</button>
+      <button class="opt" data-feedback="A full tunnel campaign is overkill for a preliminary polar — the cheap solver answers this in seconds.">a wind-tunnel test before any computation at all</button>
+    </div>
+    <div class="q-feedback"></div>
+  </div>
+
+  <div class="quiz"
+       data-explain-right="Fully-turbulent models miss the laminar runs, so drag comes out too high."
+       data-explain-wrong="Look again at §3 — what does a fully-turbulent assumption do at low Re?">
+    <div class="q-kicker">Question 2 of 3</div>
+    <div class="q-text">Run a naive, fully-turbulent RANS model on a low-Reynolds airfoil and its predicted
+    drag will most likely be…</div>
+    <div class="q-options">
+      <button class="opt" data-correct data-feedback="Exactly. Assuming turbulence everywhere paints friction over the laminar runs and smears the bubble, so C_D is over-predicted. A transition model fixes it.">over-predicted, because it misses the laminar runs</button>
+      <button class="opt" data-feedback="Wrong direction. Turbulent boundary layers carry MORE skin friction, not less, so the naive model over-predicts drag.">under-predicted, since turbulence cuts skin friction</button>
+      <button class="opt" data-feedback="Not at all — RANS averages turbulence and, without a transition model, can't resolve the laminar-to-turbulent switch at low Re.">about right, since RANS resolves every flow regime</button>
+      <button class="opt" data-feedback="Drag still matters very much at low Re — and getting it wrong is the whole hazard this lesson warns about.">irrelevant, because low-Re drag barely affects design</button>
+    </div>
+    <div class="q-feedback"></div>
+  </div>
+
+  <div class="quiz"
+       data-explain-right="A CFD number is only trustworthy once it's mesh-independent and matches data."
+       data-explain-wrong="See §5 — fidelity is only potential accuracy until it's validated.">
+    <div class="q-kicker">Question 3 of 3</div>
+    <div class="q-text">Before you trust the <em>absolute</em> drag number from a CFD run, you must…</div>
+    <div class="q-options">
+      <button class="opt" data-correct data-feedback="Yes. Mesh independence proves the number isn't an artefact, and matching measured data (or XFOIL) proves the physics is right.">check mesh independence and validate against data</button>
+      <button class="opt" data-feedback="More cells isn't the goal — you refine UNTIL the forces stop changing, then validate. Endless refinement alone proves nothing.">keep adding cells until the solver finally converges</button>
+      <button class="opt" data-feedback="Higher fidelity is only potential accuracy. An unvalidated, naively-set-up run can be worse than XFOIL — never trust it blind.">trust it outright — CFD outranks any experiment</button>
+      <button class="opt" data-feedback="A faster computer gives you the same wrong answer sooner. Speed has nothing to do with whether the result is correct.">rerun it on a faster computer to confirm the value</button>
+    </div>
+    <div class="q-feedback"></div>
+  </div>
+
+  <div class="recap">
+    <h3>What you can now say</h3>
+    <ol>
+      <li>Analysis tools form a <strong>fidelity ladder</strong> — XFOIL ≪ XFLR5 ≪ RANS CFD — and each rung trades more physics for more effort.</li>
+      <li><strong>XFOIL / XFLR5 is enough</strong> for attached, mildly-2-D, preliminary work: airfoil and whole-wing polars at your Reynolds number.</li>
+      <li><strong>Escalate to CFD</strong> only for genuinely 3-D / separated flow, propeller–wing interaction, junction effects, or shape optimisation.</li>
+      <li>The <strong>low-Re trap</strong>: a fully-turbulent RANS model over-predicts drag — you must run a <strong>transition model</strong> (γ–Re<sub>θ</sub>) to capture laminar runs and bubbles.</li>
+      <li>Trust CFD only after <strong>mesh independence</strong> and <strong>validation against measured data</strong>. Fidelity is potential accuracy; it must be earned.</li>
+    </ol>
+  </div>
+
+  <div class="sourcebox">
+    <div class="icon">📖</div>
+    <div>
+      <div class="label">Primary source · read this next</div>
+      <div class="title"><a href="https://www.researchgate.net/publication/338901792" target="_blank" rel="noopener">“Evaluation of Transitional Turbulence Models in Open-Source CFD at Low Reynolds Number”</a></div>
+      <div class="desc">The evidence behind §3: fully-turbulent RANS over-predicts low-Re drag, and a γ–Re<sub>θ</sub>
+      transition model brings it back toward measured polars. Pair it with the
+      <a href="https://su2code.github.io/" target="_blank" rel="noopener">SU2</a> and
+      <a href="https://www.openfoam.com/" target="_blank" rel="noopener">OpenFOAM</a> docs when you set up
+      your first case. ~20-minute read.</div>
+    </div>
+  </div>
+
+  <div class="ask-teacher">
+    💬 <b>I'm your teacher — ask me anything.</b> Wondering how to set up a γ–Re<sub>θ</sub> case in
+    OpenFOAM, what y⁺ your mesh needs, or whether your specific question really needs CFD at all? Bring
+    the geometry and the Reynolds number to chat — half the skill is deciding <em>not</em> to mesh.
+    Confused beats stuck.
+  </div>
+
+  <div class="crosslinks">
+    <b>Glossary:</b>
+    <a href="../reference/glossary.html#cfd">CFD</a> ·
+    <a href="../reference/glossary.html#rans">RANS</a> ·
+    <a href="../reference/glossary.html#transition-model">transition model</a> ·
+    <a href="../reference/glossary.html#mesh">mesh</a> ·
+    <a href="../reference/glossary.html#xfoil">XFOIL</a> ·
+    <a href="../reference/glossary.html#panel-method">panel method</a>.
+    <b>Builds on →</b> <strong>T3</strong> (whole-wing analysis) and <strong>D1</strong> (the synthesised wing).
+    <b>Builds toward →</b> <strong>your build</strong> — go make the wing.
+  </div>
+
+  <h2 id="refs"><span class="num">§</span>References</h2>
+  <ol style="font-family:var(--sans);font-size:.84rem;color:var(--ink-soft);line-height:1.5">
+    <li id="r-su2">SU2 — <a href="https://su2code.github.io/" target="_blank" rel="noopener">su2code.github.io</a> (Stanford). Open-source RANS/Euler CFD with adjoint-based shape optimisation. <b>Primary tool.</b></li>
+    <li id="r-openfoam">OpenFOAM — <a href="https://www.openfoam.com/" target="_blank" rel="noopener">openfoam.com</a>. General-purpose finite-volume CFD; low-Re cases need a transition model (γ–Re<sub>θ</sub>) or drag is over-predicted. <b>Primary tool.</b></li>
+    <li id="r-trans"><a href="https://www.researchgate.net/publication/338901792" target="_blank" rel="noopener">Evaluation of Transitional Turbulence Models in Open-Source CFD at Low Reynolds Number</a>. Why fully-turbulent RANS over-predicts low-Re drag and how transition modelling corrects it. <b>Key reference.</b></li>
+    <li id="r-xfoil">Drela &amp; Youngren — <a href="https://web.mit.edu/drela/Public/web/xfoil/" target="_blank" rel="noopener">XFOIL</a> (MIT). The 2-D viscous panel + boundary-layer code with transition built in.</li>
+    <li id="r-cfdonline">CFD Online — <a href="https://www.cfd-online.com/Forums/" target="_blank" rel="noopener">community forums</a>. The place to ask meshing, turbulence-model and OpenFOAM/SU2 setup questions.</li>
+  </ol>
+
+  <nav class="lesson-nav">
+    <a href="0010-synthesize-the-endurance-wing.html">
+      <div class="dir">← Prev · D1</div>
+      <div class="ttl">Synthesize the Endurance Wing</div>
+    </a>
+    <a class="next" href="../index.html">
+      <div class="dir">Course home →</div>
+      <div class="ttl">Go build it</div>
+    </a>
+  </nav>
+
+  <p class="pagefoot">Lesson D2 of the Wing Design course · the final lesson ·
+  <a href="../index.html">all lessons</a> ·
+  <a href="https://github.com/chrisfraser/wing-design">source on GitHub</a></p>
+</main>
+
+<script>
+/* ============================ Tool chooser ============================ */
+(function(){
+  var t1=document.getElementById('t1'), t2=document.getElementById('t2'), t3=document.getElementById('t3');
+  var recTool=document.getElementById('recTool'), recStatus=document.getElementById('recStatus');
+  var canvas=document.getElementById('ladderCanvas'), ctx=canvas?canvas.getContext('2d'):null;
+  if(!t1||!ctx) return;
+
+  var tools=[
+    {name:'XFOIL',    sub:'2-D viscous panel',         cost:0.16},
+    {name:'XFLR5',    sub:'3-D panel · LLT / VLM',     cost:0.44},
+    {name:'RANS CFD', sub:'meshed 3-D viscous',        cost:1.00}
+  ];
+  var W=canvas.width, H=canvas.height, padL=132, padR=64, top=20, rowH=52;
+
+  function rrect(x,y,w,h,r){
+    r=Math.min(r,h/2,Math.abs(w)/2);
+    ctx.beginPath();
+    ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r);
+    ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath();
+  }
+
+  function draw(recIdx){
+    ctx.clearRect(0,0,W,H); ctx.fillStyle='#0a1c30'; ctx.fillRect(0,0,W,H);
+    ctx.font='11px Inter, system-ui'; ctx.textAlign='left'; ctx.fillStyle='#8fb9c6';
+    ctx.fillText('fidelity & cost  →', padL, top-6);
+    var trackW=W-padL-padR, bh=24;
+    tools.forEach(function(t,i){
+      var y=top+8+i*rowH, recd=(i===recIdx);
+      // track
+      ctx.fillStyle='rgba(143,185,198,.12)'; rrect(padL,y,trackW,bh,6); ctx.fill();
+      // bar
+      ctx.fillStyle= recd ? '#ffd479' : 'rgba(78,163,218,.55)';
+      rrect(padL,y,Math.max(trackW*t.cost,10),bh,6); ctx.fill();
+      // tool name
+      ctx.textAlign='left'; ctx.font='bold 13px Inter, system-ui';
+      ctx.fillStyle= recd ? '#ffd479' : '#d8ecf5';
+      ctx.fillText(t.name, 12, y+11);
+      ctx.font='10px Inter, system-ui'; ctx.fillStyle='#5b7e93';
+      ctx.fillText(t.sub, 12, y+23);
+      // recommended tick
+      if(recd){
+        ctx.textAlign='right'; ctx.font='bold 11px Inter, system-ui'; ctx.fillStyle='#ffd479';
+        ctx.fillText('◀ pick this', W-8, y+15);
+      }
+    });
+  }
+
+  function recommend(){
+    var attached2d = t1.getAttribute('data-on')==='true';
+    var need3d     = t2.getAttribute('data-on')==='true';
+    var haveCFD    = t3.getAttribute('data-on')==='true';
+    var idx, name, rationale, cls='ok';
+
+    if(need3d){
+      idx=2;
+      if(haveCFD){
+        name='RANS CFD — with a transition model';
+        rationale='✓ The physics (3-D / separated / prop / junction) is beyond panel methods, and you have meshing time and a transition model. Mesh it — and validate against data.';
+      } else {
+        name='RANS CFD — but you are NOT ready yet';
+        rationale='⚠ Your question needs CFD, but without meshing time and a transition model the low-Re drag will be wrong. Get those first, or reframe the question. Use XFLR5 for a rough 3-D estimate meanwhile.';
+        cls='warn';
+      }
+    } else if(attached2d){
+      idx=0; name='XFOIL';
+      rationale = haveCFD
+        ? '✓ Attached and 2-D — don’t burn a mesh on it. XFOIL is faster and, with transition built in, just as accurate here.'
+        : '✓ Attached, 2-D airfoil flow — XFOIL’s viscous panel method nails this in seconds. No meshing needed.';
+    } else {
+      idx=1; name='XFLR5';
+      rationale = haveCFD
+        ? '✓ A finite wing with attached flow (span, taper, induced drag) — XFLR5 is the right preliminary tool. Save CFD for when separation or 3-D interaction actually appears.'
+        : '✓ A whole 3-D wing but attached, mild flow — XFLR5 stacks 2-D viscous strips with lifting-line / VLM. Ideal preliminary 3-D design.';
+    }
+    recTool.textContent=name;
+    recStatus.className='status '+cls;
+    recStatus.textContent=rationale;
+    draw(idx);
+  }
+
+  function wireToggle(btn){
+    btn.addEventListener('click', function(){
+      var on = btn.getAttribute('data-on')==='true';
+      on=!on;
+      btn.setAttribute('data-on', on?'true':'false');
+      btn.textContent = on?'Yes':'No';
+      btn.classList.toggle('yes', on);
+      recommend();
+    });
+  }
+  [t1,t2,t3].forEach(wireToggle);
+  recommend();
+})();
+</script>
+</body>
+</html>

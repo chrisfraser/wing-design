@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>T3 · Whole-Wing Analysis in XFLR5</title>
+<link rel="stylesheet" href="../assets/styles.css">
+<script defer src="../assets/widgets.js"></script>
+<style>
+  /* Lesson-T3-specific: the taper / lift-distribution explorer */
+  canvas { width:100%; display:block; border-radius:8px; background:var(--night); }
+  .span-readouts { display:grid; grid-template-columns:repeat(2,1fr); gap:.3rem 1.2rem; margin-top:.7rem; font-family:var(--mono); font-size:.95rem; color:#d8ecf5; }
+  .span-readouts b { color:#ffd479; font-variant-numeric:tabular-nums; }
+  .span-readouts .full { grid-column:1 / -1; color:#8fb9c6; font-size:.84rem; }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap-wide">
+    <a class="brand" href="../index.html"><span class="dot">✈</span> Wing Design</a>
+    <nav>
+      <a href="../index.html">Lessons</a>
+      <a href="../reference/glossary.html">Glossary</a>
+      <a href="https://github.com/chrisfraser/wing-design">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <p class="kicker">Phase 3 · Analysis Tools · T3</p>
+  <h1 class="lesson-title">Whole-Wing Analysis in XFLR5</h1>
+  <p class="lesson-sub">Your airfoil polars describe a slice of wing one millimetre thick. A real wing
+  has ends — and those ends change everything. Here we go from 2-D to 3-D.</p>
+  <div class="lesson-meta">
+    <span>⏱ ~14 minutes</span><span class="sep">•</span>
+    <span>🧮 One clean formula, computed live</span><span class="sep">•</span>
+    <span class="tag sky">Builds on F3 · T1 · T2</span>
+  </div>
+
+  <div class="callout mission">
+    <div class="callout-label">◎ Why this lesson</div>
+    <p>In <a href="0008-planform-and-wing-loading.html">T2</a> you turned aspect ratio and area into a real
+    span and chord; in <a href="0007-hands-on-xfoil.html">T1</a> you generated honest 2-D polars for your
+    airfoil. But a 2-D polar is a lie of omission — it assumes the wing is infinitely long. The moment your
+    wing has <em>tips</em>, it sheds vortices, makes <a href="../reference/glossary.html#induced-drag">induced
+    drag</a>, and loses some lift-curve slope. This lesson shows you how the <strong>planform</strong>
+    controls that loss, and how <strong>XFLR5</strong> computes the polar of the <em>whole</em> wing — the
+    real <strong>C<sub>L</sub><sup>1.5</sup>/C<sub>D</sub></strong> you'll actually fly.</p>
+  </div>
+
+  <p class="lead">An airfoil is a cross-section. A wing is a finite object with two ends, and air does not
+  politely flow straight back over those ends — it spills from the high-pressure belly around the tip to
+  the low-pressure top, rolling up into a pair of trailing vortices. Those vortices are the price of being
+  three-dimensional, and they are why your wing always performs a little worse than its airfoil promised.</p>
+
+  <h2><span class="num">1</span>Why a 3-D wing isn't its 2-D section</h2>
+  <p>Back in <strong>F3</strong> you met <a href="../reference/glossary.html#induced-drag">induced drag</a>:
+  the drag a finite wing pays to make lift, born from the <a href="../reference/glossary.html#tip-vortex">tip
+  vortices</a>. Those same vortices induce a gentle <em>downwash</em> over the whole span, which tilts the
+  local airflow downward. The wing therefore meets the air at a smaller <em>effective</em> angle than the
+  one you set — so it makes less lift per degree than the 2-D section did. Two consequences follow, and both
+  hurt:</p>
+
+  <ul>
+    <li><strong>Extra drag.</strong> The lift vector tilts back with the airflow, leaving a rearward
+    component — <a href="../reference/glossary.html#induced-drag">induced drag</a> — that simply doesn't
+    exist in 2-D.</li>
+    <li><strong>A shallower lift-curve slope.</strong> The finite wing needs a larger geometric angle to
+    reach the same C<sub>L</sub>. The 2-D slope of ~0.11 per degree softens toward ~0.08–0.09 per degree
+    on a typical model wing.</li>
+  </ul>
+
+  <p>The induced-drag coefficient is the single most important equation in this lesson — you already saw it
+  in F3, and now we're going to learn what sets that mysterious <strong>e</strong>:<span class="cite"><a href="#r-nasa">4</a></span></p>
+
+  <div class="formula">
+<span class="var">C<sub>Di</sub></span> <span class="op">=</span> <span class="var">C<sub>L</sub></span>² <span class="op">/</span> ( π <span class="op">·</span> <span class="var">AR</span> <span class="op">·</span> <span class="var">e</span> )
+<small>AR = aspect ratio, <b>e</b> = span efficiency factor (≤ 1). Higher AR and higher <b>e</b> both cut induced drag. The <b>e</b> here is the <b>inviscid, wing-alone</b> span efficiency set by planform shape — not the whole-aircraft Oswald factor (more on that below).</small>
+  </div>
+
+  <p>And the shallower slope is real, predictable physics from lifting-line theory — the finite-wing
+  lift-curve slope <span class="inline-math">a</span> falls below the 2-D value
+  <span class="inline-math">a<sub>0</sub></span>:<span class="cite"><a href="#r-mit">3</a></span></p>
+
+  <div class="formula">
+<span class="var">a</span> <span class="op">=</span> <span class="var">a<sub>0</sub></span> <span class="op">/</span> ( 1 <span class="op">+</span> <span class="var">a<sub>0</sub></span> <span class="op">/</span> ( π <span class="op">·</span> <span class="var">AR</span> <span class="op">·</span> <span class="var">e</span> ) )
+<small>With a<sub>0</sub> ≈ 2π per radian and AR = 8, e ≈ 0.95: the slope drops from 0.110 to about 0.087 per degree. A higher aspect ratio recovers most of it — another reason endurance wings run long and slender.</small>
+  </div>
+
+  <h2><span class="num">2</span>The lift distribution, and the magic of elliptical</h2>
+  <p>Picture the lift spread across the span — heavy in the middle, fading to zero at each tip. The
+  <em>shape</em> of that <a href="../reference/glossary.html#elliptical-loading">spanwise lift
+  distribution</a> is what sets <strong>e</strong>. There is one shape that is provably optimal: the
+  <strong>elliptical</strong> distribution, which produces uniform downwash across the span and gives the
+  theoretical minimum induced drag — <strong>e = 1.0</strong>.<span class="cite"><a href="#r-mit">3</a></span>
+  Every other shape wastes a little.</p>
+
+  <p>A plain <strong>rectangular</strong> wing carries too much load out near the tips, where it does the
+  most vortex-making harm. It lands around <strong>e ≈ 0.93</strong> (at AR 8) — roughly 7% more induced
+  drag than ideal. The fix is almost embarrassingly cheap: <strong><a href="../reference/glossary.html#taper-ratio">taper</a></strong>
+  the wing, narrowing the chord toward the tip. A moderate taper ratio
+  <span class="inline-math">λ = c<sub>tip</sub>/c<sub>root</sub> ≈ 0.4</span> pulls the load distribution
+  almost onto the elliptical curve and recovers <strong>e ≈ 0.98–0.99</strong> — without the manufacturing
+  nightmare of building a true ellipse.</p>
+
+  <p>Where does that number come from? We compute <strong>e</strong> live from the verified
+  Hörner / Niță–Scholz result,<span class="cite"><a href="#r-nita">5</a></span> which turns the planform
+  taper ratio straight into a span-efficiency factor:</p>
+
+  <div class="formula">
+<span class="var">e</span> <span class="op">=</span> 1 <span class="op">/</span> ( 1 <span class="op">+</span> δ )      δ <span class="op">=</span> <span class="var">AR</span> <span class="op">·</span> <span class="var">f(λ)</span>
+<span class="var">f(λ)</span> <span class="op">=</span> 0.0524 λ⁴ <span class="op">−</span> 0.1500 λ³ <span class="op">+</span> 0.1659 λ² <span class="op">−</span> 0.0706 λ <span class="op">+</span> 0.0119
+<small>λ = taper ratio (tip chord ÷ root chord). The penalty factor f(λ) is smallest near <b>λ ≈ 0.357</b> — but the minimum is broad and shallow, so anything from λ ≈ 0.3 to 0.5 sits within ~1% of ideal. A true ellipse drives f → 0, hence e = 1.</small>
+  </div>
+
+  <div class="callout note">
+    <div class="callout-label">⚠ Don't confuse e with the Oswald factor</div>
+    <p>The <strong>e</strong> we compute here is the <em>inviscid, wing-alone</em> span efficiency — it
+    accounts only for the planform's lift distribution. The whole-aircraft <strong>Oswald efficiency
+    factor</strong> you'll see quoted as ~0.7–0.85 is a different, larger bookkeeping number: it also
+    folds in viscous drag-due-to-lift, the fuselage, and other interference. XFLR5 reports the wing-alone
+    figure; keep the two straight so you don't double-count the penalty.</p>
+  </div>
+
+  <h2><span class="num">3</span>Feel it: taper &amp; the lift distribution</h2>
+  <p>Drag the sliders and watch the spanwise load move. The dashed gold curve is the <em>ideal</em>
+  elliptical distribution; the solid blue curve is your tapered wing's approximate load. A rectangular wing
+  (λ = 1) bulges out toward the tip; taper pulls it down onto the ideal. The readouts compute
+  <strong>e</strong> from the formula above and show exactly what it costs you in induced drag.</p>
+
+  <div class="calc">
+    <div class="calc-title">🧮 Taper explorer — find the span-efficiency sweet spot</div>
+    <p style="font-family:var(--sans);font-size:.86rem;color:var(--ink-soft);margin:-.3rem 0 .9rem">
+      Left edge is the wing <strong>root</strong>, right edge is the <strong>tip</strong>. Both curves are
+      normalised to the same total lift, so wherever the solid curve rises <em>above</em> the dashed one,
+      your wing is over-loading that part of the span — and near the tip, over-loading is exactly what
+      feeds the vortices.</p>
+    <div class="controls">
+      <div class="control">
+        <label>Taper ratio λ = c<sub>tip</sub>/c<sub>root</sub> <output id="lamOut">0.40</output></label>
+        <input type="range" id="lamRange" min="0.2" max="1.0" step="0.01" value="0.4">
+      </div>
+      <div class="control">
+        <label>Aspect ratio AR <output id="arOut">8</output></label>
+        <input type="range" id="arRange" min="6" max="16" step="0.5" value="8">
+      </div>
+    </div>
+    <div class="readout">
+      <canvas id="spanCanvas" width="720" height="340" aria-label="Half-span lift distribution: elliptical ideal versus the tapered wing's load"></canvas>
+      <div class="span-readouts">
+        <span>span efficiency e = <b id="eVal">—</b></span>
+        <span>induced-drag factor 1/e = <b id="ieVal">—</b></span>
+        <span>C<sub>Di</sub> at C<sub>L</sub>=1.0 = <b id="cdiVal">—</b></span>
+        <span>vs elliptical = <b id="penVal">—</b></span>
+        <span class="full">Lower e directly inflates C<sub>Di</sub> = C<sub>L</sub>²/(π·AR·e), which raises total C<sub>D</sub> and pulls down the endurance figure of merit C<sub>L</sub><sup>1.5</sup>/C<sub>D</sub>.</span>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="simbtn" id="presetRect">λ = 1.0 · rectangular</button>
+      <button class="simbtn" id="presetOpt">λ ≈ 0.36 · optimum taper</button>
+    </div>
+    <div class="status hint" id="status">Drag λ down from 1.0 and watch the blue curve fall toward the gold ideal…</div>
+  </div>
+
+  <h2><span class="num">4</span>The XFLR5 workflow, step by step</h2>
+  <p><a href="https://sourceforge.net/projects/xflr5/" target="_blank" rel="noopener">XFLR5</a> (Deperrois)
+  is a free GUI that wraps XFOIL and adds a 3-D solver: <a href="../reference/glossary.html#lifting-line">lifting-line
+  theory (LLT)</a> and the <a href="../reference/glossary.html#vlm">vortex-lattice method (VLM)</a>. You
+  feed it the airfoil polars you generated in T1, describe your planform, and it returns the whole-wing
+  polar — including induced drag, span efficiency, and the spanwise C<sub>L</sub> distribution.<span class="cite"><a href="#r-xflr5">1</a></span></p>
+
+  <ol class="steps">
+    <li>
+      <div class="step-title">Import your airfoil's 2-D polars (from T1)</div>
+      <div class="step-detail">In <em>Direct Foil Design</em>, load your <code>.dat</code> coordinates. Then
+      in <em>XFoil Direct Analysis</em>, run a batch sweep of viscous polars across a range of Reynolds
+      numbers that brackets your wing's operating Re (recall T2 — chord sets Re). XFLR5 will interpolate
+      between these at each spanwise station.</div>
+    </li>
+    <li>
+      <div class="step-title">Define the wing in the Plane / Wing editor</div>
+      <div class="step-detail">Switch to <em>Wing and Plane Design</em>. Set the <strong>span</strong>,
+      <strong>root chord</strong> and <strong>tip chord</strong> — their ratio is your taper λ. Confirm the
+      resulting <strong>area</strong> and <strong>aspect ratio</strong> match the numbers you sized in T2.
+      Assign your imported foil to the sections.</div>
+    </li>
+    <li>
+      <div class="step-title">Choose an analysis: LLT or VLM</div>
+      <div class="step-detail">For a straight, unswept, moderate-AR wing, <strong>LLT</strong> is fast and
+      accurate and reports span efficiency directly. Use <strong>VLM</strong> (or panels) when you add
+      sweep, dihedral, or a full plane where LLT's assumptions break down.</div>
+    </li>
+    <li>
+      <div class="step-title">Run the analysis across an α sweep</div>
+      <div class="step-detail">Define a sequence of angles of attack and run. XFLR5 solves the lift
+      distribution at each α, blending in the viscous 2-D drag from your imported polars to get total
+      C<sub>D</sub> = profile + induced.</div>
+    </li>
+    <li>
+      <div class="step-title">Read the whole-wing polar and the endurance number</div>
+      <div class="step-detail">Plot C<sub>L</sub>–C<sub>D</sub>, C<sub>L</sub>–α, and — the one you care
+      about — <strong>C<sub>L</sub><sup>1.5</sup>/C<sub>D</sub></strong> versus C<sub>L</sub>. Check the
+      <strong>span efficiency</strong> and the <strong>spanwise C<sub>L</sub></strong> plot to confirm the
+      tips aren't stalling first. This is your wing's real performance — the airfoil's promise, taxed by
+      three dimensions.</div>
+    </li>
+  </ol>
+
+  <div class="callout key">
+    <div class="callout-label">★ The through-line</div>
+    <p>Airfoil polars (T1) describe a 2-D slice. Planform (T2) and taper (this lesson) decide how that
+    slice is distributed over a finite span. XFLR5 stitches them together into <em>one</em>
+    C<sub>L</sub><sup>1.5</sup>/C<sub>D</sub> for the whole wing — the number that finally answers
+    "how long will it stay up?". That's exactly what D1 will let you synthesise end-to-end.</p>
+  </div>
+
+  <h2><span class="num">5</span>Check yourself</h2>
+  <p>Answer from memory — that effort is what turns a fact you just read into one you'll keep.</p>
+
+  <div class="quiz"
+       data-explain-right="Elliptical loading gives uniform downwash and the minimum induced drag."
+       data-explain-wrong="Re-read §2 — one specific lift-distribution shape is provably optimal.">
+    <div class="q-kicker">Question 1 of 3</div>
+    <div class="q-text">Which spanwise lift distribution gives the minimum induced drag, with span efficiency e = 1?</div>
+    <div class="q-options">
+      <button class="opt" data-correct data-feedback="Correct. The elliptical distribution produces uniform downwash across the span, which is the condition for minimum induced drag — that's why it scores e = 1.">an elliptical lift distribution across the span</button>
+      <button class="opt" data-feedback="A rectangular planform carries too much load near the tips, so it lands around e ≈ 0.93 — close, but not the ideal.">a uniform, flat distribution from root to tip</button>
+      <button class="opt" data-feedback="Loading the tips heavily is the worst thing you can do — that's exactly what feeds the vortices and raises induced drag.">a distribution that peaks out at the wingtips</button>
+      <button class="opt" data-feedback="Concentrating all the load at the root would stall the centre and waste the outer span — far from the elliptical optimum.">a sharp spike of lift at the wing root only</button>
+    </div>
+    <div class="q-feedback"></div>
+  </div>
+
+  <div class="quiz"
+       data-explain-right="A taper of ~0.4 nearly matches elliptical at a fraction of the cost."
+       data-explain-wrong="Look again at what moderate taper did to e in the explorer.">
+    <div class="q-kicker">Question 2 of 3</div>
+    <div class="q-text">Why do designers taper a wing to roughly λ ≈ 0.4 instead of building a true ellipse?</div>
+    <div class="q-options">
+      <button class="opt" data-correct data-feedback="Exactly. A straight-tapered wing at λ ≈ 0.4 recovers e ≈ 0.98–0.99 — within ~1% of the elliptical ideal — while being far easier and cheaper to build than a curved ellipse.">a straight taper reaches ~99% of elliptical e far more cheaply</button>
+      <button class="opt" data-feedback="Taper actually lowers induced drag toward the elliptical minimum — it doesn't raise it. The whole point is to approach e = 1.">a tapered wing deliberately maximises its induced drag</button>
+      <button class="opt" data-feedback="An elliptical planform isn't aerodynamically inferior — it's the ideal. Taper just approximates it cheaply; it doesn't beat it.">a straight taper has lower induced drag than any ellipse</button>
+      <button class="opt" data-feedback="Taper changes the lift distribution and e; it isn't merely cosmetic. The aerodynamic payoff is the whole reason to do it.">taper is purely a styling choice with no effect on e</button>
+    </div>
+    <div class="q-feedback"></div>
+  </div>
+
+  <div class="quiz"
+       data-explain-right="Finite span adds induced drag and softens the lift-curve slope."
+       data-explain-wrong="See §1 — what does being three-dimensional cost the wing?">
+    <div class="q-kicker">Question 3 of 3</div>
+    <div class="q-text">Compared with its 2-D airfoil section, a finite (3-D) wing has…</div>
+    <div class="q-options">
+      <button class="opt" data-correct data-feedback="Right. Tip vortices add induced drag the 2-D section never had, and the downwash they create reduces the effective angle of attack — so the lift-curve slope is shallower too.">more total drag and a shallower lift-curve slope</button>
+      <button class="opt" data-feedback="It's the opposite on both counts: the finite wing has MORE drag (induced) and a LOWER lift-curve slope than the 2-D section.">less drag and a steeper lift-curve slope</button>
+      <button class="opt" data-feedback="Drag does change — induced drag appears in 3-D — and the slope changes too. The section's numbers don't carry over unaltered.">identical drag and an identical lift-curve slope</button>
+      <button class="opt" data-feedback="The drag part is right, but the slope is wrong: downwash makes the 3-D lift-curve slope shallower, not steeper.">more total drag but a steeper lift-curve slope</button>
+    </div>
+    <div class="q-feedback"></div>
+  </div>
+
+  <div class="recap">
+    <h3>What you can now say</h3>
+    <ol>
+      <li>A finite wing sheds <strong>tip vortices</strong>, which create <strong>induced drag</strong> and a <strong>shallower lift-curve slope</strong> than the 2-D section.</li>
+      <li>Induced drag is <strong>C<sub>Di</sub> = C<sub>L</sub>²/(π·AR·e)</strong> — high AR and high <strong>e</strong> both cut it.</li>
+      <li>The <strong>elliptical</strong> lift distribution is optimal (<strong>e = 1</strong>); a rectangular wing wastes ~7% (e ≈ 0.93).</li>
+      <li>A moderate <strong>taper λ ≈ 0.4</strong> recovers e ≈ 0.98–0.99 cheaply — the broad optimum sits near λ ≈ 0.357.</li>
+      <li><strong>XFLR5</strong> imports your T1 airfoil polars, takes your planform, runs LLT/VLM, and returns the whole-wing polar and its real <strong>C<sub>L</sub><sup>1.5</sup>/C<sub>D</sub></strong>.</li>
+    </ol>
+  </div>
+
+  <div class="sourcebox">
+    <div class="icon">📖</div>
+    <div>
+      <div class="label">Primary source · read this next</div>
+      <div class="title"><a href="https://aero.us.es/adesign/Slides/Extra/Aerodynamics/Software/XFLR5/XFLR5%20v6.10.02/Guidelines.pdf" target="_blank" rel="noopener">Deperrois — “XFLR5 Analysis of foils and wings operating at low Reynolds numbers” (Guidelines)</a></div>
+      <div class="desc">The author's own guide to what XFLR5 is really computing — LLT vs VLM vs panel methods, where each is valid, and how span efficiency and the whole-wing polar are produced. Skim §§ on the analysis types before your first run. ~30-minute read.</div>
+    </div>
+  </div>
+
+  <div class="ask-teacher">
+    💬 <b>I'm your teacher — ask me anything.</b> Want the elliptical-loading minimum-drag result derived
+    from lifting-line theory, or unsure when to choose VLM over LLT for your planform? Curious why the
+    optimum taper is 0.357 and not a round number? Bring it to chat. Confused beats stuck.
+  </div>
+
+  <div class="crosslinks">
+    <b>Glossary:</b>
+    <a href="../reference/glossary.html#taper-ratio">taper ratio</a> ·
+    <a href="../reference/glossary.html#span-efficiency">span efficiency</a> ·
+    <a href="../reference/glossary.html#elliptical-loading">elliptical loading</a> ·
+    <a href="../reference/glossary.html#lifting-line">lifting-line theory</a> ·
+    <a href="../reference/glossary.html#vlm">vortex-lattice method</a> ·
+    <a href="../reference/glossary.html#induced-drag">induced drag</a>.
+    <b>Builds on →</b> <strong>F3</strong> (the two kinds of drag) and <strong>T2</strong> (planform &amp; wing loading).
+    <b>Builds toward →</b> <strong>D1</strong> (synthesise the endurance wing).
+  </div>
+
+  <h2 id="refs"><span class="num">§</span>References</h2>
+  <ol style="font-family:var(--sans);font-size:.84rem;color:var(--ink-soft);line-height:1.5">
+    <li id="r-xflr5">Deperrois — <a href="https://aero.us.es/adesign/Slides/Extra/Aerodynamics/Software/XFLR5/XFLR5%20v6.10.02/Guidelines.pdf" target="_blank" rel="noopener">XFLR5 Guidelines: analysis of foils and wings at low Reynolds numbers</a>. The authoritative guide to LLT/VLM/panel analysis in XFLR5. <b>Primary source.</b></li>
+    <li id="r-rosflight">ROSflight — <a href="https://docs.rosflight.org/latest/user-guide/tutorials/user-manual-xflr5/" target="_blank" rel="noopener">XFLR5 user manual / tutorial</a>. A clean, modern UAV-oriented walkthrough of importing foils, building a wing, and running an analysis.</li>
+    <li id="r-mit">MIT 16.100 Aerodynamics — <a href="https://ocw.mit.edu/courses/16-100-aerodynamics-fall-2005/pages/lecture-notes/" target="_blank" rel="noopener">Lecture notes</a> (MIT OCW). Lifting-line theory, elliptical loading, span efficiency, and the finite-wing lift-curve slope.</li>
+    <li id="r-nasa">NASA Glenn — <a href="https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/induced-drag-coefficient/" target="_blank" rel="noopener">Induced Drag Coefficient</a>. The C<sub>Di</sub> = C<sub>L</sub>²/(π·AR·e) relation and why high aspect ratio cuts induced drag.</li>
+    <li id="r-nita">Niță &amp; Scholz — <a href="https://www.fzt.haw-hamburg.de/pers/Scholz/OPerA/OPerA_PUB_DLRK_12-09-10.pdf" target="_blank" rel="noopener">“Estimating the Oswald Factor from Basic Aircraft Geometrical Parameters”</a> (DLRK 2012). Source of the f(λ) taper-penalty polynomial used to compute span efficiency live; rooted in Hörner's classic result.</li>
+  </ol>
+
+  <nav class="lesson-nav">
+    <a href="0008-planform-and-wing-loading.html">
+      <div class="dir">← Prev · T2</div>
+      <div class="ttl">Planform &amp; Wing Loading</div>
+    </a>
+    <a class="next" href="0010-synthesize-the-endurance-wing.html">
+      <div class="dir">Next · D1</div>
+      <div class="ttl">Synthesize the Endurance Wing →</div>
+    </a>
+  </nav>
+
+  <p class="pagefoot">Lesson T3 of the Wing Design course ·
+  <a href="../index.html">all lessons</a> ·
+  <a href="https://github.com/chrisfraser/wing-design">source on GitHub</a></p>
+</main>
+
+<script>
+/* ====================== Taper & lift-distribution explorer ====================== */
+(function(){
+  // Span-efficiency from the verified Hörner / Niță–Scholz polynomial.
+  function fLam(L){ return 0.0524*Math.pow(L,4) - 0.1500*Math.pow(L,3) + 0.1659*L*L - 0.0706*L + 0.0119; }
+  function eOf(L, AR){ return 1/(1 + AR*fLam(L)); }
+  var L_OPT = 0.357;          // broad, shallow optimum
+
+  // Normalised distributions over the half-span y in [0,1] (unit area each).
+  function ellip(y){ return Math.sqrt(Math.max(0,1-y*y)) * 4/Math.PI; }        // area = 1
+  function chord(y, L){ return 2*(1 - (1-L)*y) / (1+L); }                       // area = 1
+  function blend(y, L){ return 0.5*(ellip(y) + chord(y, L)); }                  // wing's approx load
+
+  var lamR=document.getElementById('lamRange'), lamO=document.getElementById('lamOut');
+  var arR =document.getElementById('arRange'),  arO =document.getElementById('arOut');
+  var canvas=document.getElementById('spanCanvas'), ctx=canvas?canvas.getContext('2d'):null;
+  var status=document.getElementById('status');
+  var bRect=document.getElementById('presetRect'), bOpt=document.getElementById('presetOpt');
+  if(!ctx) return;
+
+  var W=canvas.width, H=canvas.height, padL=58, padR=18, padT=22, padB=40;
+  var yMax=1.6;
+  function xOf(y){ return padL + y*(W-padL-padR); }
+  function vOf(v){ return (H-padB) - (v/yMax)*(H-padT-padB); }
+
+  function curve(fn, L){ ctx.beginPath(); var first=true;
+    for(var y=0; y<=1+1e-9; y+=0.01){ var X=xOf(y), Y=vOf(fn(y,L)); if(first){ctx.moveTo(X,Y);first=false;} else ctx.lineTo(X,Y);} }
+
+  function draw(L){
+    ctx.clearRect(0,0,W,H); ctx.fillStyle='#0a1c30'; ctx.fillRect(0,0,W,H);
+    // grid — vertical (span fraction)
+    ctx.font='11px Inter, system-ui'; ctx.textAlign='center';
+    for(var gx=0; gx<=1+1e-9; gx+=0.25){
+      ctx.strokeStyle='rgba(143,185,198,.12)'; ctx.beginPath(); ctx.moveTo(xOf(gx),padT); ctx.lineTo(xOf(gx),H-padB); ctx.stroke();
+      ctx.fillStyle='#5b7e93'; ctx.fillText(gx.toFixed(2), xOf(gx), H-padB+15);
+    }
+    // grid — horizontal (normalised load)
+    ctx.textAlign='right';
+    for(var gy=0; gy<=yMax+1e-9; gy+=0.4){
+      ctx.strokeStyle='rgba(143,185,198,.10)'; ctx.beginPath(); ctx.moveTo(padL,vOf(gy)); ctx.lineTo(W-padR,vOf(gy)); ctx.stroke();
+      ctx.fillStyle='#5b7e93'; ctx.fillText(gy.toFixed(1), padL-7, vOf(gy)+4);
+    }
+    // axis titles
+    ctx.fillStyle='#8fb9c6'; ctx.textAlign='center';
+    ctx.fillText('root  ◄————  half-span position  ————►  tip', (padL+W-padR)/2, H-4);
+    ctx.save(); ctx.translate(15,(padT+H-padB)/2); ctx.rotate(-Math.PI/2);
+    ctx.fillText('normalised local lift', 0, 0); ctx.restore();
+
+    // filled area under the wing's load (blue), to make over/under-loading legible
+    curve(blend, L);
+    ctx.lineTo(xOf(1), vOf(0)); ctx.lineTo(xOf(0), vOf(0)); ctx.closePath();
+    ctx.fillStyle='rgba(78,163,218,.16)'; ctx.fill();
+
+    // elliptical ideal — dashed gold
+    ctx.strokeStyle='#ffd479'; ctx.lineWidth=2.2; ctx.setLineDash([6,4]);
+    curve(ellip, L); ctx.stroke(); ctx.setLineDash([]);
+
+    // wing's approximate load — solid blue
+    ctx.strokeStyle='#4ea3da'; ctx.lineWidth=2.8;
+    curve(blend, L); ctx.stroke();
+
+    // tip-loading flag: where solid sits above dashed near the tip
+    var yTip=0.9, over=blend(yTip,L)-ellip(yTip,L);
+    if(over>0.04){
+      ctx.fillStyle='#e0843a'; ctx.textAlign='left'; ctx.font='bold 11px Inter, system-ui';
+      ctx.fillText('↑ tip over-loaded', xOf(0.62), vOf(blend(0.78,L))-8);
+      ctx.font='11px Inter, system-ui';
+    }
+    // legend
+    ctx.textAlign='left'; ctx.font='11px Inter, system-ui';
+    ctx.fillStyle='#ffd479'; ctx.fillText('— — elliptical ideal (e = 1)', xOf(0.42), padT+12);
+    ctx.fillStyle='#4ea3da'; ctx.fillText('——— your tapered wing', xOf(0.42), padT+28);
+  }
+
+  function update(){
+    var L=parseFloat(lamR.value), AR=parseFloat(arR.value);
+    var e=eOf(L,AR), cdi=1/(Math.PI*AR*e), pen=(1/e-1)*100;
+    lamO.textContent=L.toFixed(2);
+    arO.textContent = (AR%1===0)?AR.toFixed(0):AR.toFixed(1);
+    document.getElementById('eVal').textContent=e.toFixed(3);
+    document.getElementById('ieVal').textContent=(1/e).toFixed(3);
+    document.getElementById('cdiVal').textContent=cdi.toFixed(4);
+    document.getElementById('penVal').textContent='+'+pen.toFixed(1)+'% Cᴅᵢ';
+    draw(L);
+
+    bRect.classList.toggle('active', Math.abs(L-1.0)<1e-6);
+    bOpt.classList.toggle('active', Math.abs(L-L_OPT)<0.02);
+
+    if(L>=0.95){
+      status.className='status warn';
+      status.textContent='λ='+L.toFixed(2)+' rectangular → e='+e.toFixed(2)+' at AR='+arO.textContent+': '+pen.toFixed(0)+'% more induced drag than elliptical. Taper toward 0.4 to recover most of it.';
+    } else if(L>=0.30 && L<=0.50){
+      status.className='status ok';
+      status.textContent='✓ λ='+L.toFixed(2)+' → e='+e.toFixed(2)+' — within ~1% of the elliptical ideal. This is the cheap sweet spot (broad optimum near λ≈0.357).';
+    } else if(L<0.30){
+      status.className='status hint';
+      status.textContent='λ='+L.toFixed(2)+' → e='+e.toFixed(2)+'. Over-tapering starves the tips and edges back off the optimum — and risks tip stall. Ease λ up toward ~0.4.';
+    } else {
+      status.className='status hint';
+      status.textContent='λ='+L.toFixed(2)+' → e='+e.toFixed(2)+' ('+pen.toFixed(1)+'% over elliptical). Keep lowering λ toward ~0.4 to pull the blue curve onto the gold ideal.';
+    }
+  }
+  lamR.addEventListener('input', update);
+  arR.addEventListener('input', update);
+  bRect.addEventListener('click', function(){ lamR.value='1'; update(); });
+  bOpt.addEventListener('click', function(){ lamR.value=String(L_OPT); update(); });
+  update();
+})();
+</script>
+</body>
+</html>

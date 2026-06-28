@@ -24,7 +24,7 @@
   <h1 class="lesson-title">Glossary</h1>
   <p class="lesson-sub">The canonical language for this course. Every lesson uses these terms; they're
   added once you can use them correctly.</p>
-  <div class="lesson-meta"><span>Last updated: Lesson F3</span><span class="sep">•</span><span>Deep-linked from every lesson</span></div>
+  <div class="lesson-meta"><span>Last updated: Lesson D2</span><span class="sep">•</span><span>Deep-linked from every lesson</span></div>
 
   <h2><span class="num">A</span>Forces &amp; Efficiency</h2>
 
@@ -139,8 +139,140 @@
     <p class="gt-def">Air leaking around the wingtips rolls into two trailing vortices, which drive a downward flow (downwash) over the wing. The downwash tilts the lift vector backward — that backward component <em>is</em> <a href="#induced-drag">induced drag</a>.</p>
   </div>
 
-  <p class="muted" style="font-family:var(--sans);font-size:.85rem;margin-top:2rem">Coming in later lessons:
-  Reynolds number, laminar separation bubble, wing loading, chord &amp; mean line, transition, XFOIL, panel method, VLM.</p>
+  <h2><span class="num">E</span>Reynolds &amp; the Low-Re Regime</h2>
+
+  <div class="glossary-term" id="reynolds-number">
+    <span class="gt-name">Reynolds number</span><span class="gt-sym">Re = ρVc/μ = Vc/ν</span>
+    <p class="gt-def">The ratio of inertial to viscous forces in a flow, based on chord c and airspeed V (ν ≈ 1.5×10⁻⁵ m²/s for air). A 1–2 m drone flies at <strong>Re ≈ 100k–400k</strong> — low enough that viscosity dominates and many full-scale airfoils misbehave.</p>
+    <p class="gt-avoid">Avoid: treating it as a property of the airfoil — it's a property of the flow condition.</p>
+  </div>
+
+  <div class="glossary-term" id="boundary-layer">
+    <span class="gt-name">Boundary layer</span>
+    <p class="gt-def">The thin layer of slowed air clinging to the wing's surface, where all skin-friction drag is generated. It begins <em>laminar</em> (smooth) and may <a href="#transition">transition</a> to <em>turbulent</em> (mixed) further back.</p>
+  </div>
+
+  <div class="glossary-term" id="laminar-separation-bubble">
+    <span class="gt-name">Laminar separation bubble</span>
+    <p class="gt-def">At low Reynolds number the laminar boundary layer separates before it can transition, then sometimes re-attaches — trapping a “bubble” that adds drag and can trigger early <a href="#stall">stall</a>. The defining headache of low-Re airfoil design.</p>
+  </div>
+
+  <div class="glossary-term" id="transition">
+    <span class="gt-name">Transition</span>
+    <p class="gt-def">The change of the <a href="#boundary-layer">boundary layer</a> from laminar to turbulent. Its location sets drag; XFOIL models it with the <a href="#ncrit">Ncrit</a> parameter, and low-Re CFD needs a dedicated <a href="#transition-model">transition model</a>.</p>
+  </div>
+
+  <h2><span class="num">F</span>Airfoil Geometry</h2>
+
+  <div class="glossary-term" id="chord-line">
+    <span class="gt-name">Chord line</span>
+    <p class="gt-def">The straight line from the leading edge to the trailing edge. Its length is the <em>chord</em> (c); <a href="#angle-of-attack">angle of attack</a> is measured from it.</p>
+  </div>
+
+  <div class="glossary-term" id="mean-camber-line">
+    <span class="gt-name">Mean camber line</span>
+    <p class="gt-def">The line halfway between the upper and lower surfaces. Its curvature is the airfoil's <a href="#camber">camber</a>; a symmetric airfoil's mean line coincides with the chord line.</p>
+  </div>
+
+  <div class="glossary-term" id="thickness">
+    <span class="gt-name">Thickness</span>
+    <p class="gt-def">The distance between upper and lower surfaces, given as a % of chord at its maximum. More thickness softens the <a href="#stall">stall</a> and adds structural room, but raises drag — especially at low Reynolds number.</p>
+  </div>
+
+  <div class="glossary-term" id="naca-4-digit">
+    <span class="gt-name">NACA 4-digit code</span><span class="gt-sym">MPXX</span>
+    <p class="gt-def">A compact airfoil parametrization: <strong>M</strong> = max camber (% chord), <strong>P</strong> = its position (tenths of chord), <strong>XX</strong> = max thickness (% chord). E.g. NACA 2412 = 2% camber at 0.4c, 12% thick.</p>
+  </div>
+
+  <div class="glossary-term" id="drag-bucket">
+    <span class="gt-name">Drag bucket</span>
+    <p class="gt-def">The low-drag trough in an airfoil's <a href="#drag-polar">polar</a> over a range of lift coefficients where the flow stays favourable. A foil whose bucket spans your <a href="#design-lift-coefficient">design C<sub>L</sub></a> is efficient where it matters.</p>
+  </div>
+
+  <div class="glossary-term" id="design-lift-coefficient">
+    <span class="gt-name">Design lift coefficient</span>
+    <p class="gt-def">The C<sub>L</sub> the wing is intended to cruise at — for us, the endurance value (~1.0–1.1). Airfoil and planform choices are tuned so this C<sub>L</sub> lands in the <a href="#drag-bucket">drag bucket</a> and near peak <a href="#endurance-parameter">C<sub>L</sub><sup>1.5</sup>/C<sub>D</sub></a>.</p>
+  </div>
+
+  <h2><span class="num">G</span>Planform &amp; Sizing</h2>
+
+  <div class="glossary-term" id="wing-loading">
+    <span class="gt-name">Wing loading</span><span class="gt-sym">W/S</span>
+    <p class="gt-def">Weight per unit wing area. Lower wing loading means slower flight at a given lift coefficient (V ∝ √(W/S)) — endurance wants it low, traded against bigger, floppier wings. Often quoted in g/dm² by modellers.</p>
+  </div>
+
+  <div class="glossary-term" id="stall-speed">
+    <span class="gt-name">Stall speed</span><span class="gt-sym">V<sub>stall</sub></span>
+    <p class="gt-def">The minimum flyable speed, where the wing reaches CLmax: V<sub>stall</sub> = √(2W/(ρ·S·CLmax)). Cruise speed must keep a comfortable margin above it.</p>
+  </div>
+
+  <div class="glossary-term" id="planform">
+    <span class="gt-name">Planform</span>
+    <p class="gt-def">The wing's shape seen from above — span, chord distribution, <a href="#taper-ratio">taper</a> and sweep. Sets <a href="#aspect-ratio">aspect ratio</a> and, through the lift distribution, <a href="#span-efficiency">span efficiency</a>.</p>
+  </div>
+
+  <div class="glossary-term" id="taper-ratio">
+    <span class="gt-name">Taper ratio</span><span class="gt-sym">λ = c<sub>tip</sub>/c<sub>root</sub></span>
+    <p class="gt-def">How much the chord shrinks from root to tip. A moderate taper (λ ≈ 0.4) approximates the ideal <a href="#elliptical-loading">elliptical loading</a> cheaply, pushing <a href="#span-efficiency">e</a> toward 1.</p>
+  </div>
+
+  <div class="glossary-term" id="elliptical-loading">
+    <span class="gt-name">Elliptical loading</span>
+    <p class="gt-def">The spanwise lift distribution that minimises <a href="#induced-drag">induced drag</a> (span efficiency e = 1). The benchmark every real planform is measured against; taper and twist are how you approach it.</p>
+  </div>
+
+  <div class="glossary-term" id="lifting-line">
+    <span class="gt-name">Lifting-line theory</span>
+    <p class="gt-def">Prandtl's classic model of a finite wing as a line of vortices, predicting the lift distribution, <a href="#induced-drag">induced drag</a> and reduced lift-curve slope. The method behind XFLR5's fast wing analysis.</p>
+  </div>
+
+  <div class="glossary-term" id="vlm">
+    <span class="gt-name">Vortex-lattice method</span><span class="gt-sym">VLM</span>
+    <p class="gt-def">A panel method that tiles the wing with horseshoe vortices to compute 3-D lift and induced drag for arbitrary planforms — XFLR5's option when <a href="#lifting-line">lifting-line</a> assumptions break down.</p>
+  </div>
+
+  <h2><span class="num">H</span>Tools &amp; CFD</h2>
+
+  <div class="glossary-term" id="xfoil">
+    <span class="gt-name">XFOIL</span>
+    <p class="gt-def">Mark Drela's 2-D airfoil code (MIT): an inviscid <a href="#panel-method">panel method</a> coupled to a viscous <a href="#boundary-layer">boundary-layer</a> solver. Fast and well-validated for low-Re section polars — the workhorse of this course.</p>
+  </div>
+
+  <div class="glossary-term" id="panel-method">
+    <span class="gt-name">Panel method</span>
+    <p class="gt-def">A solver that represents a surface with many small vortex/source panels and solves the inviscid flow around them. Cheap and accurate for attached flow; it cannot model heavy separation on its own.</p>
+  </div>
+
+  <div class="glossary-term" id="ncrit">
+    <span class="gt-name">Ncrit</span>
+    <p class="gt-def">XFOIL's e<sup>N</sup> <a href="#transition">transition</a> setting: ≈ 9 for clean, low-turbulence air; ≈ 7 for average free flight; lower for turbulent/rough conditions. Lower Ncrit = earlier transition = more drag.</p>
+  </div>
+
+  <div class="glossary-term" id="viscous-polar">
+    <span class="gt-name">Viscous polar</span>
+    <p class="gt-def">A polar computed <em>with</em> viscosity (in XFOIL, after setting <code>VISC &lt;Re&gt;</code>), so it includes real drag. An inviscid run gives lift but essentially no drag and is useless for our purposes.</p>
+  </div>
+
+  <div class="glossary-term" id="cfd">
+    <span class="gt-name">CFD</span>
+    <p class="gt-def">Computational fluid dynamics: solving the flow equations on a 3-D <a href="#mesh">mesh</a> (e.g. OpenFOAM, SU2). Higher fidelity than panel methods for separated/3-D flow, at much greater setup and compute cost.</p>
+  </div>
+
+  <div class="glossary-term" id="rans">
+    <span class="gt-name">RANS</span>
+    <p class="gt-def">Reynolds-Averaged Navier–Stokes — the standard, affordable CFD approach that models turbulence statistically. The usual first rung of real <a href="#cfd">CFD</a> for wings.</p>
+  </div>
+
+  <div class="glossary-term" id="transition-model">
+    <span class="gt-name">Transition model</span>
+    <p class="gt-def">An add-on (e.g. γ-Re<sub>θ</sub> / Langtry–Menter) that lets <a href="#rans">RANS</a> predict where the <a href="#boundary-layer">boundary layer</a> trips turbulent. <strong>Essential at low Re</strong> — without it, CFD over-predicts drag badly.</p>
+    <p class="gt-avoid">Avoid: assuming default “fully turbulent” RANS is valid for our regime.</p>
+  </div>
+
+  <div class="glossary-term" id="mesh">
+    <span class="gt-name">Mesh</span>
+    <p class="gt-def">The grid of cells a <a href="#cfd">CFD</a> solver computes on. Results must be shown <em>mesh-independent</em> (unchanged as the mesh is refined) before they're trusted.</p>
+  </div>
 
   <nav class="lesson-nav">
     <a href="../index.html">

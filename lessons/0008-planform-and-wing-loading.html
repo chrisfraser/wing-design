@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>T2 · Planform &amp; Wing Loading</title>
+<link rel="stylesheet" href="../assets/styles.css">
+<script defer src="../assets/widgets.js"></script>
+<style>
+  /* Lesson-T2-specific: the wing-sizer canvas + readout grid + constraint chips */
+  canvas { width:100%; display:block; border-radius:8px; background:var(--night); }
+  .sizer-readouts { display:grid; grid-template-columns:repeat(2,1fr); gap:.4rem 1.4rem; margin-top:.8rem; font-family:var(--mono); font-size:.95rem; color:#d8ecf5; }
+  .sizer-readouts b { color:#ffd479; font-variant-numeric:tabular-nums; }
+  .sizer-readouts .u { color:#8fb9c6; font-size:.82rem; }
+  .chips { display:flex; flex-wrap:wrap; gap:.5rem; margin-top:1rem; }
+  .chip { font-family:var(--sans); font-size:.74rem; font-weight:700; padding:.22rem .62rem; border-radius:999px; border:1px solid; letter-spacing:.01em; }
+  .chip.ok   { background:rgba(63,125,78,.13);  color:#2e6b3d; border-color:#bcd9c2; } /* --kelp  */
+  .chip.warn { background:rgba(192,133,46,.15); color:#8a6420; border-color:#e6cfa0; } /* --warm  */
+  .chip.bad  { background:rgba(193,73,43,.12);  color:#a83a22; border-color:#e6bfb4; } /* --coral */
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap-wide">
+    <a class="brand" href="../index.html"><span class="dot">✈</span> Wing Design</a>
+    <nav>
+      <a href="../index.html">Lessons</a>
+      <a href="../reference/glossary.html">Glossary</a>
+      <a href="https://github.com/chrisfraser/wing-design">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <p class="kicker">Phase 3 · Analysis Tools · T2</p>
+  <h1 class="lesson-title">Planform &amp; Wing Loading</h1>
+  <p class="lesson-sub">Coefficients are abstract. This lesson turns them into the four numbers you can
+  actually measure with a tape and a scale: span, chord, speed — and the Reynolds number they force.</p>
+  <div class="lesson-meta">
+    <span>⏱ ~14 minutes</span><span class="sep">•</span>
+    <span>🧮 Real numbers — keep a calculator handy</span><span class="sep">•</span>
+    <span class="tag build">Builds on F3 · F4</span>
+  </div>
+
+  <div class="callout mission">
+    <div class="callout-label">◎ Why this lesson</div>
+    <p>In <a href="0007-hands-on-xfoil.html">T1</a> you generated your own airfoil polars — but a polar is
+    still just <em>character</em>: dimensionless C<sub>L</sub> and C<sub>D</sub> that describe a slice of
+    wing, not a wing. Before the capstone you need to commit to <strong>real geometry and a real speed</strong>.
+    This lesson does the algebra that converts your endurance lift coefficient (from
+    <a href="0001-lift-drag-and-the-endurance-number.html">F1</a>) and your aspect-ratio ambition (from
+    <a href="0003-the-two-kinds-of-drag.html">F3</a>) into a span, a chord, a cruise speed — and the
+    <a href="0004-reynolds-number.html">Reynolds number</a> (F4) that chord lands you in. Those numbers are
+    the raw material the capstone <strong>D1</strong> assembles.</p>
+  </div>
+
+  <p class="lead">Pick a weight and a wing area and you have, whether you meant to or not, already chosen how
+  fast your aircraft must fly. Stretch that same area into a longer, thinner wing and you have chosen its
+  Reynolds number too. The planform is where every abstract choice cashes out as a physical object.</p>
+
+  <h2><span class="num">1</span>Wing loading: weight spread over wing</h2>
+  <p>The single most decisive number for how an aircraft flies is its
+  <strong><a href="../reference/glossary.html#wing-loading">wing loading</a></strong> — the weight it has to
+  support divided by the wing area that supports it. Light wing, big area → low loading. Heavy load, small
+  area → high loading.<span class="cite"><a href="#r-nasa">3</a></span></p>
+
+  <div class="formula">
+<span class="var">W</span> <span class="op">=</span> <span class="var">m</span> <span class="op">·</span> <span class="var">g</span>     <span class="var">W</span><span class="op">/</span><span class="var">S</span> <span class="op">=</span> wing loading
+<small>Weight <b>W</b> in newtons (mass <b>m</b> in kg × <b>g</b> = 9.81 m/s²); area <b>S</b> in m². Aeronautics quotes loading in <b>N/m²</b>; the RC-model world prefers <b>g/dm²</b> (grams per square decimetre). They measure the same thing: <b>1 g/dm² = 0.981 N/m²</b>, so g/dm² ≈ (W/S) ⁄ 0.981. A 1.5 kg model on 0.30 m² carries ~49 N/m² ≈ 50 g/dm² — a typical light sport/soarer value.</small>
+  </div>
+
+  <p>Why does loading rule everything? Because the wing has to make exactly enough lift to hold the weight
+  up. Spread the same weight over more wing and each square metre works less hard — which, as the next
+  section shows, means the aircraft can fly <em>slower</em> to stay aloft.</p>
+
+  <h2><span class="num">2</span>The speed your loading demands</h2>
+  <p>In steady, level flight lift equals weight. Set the lift equation equal to W and solve for speed:</p>
+
+  <div class="formula">
+½ <span class="op">·</span> ρ <span class="op">·</span> <span class="var">V</span>² <span class="op">·</span> <span class="var">S</span> <span class="op">·</span> <span class="var">C<sub>L</sub></span> <span class="op">=</span> <span class="var">W</span>     <span class="op">⇒</span>     <span class="var">V</span> <span class="op">=</span> √( 2<span class="var">W</span> ⁄ (ρ <span class="op">·</span> <span class="var">S</span> <span class="op">·</span> <span class="var">C<sub>L</sub></span>) )
+<small>ρ = 1.225 kg/m³ (sea level). Because W and ρ are fixed, <b>V ∝ 1/√(S · C<sub>L</sub>)</b> — equivalently V = √(2·(W/S)/(ρ·C<sub>L</sub>)). Lower wing loading, or a higher operating C<sub>L</sub>, means a <b>slower</b> flight speed.<span class="cite"><a href="#r-marchman">1</a></span></small>
+  </div>
+
+  <p>That proportionality is the whole point of this lesson. Slow flight is precisely what endurance wants:
+  back in F1 you learned that staying aloft longest is a <em>minimum-power</em> problem, and power is drag ×
+  speed — so flying slowly is half the battle. Two levers buy that slowness: a <strong>low wing loading</strong>
+  (big wing for the weight) or a <strong>high C<sub>L</sub></strong> (fly near the top of the lift curve).
+  Tennekes' famous "great flight diagram" shows the same law across every flyer from a fruit fly to a 747:
+  the lighter your loading, the slower and gentler you fly.<span class="cite"><a href="#r-tennekes">2</a></span></p>
+
+  <p>There is a floor under that speed, though — the
+  <strong><a href="../reference/glossary.html#stall-speed">stall speed</a></strong>. You cannot fly slower
+  than the speed at which the wing, even at its maximum lift coefficient, can no longer hold the weight:</p>
+
+  <div class="formula">
+<span class="var">V<sub>stall</sub></span> <span class="op">=</span> √( 2<span class="var">W</span> ⁄ (ρ <span class="op">·</span> <span class="var">S</span> <span class="op">·</span> <span class="var">C<sub>Lmax</sub></span>) )    <span class="op">,</span>   <span class="var">C<sub>Lmax</sub></span> <span class="op">≈</span> 1.4
+<small>Same equation, run at the wing's ceiling C<sub>Lmax</sub> instead of your cruise C<sub>L</sub>. Your design must cruise comfortably <b>above</b> this. The margin is V/V<sub>stall</sub> = √(C<sub>Lmax</sub>/C<sub>L</sub>) — so a design C<sub>L</sub> close to 1.4 flies uncomfortably near the stall, exactly the thin margin F2 warned about for endurance.</small>
+  </div>
+
+  <h2><span class="num">3</span>From aspect ratio to span and chord</h2>
+  <p>Wing loading fixed your <em>speed</em>; <a href="../reference/glossary.html#aspect-ratio">aspect ratio</a>
+  now fixes your <em>shape</em>. AR is the ratio of span to chord — for a simple rectangular wing,
+  AR = b²/S. Hold the area S constant and AR alone decides whether that area is a short stubby paddle or a
+  long slender blade:</p>
+
+  <div class="formula">
+<span class="var">b</span> <span class="op">=</span> √( <span class="var">AR</span> <span class="op">·</span> <span class="var">S</span> )     <span class="var">c</span> <span class="op">=</span> <span class="var">S</span> ⁄ <span class="var">b</span> <span class="op">=</span> √( <span class="var">S</span> ⁄ <span class="var">AR</span> )     <span class="var">Re</span> <span class="op">=</span> <span class="var">V</span> <span class="op">·</span> <span class="var">c</span> ⁄ ν
+<small>Span <b>b</b> and chord <b>c</b> from area and aspect ratio (ν = 1.5×10⁻⁵ m²/s). Raising AR at fixed area <b>lengthens the span and shrinks the chord</b> — and chord is the length scale in the Reynolds number, so high AR drags Re downward.</small>
+  </div>
+
+  <p>Here is the trap the whole course has been circling. <a href="0003-the-two-kinds-of-drag.html">F3</a>
+  taught you that <strong>high aspect ratio cuts induced drag</strong> — long, thin wings leak less energy off
+  their tips. <a href="0004-reynolds-number.html">F4</a> taught you that <strong>low Reynolds number wrecks
+  airfoil performance</strong> — thin laminar boundary layers separate and form drag-producing bubbles. But
+  raising AR to win the first fight <em>shrinks the chord</em>, which lowers Reynolds number and loses the
+  second. The two best pieces of advice in the course pull in opposite directions, and the planform is where
+  you are forced to broker the deal. The sizer below lets you feel exactly where it bites.</p>
+
+  <h2><span class="num">4</span>Size your wing</h2>
+  <p>Pick a mass, an area, an aspect ratio, and the design lift coefficient you intend to cruise at. The card
+  computes the loading, the geometry, both speeds, and the Reynolds number — and draws the wing to scale so you
+  can <em>see</em> how aspect ratio stretches it. Watch the constraint chips: green is healthy, amber is
+  marginal, red is trouble.</p>
+
+  <div class="calc">
+    <div class="calc-title">🧮 Wing sizer — turn four picks into a real planform</div>
+    <p style="font-family:var(--sans);font-size:.86rem;color:var(--ink-soft);margin:-.3rem 0 .9rem">
+      The canvas is a <a href="../reference/glossary.html#planform">planform</a> — a true top-view of your wing,
+      drawn to a fixed scale (the 1&nbsp;m bar at the bottom). Push the aspect ratio up and the rectangle gets
+      long and skinny; the chord readout — and the Reynolds chip — fall with it. Try the two preset builds to
+      feel the trade from opposite ends.</p>
+    <div class="controls">
+      <div class="control">
+        <label>Mass m <output id="mOut">1.5 kg</output></label>
+        <input type="range" id="mRange" min="0.5" max="6" step="0.1" value="1.5">
+      </div>
+      <div class="control">
+        <label>Wing area S <output id="sOut">0.30 m²</output></label>
+        <input type="range" id="sRange" min="0.10" max="0.80" step="0.01" value="0.30">
+      </div>
+      <div class="control">
+        <label>Aspect ratio AR <output id="arOut">12</output></label>
+        <input type="range" id="arRange" min="6" max="18" step="1" value="12">
+      </div>
+      <div class="control">
+        <label>Design lift coefficient C<sub>L</sub> <output id="clOut">1.10</output></label>
+        <input type="range" id="clRange" min="0.6" max="1.3" step="0.05" value="1.1">
+      </div>
+    </div>
+    <div class="readout">
+      <canvas id="planCanvas" width="720" height="300" aria-label="A to-scale top-view of the wing as a rectangle whose width is the span and height is the chord, annotated with the span and chord dimensions and a one-metre scale bar."></canvas>
+      <div class="sizer-readouts">
+        <span>wing loading <b id="wlVal">—</b> <span class="u">N/m²</span> · <b id="wlgVal">—</b> <span class="u">g/dm²</span></span>
+        <span>Reynolds Re <b id="reVal">—</b></span>
+        <span>span b <b id="bVal">—</b> <span class="u">m</span></span>
+        <span>chord c <b id="cVal">—</b> <span class="u">m</span></span>
+        <span>cruise V <b id="vVal">—</b> <span class="u">m/s</span></span>
+        <span>stall V<sub>stall</sub> <b id="vsVal">—</b> <span class="u">m/s</span></span>
+      </div>
+      <div class="chips">
+        <span class="chip" id="chRe">Reynolds</span>
+        <span class="chip" id="chSpan">span</span>
+        <span class="chip" id="chStall">stall margin</span>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="simbtn" id="presetEnd">🪶 Low-loading endurance build</button>
+      <button class="simbtn" id="presetCompact">🧱 Compact high-loading build</button>
+      <button class="simbtn" id="presetReset">↺ Reset defaults</button>
+    </div>
+    <div class="status hint" id="status">Drag the sliders — watch the chord and the Reynolds chip move together.</div>
+  </div>
+
+  <h2><span class="num">5</span>The wing-loading trade</h2>
+  <p>There is no universally "best" wing loading — only the one that fits your mission. For an endurance
+  drone the pull is toward the <em>low</em> end, but it is a genuine trade, paid in size and fragility:</p>
+
+  <table>
+    <caption>Lowering wing loading buys slow, efficient flight — and charges you in metres of wingspan and grams of structure.</caption>
+    <thead>
+      <tr><th>What you care about</th><th>Low wing loading</th><th>High wing loading</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Flight speed</td><td>Slow — V ∝ √(W/S)</td><td>Fast</td></tr>
+      <tr><td>Power to stay aloft</td><td>Low — good for endurance</td><td>High — drains the battery</td></tr>
+      <tr><td>Wing size</td><td>Large span &amp; area</td><td>Compact, hangar-friendly</td></tr>
+      <tr><td>Structure</td><td>Light, floppy, flexes in gusts</td><td>Stiff, robust</td></tr>
+      <tr><td>Gust &amp; wind handling</td><td>Tossed around; hard in wind</td><td>Penetrates wind, steady</td></tr>
+      <tr><td>Reynolds (if AR is pushed)</td><td>Risks tiny chord → low Re</td><td>Easier to keep chord healthy</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout key">
+    <div class="callout-label">★ The planform verdict</div>
+    <p>Endurance wants <strong>low wing loading</strong> (to fly slow and sip power) and <strong>high aspect
+    ratio</strong> (to cut induced drag). Both push toward a big, slender wing — and both quietly shrink the
+    chord, dragging Reynolds number down toward the regime where airfoils misbehave. A good endurance wing is
+    therefore the <em>largest, slimmest</em> wing whose chord still holds a healthy Reynolds number. That single
+    sentence is the optimisation D1 will make you defend.</p>
+  </div>
+
+  <h2><span class="num">6</span>Check yourself</h2>
+  <p>Answer from memory — that effort is what turns a fact you just read into one you'll keep.</p>
+
+  <div class="quiz"
+       data-explain-right="V = √(2W/(ρ·S·C_L)), so cruise speed scales as 1/√(S·C_L)."
+       data-explain-wrong="Re-read §2 — solving lift = weight gives V ∝ 1/√(S·C_L).">
+    <div class="q-kicker">Question 1 of 3</div>
+    <div class="q-text">In steady level flight, an aircraft's cruise speed is proportional to…</div>
+    <div class="q-options">
+      <button class="opt" data-correct data-feedback="Right. From lift = weight, V = √(2W/(ρ·S·C_L)); with W and ρ fixed, V scales as 1/√(S·C_L). More area or more lift coefficient means slower flight.">1 ⁄ √(S · C<sub>L</sub>) — more area or lift means slower</button>
+      <button class="opt" data-feedback="The opposite — a bigger area lets you fly slower, not faster. Speed falls as 1/√(S·C_L), it does not climb with S.">√(S · C<sub>L</sub>) — a bigger wing flies faster</button>
+      <button class="opt" data-feedback="Speed does not scale linearly with area at all; the square root, and the inverse, both matter. Doubling S cuts speed by only ~30%.">S · C<sub>L</sub> directly — double the area, double speed</button>
+      <button class="opt" data-feedback="Speed depends very much on wing area through the loading W/S; it is not independent of how big the wing is.">C<sub>L</sub> ⁄ S — independent of overall wing size</button>
+    </div>
+    <div class="q-feedback"></div>
+  </div>
+
+  <div class="quiz"
+       data-explain-right="Low wing loading flies slow, which cuts the power bill endurance lives on."
+       data-explain-wrong="Look again at §2 and §5 — slow flight means low power, and slow comes from low loading.">
+    <div class="q-kicker">Question 2 of 3</div>
+    <div class="q-text">For maximum endurance, the wing loading you generally want is…</div>
+    <div class="q-options">
+      <button class="opt" data-correct data-feedback="Yes. Low loading means slow flight, and slow flight means low power required — the minimum-power condition endurance is built on. You pay in a large, flexible wing.">low — slow, low-power flight, at the cost of a big floppy wing</button>
+      <button class="opt" data-feedback="A small dense wing flies fast, and power is drag × speed — fast flight burns more power, not less. High loading hurts endurance.">high — a small dense wing always sips less power aloft</button>
+      <button class="opt" data-feedback="Heavier loading raises both cruise and stall speed; it does not lengthen flights. Gliders chase low loading for a reason.">maximal — heavier wings simply stay up longer in all cases</button>
+      <button class="opt" data-feedback="Wing loading sets your flight speed, and speed sets your power draw — it is one of the most decisive numbers for time aloft.">irrelevant — loading has no bearing on time aloft</button>
+    </div>
+    <div class="q-feedback"></div>
+  </div>
+
+  <div class="quiz"
+       data-explain-right="At fixed area, higher AR means a smaller chord, and Re = V·c/ν falls with chord."
+       data-explain-wrong="See §3 — c = √(S/AR), so raising AR shrinks the chord and lowers Reynolds.">
+    <div class="q-kicker">Question 3 of 3</div>
+    <div class="q-text">Holding wing area fixed, raising the aspect ratio…</div>
+    <div class="q-options">
+      <button class="opt" data-correct data-feedback="Exactly. c = √(S/AR), so a higher AR shrinks the chord; since Re = V·c/ν, the Reynolds number falls toward the risky low-Re regime — the F3-versus-F4 tension.">shrinks the chord, lowering Reynolds toward the risky regime</button>
+      <button class="opt" data-feedback="It is the reverse: higher AR makes the chord smaller, not larger, so Reynolds number falls rather than rises.">widens the chord, raising Reynolds into safer territory</button>
+      <button class="opt" data-feedback="The chord is set by both area and AR (c = √(S/AR)); raise AR and the chord must shrink to keep the area fixed.">leaves the chord untouched, so Reynolds is unaffected</button>
+      <button class="opt" data-feedback="Higher AR lengthens the span (b = √(AR·S)), it does not shorten it — and the Reynolds change comes from the chord.">shortens the span, raising Reynolds number for free</button>
+    </div>
+    <div class="q-feedback"></div>
+  </div>
+
+  <div class="recap">
+    <h3>What you can now say</h3>
+    <ol>
+      <li><strong>Wing loading W/S</strong> (in N/m², or g/dm² with 1 g/dm² = 0.981 N/m²) is the single number that, with C<sub>L</sub>, fixes how fast an aircraft must fly.</li>
+      <li><strong>V = √(2W/(ρ·S·C<sub>L</sub>))</strong>, so <strong>V ∝ 1/√(S·C<sub>L</sub>)</strong> — lower loading or higher C<sub>L</sub> means slower, lower-power flight, which is what endurance wants.</li>
+      <li><strong>V<sub>stall</sub></strong> uses the same equation at C<sub>Lmax</sub> ≈ 1.4; cruise must stay above it, and a high design C<sub>L</sub> leaves a thin margin.</li>
+      <li>From area and aspect ratio, <strong>b = √(AR·S)</strong> and <strong>c = √(S/AR)</strong>, and the chord sets <strong>Re = V·c/ν</strong>.</li>
+      <li>High AR and low loading both fight for a big, slim wing — but both shrink the chord and drag Reynolds down. The endurance wing is the largest, slimmest one whose chord keeps Re healthy.</li>
+    </ol>
+  </div>
+
+  <div class="sourcebox">
+    <div class="icon">📖</div>
+    <div>
+      <div class="label">Primary source · read this next</div>
+      <div class="title"><a href="https://pressbooks.lib.vt.edu/aerodynamics/" target="_blank" rel="noopener">Marchman — “Aerodynamics and Aircraft Performance” (Virginia Tech, open textbook)</a></div>
+      <div class="desc">Work the level-flight chapter: lift = weight gives the cruise-speed equation V = √(2W/(ρS C<sub>L</sub>)) and the stall-speed relation directly. It is the cleanest <em>free</em> derivation of why wing loading and C<sub>L</sub> set your flying speed. ~20-minute read.</div>
+    </div>
+  </div>
+
+  <div class="ask-teacher">
+    💬 <b>I'm your teacher — ask me anything.</b> Want the cruise-speed equation derived from lift = weight
+    step by step, or curious why the RC world clings to g/dm² instead of N/m²? Wondering how low you can push
+    Reynolds before the airfoil quits? Bring it to chat. Confused beats stuck.
+  </div>
+
+  <div class="crosslinks">
+    <b>Glossary:</b>
+    <a href="../reference/glossary.html#wing-loading">wing loading</a> ·
+    <a href="../reference/glossary.html#stall-speed">stall speed</a> ·
+    <a href="../reference/glossary.html#planform">planform</a> ·
+    <a href="../reference/glossary.html#aspect-ratio">aspect ratio</a> ·
+    <a href="../reference/glossary.html#reynolds-number">Reynolds number</a>.
+    <b>Builds on →</b> <strong>F3</strong> (aspect ratio &amp; induced drag) · <strong>F4</strong> (Reynolds number) ·
+    <b>Builds toward →</b> <strong>T3</strong> (whole-wing analysis) and <strong>D1</strong> (the capstone design).
+  </div>
+
+  <h2 id="refs"><span class="num">§</span>References</h2>
+  <ol style="font-family:var(--sans);font-size:.84rem;color:var(--ink-soft);line-height:1.5">
+    <li id="r-marchman">Marchman — <a href="https://pressbooks.lib.vt.edu/aerodynamics/" target="_blank" rel="noopener">Aerodynamics and Aircraft Performance</a> (Virginia Tech, open textbook). Level-flight speed from lift = weight, wing loading, and stall speed. <b>Primary source.</b></li>
+    <li id="r-tennekes">Tennekes — <a href="https://mitpress.mit.edu/9780262513135/the-simple-science-of-flight/" target="_blank" rel="noopener">The Simple Science of Flight</a> (MIT Press). The “great flight diagram”: how wing loading sets cruise speed across every flyer, and why slow + light + high-AR wins endurance.</li>
+    <li id="r-nasa">NASA Glenn Research Center — <a href="https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/" target="_blank" rel="noopener">Beginner's Guide to Aeronautics</a>. The lift equation L = ½ρV²S C<sub>L</sub>, wing area, and the level-flight balance underlying wing loading.</li>
+  </ol>
+
+  <nav class="lesson-nav">
+    <a href="0007-hands-on-xfoil.html">
+      <div class="dir">← Prev · T1</div>
+      <div class="ttl">Hands-on XFOIL</div>
+    </a>
+    <a class="next" href="0009-whole-wing-analysis-xflr5.html">
+      <div class="dir">Next · T3</div>
+      <div class="ttl">Whole-Wing Analysis in XFLR5 →</div>
+    </a>
+  </nav>
+
+  <p class="pagefoot">Lesson T2 of the Wing Design course ·
+  <a href="../index.html">all lessons</a> ·
+  <a href="https://github.com/chrisfraser/wing-design">source on GitHub</a></p>
+</main>
+
+<script>
+/* ============================ Wing sizer ============================ */
+(function(){
+  var RHO=1.225, NU=1.5e-5, G=9.81, CLMAX=1.4, GDM=0.981; /* 1 g/dm² = 0.981 N/m² */
+
+  var mR=document.getElementById('mRange'),  mO=document.getElementById('mOut');
+  var sR=document.getElementById('sRange'),  sO=document.getElementById('sOut');
+  var arR=document.getElementById('arRange'),arO=document.getElementById('arOut');
+  var clR=document.getElementById('clRange'),clO=document.getElementById('clOut');
+
+  var wlVal=document.getElementById('wlVal'), wlgVal=document.getElementById('wlgVal');
+  var reVal=document.getElementById('reVal'), bVal=document.getElementById('bVal');
+  var cVal=document.getElementById('cVal'),   vVal=document.getElementById('vVal');
+  var vsVal=document.getElementById('vsVal');
+  var chRe=document.getElementById('chRe'), chSpan=document.getElementById('chSpan'), chStall=document.getElementById('chStall');
+  var status=document.getElementById('status');
+
+  var canvas=document.getElementById('planCanvas'), ctx=canvas?canvas.getContext('2d'):null;
+  if(!ctx) return;
+  var W=canvas.width, H=canvas.height, PXM=150; /* pixels per metre — fixed, so the wing is felt to scale */
+
+  function grp(n){ return Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g,','); }
+
+  function arrowHead(x,y,ang,color){
+    var hl=7; ctx.fillStyle=color; ctx.beginPath();
+    ctx.moveTo(x,y);
+    ctx.lineTo(x-hl*Math.cos(ang-0.42), y-hl*Math.sin(ang-0.42));
+    ctx.lineTo(x-hl*Math.cos(ang+0.42), y-hl*Math.sin(ang+0.42));
+    ctx.closePath(); ctx.fill();
+  }
+  function arrow(x1,y1,x2,y2,color,wdt){
+    ctx.strokeStyle=color; ctx.lineWidth=wdt;
+    ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+    arrowHead(x2,y2,Math.atan2(y2-y1,x2-x1),color);
+  }
+
+  function drawPlan(b,c){
+    ctx.clearRect(0,0,W,H);
+    ctx.fillStyle='#0a1c30'; ctx.fillRect(0,0,W,H);
+
+    // panel label
+    ctx.fillStyle='#8fb9c6'; ctx.textAlign='left'; ctx.font='bold 11px Inter, system-ui';
+    ctx.fillText('TOP-VIEW PLANFORM · to scale', 16, 24);
+    ctx.font='11px Inter, system-ui';
+
+    var cx=W/2, cy=140;
+    var wpx=b*PXM, hpx=c*PXM;
+    var x0=cx-wpx/2, y0=cy-hpx/2, x1=cx+wpx/2, y1=cy+hpx/2;
+
+    // fuselage centreline (the air comes from the left in flight; this is the top-down body axis)
+    ctx.strokeStyle='rgba(143,185,198,.18)'; ctx.lineWidth=1; ctx.setLineDash([5,4]);
+    ctx.beginPath(); ctx.moveTo(cx, y0-30); ctx.lineTo(cx, y1+30); ctx.stroke(); ctx.setLineDash([]);
+
+    // the wing rectangle
+    ctx.fillStyle='rgba(78,163,218,.22)';
+    ctx.fillRect(x0,y0,wpx,hpx);
+    ctx.strokeStyle='#4ea3da'; ctx.lineWidth=2;
+    ctx.strokeRect(x0,y0,wpx,hpx);
+
+    // span dimension (below the wing)
+    var sy=y1+26;
+    ctx.strokeStyle='rgba(255,212,121,.55)'; ctx.lineWidth=1; ctx.setLineDash([3,3]);
+    ctx.beginPath(); ctx.moveTo(x0,y1); ctx.lineTo(x0,sy+6); ctx.moveTo(x1,y1); ctx.lineTo(x1,sy+6); ctx.stroke();
+    ctx.setLineDash([]);
+    arrow(cx, sy, x0, sy, '#ffd479', 1.4);
+    arrow(cx, sy, x1, sy, '#ffd479', 1.4);
+    ctx.fillStyle='#ffd479'; ctx.textAlign='center'; ctx.font='bold 12px Inter, system-ui';
+    ctx.fillText('span  b = '+b.toFixed(2)+' m', cx, sy+18);
+
+    // chord dimension (left of the wing, rotated)
+    var dx=x0-16;
+    ctx.strokeStyle='rgba(255,212,121,.55)'; ctx.lineWidth=1; ctx.setLineDash([3,3]);
+    ctx.beginPath(); ctx.moveTo(x0,y0); ctx.lineTo(dx-6,y0); ctx.moveTo(x0,y1); ctx.lineTo(dx-6,y1); ctx.stroke();
+    ctx.setLineDash([]);
+    arrow(dx, cy, dx, y0, '#ffd479', 1.4);
+    arrow(dx, cy, dx, y1, '#ffd479', 1.4);
+    ctx.save(); ctx.translate(dx-14, cy); ctx.rotate(-Math.PI/2);
+    ctx.fillStyle='#ffd479'; ctx.textAlign='center'; ctx.font='bold 12px Inter, system-ui';
+    ctx.fillText('chord  c = '+c.toFixed(3)+' m', 0, 0); ctx.restore();
+    ctx.font='11px Inter, system-ui';
+
+    // 1 m scale bar (bottom-left)
+    var bx=24, by=H-20, bw=PXM;
+    ctx.strokeStyle='#8fb9c6'; ctx.lineWidth=1.5;
+    ctx.beginPath();
+    ctx.moveTo(bx,by-4); ctx.lineTo(bx,by+4);
+    ctx.moveTo(bx,by); ctx.lineTo(bx+bw,by);
+    ctx.moveTo(bx+bw,by-4); ctx.lineTo(bx+bw,by+4);
+    ctx.stroke();
+    ctx.fillStyle='#8fb9c6'; ctx.textAlign='left'; ctx.font='11px Inter, system-ui';
+    ctx.fillText('1 m', bx+bw+8, by+4);
+  }
+
+  function setChip(el, state, text){
+    el.className='chip '+state;
+    el.textContent=text;
+  }
+
+  function update(){
+    var m=parseFloat(mR.value), S=parseFloat(sR.value), AR=parseFloat(arR.value), CL=parseFloat(clR.value);
+    mO.textContent=m.toFixed(1)+' kg';
+    sO.textContent=S.toFixed(2)+' m²';
+    arO.textContent=AR.toFixed(0);
+    clO.textContent=CL.toFixed(2);
+
+    var Wt=m*G, WS=Wt/S, WSg=WS/GDM;
+    var V=Math.sqrt(2*Wt/(RHO*S*CL));
+    var Vs=Math.sqrt(2*Wt/(RHO*S*CLMAX));
+    var b=Math.sqrt(AR*S), c=S/b;
+    var Re=V*c/NU;
+    var marg=V/Vs-1;
+
+    wlVal.textContent=WS.toFixed(1);
+    wlgVal.textContent=WSg.toFixed(1);
+    reVal.textContent=grp(Re);
+    bVal.textContent=b.toFixed(2);
+    cVal.textContent=c.toFixed(3);
+    vVal.textContent=V.toFixed(1);
+    vsVal.textContent=Vs.toFixed(1);
+
+    drawPlan(b,c);
+
+    // Reynolds chip
+    if(Re>=150000)      setChip(chRe,'ok','Re '+Math.round(Re/1000)+'k · healthy');
+    else if(Re>=80000)  setChip(chRe,'warn','Re '+Math.round(Re/1000)+'k · marginal');
+    else                setChip(chRe,'bad','Re '+Math.round(Re/1000)+'k · risky bubble');
+
+    // span / buildability chip
+    if(b>3.5)           setChip(chSpan,'bad','span '+b.toFixed(2)+' m · hard to build');
+    else if(b>2.5)      setChip(chSpan,'warn','span '+b.toFixed(2)+' m · big to handle');
+    else                setChip(chSpan,'ok','span '+b.toFixed(2)+' m · buildable');
+
+    // stall-margin chip
+    var mp=Math.round(marg*100);
+    if(marg>=0.20)      setChip(chStall,'ok','cruise '+mp+'% over stall · comfortable');
+    else if(marg>=0.08) setChip(chStall,'warn','cruise '+mp+'% over stall · watch stall');
+    else                setChip(chStall,'bad','cruise '+mp+'% over stall · near stall');
+
+    // status line ties it together
+    var reK=Math.round(Re/1000);
+    var lead='AR '+AR.toFixed(0)+' gives a '+b.toFixed(2)+' m span on a '+c.toFixed(3)+' m chord → cruise '+V.toFixed(1)+' m/s, Re '+reK+'k. ';
+    var advice, cls;
+    if(Re<80000){
+      advice='That chord is too small for clean low-Re flow — drop AR or grow the wing to lift Re back above 80k.';
+      cls='status warn';
+    } else if(marg<0.08){
+      advice='Cruise is barely above stall — ease the design C_L down or accept a slightly faster wing.';
+      cls='status warn';
+    } else if(b>3.5){
+      advice='At '+b.toFixed(2)+' m this is barely buildable on a bench — trim AR or area.';
+      cls='status warn';
+    } else if(Re<150000){
+      advice='Marginal low-Re territory — nudge AR down or enlarge the wing to climb toward 150k.';
+      cls='status hint';
+    } else if(b>2.5){
+      advice='Reynolds is healthy, but that is a large wing to transport and launch.';
+      cls='status hint';
+    } else {
+      advice='Reynolds is healthy and the wing is buildable — now check the loading is low enough for the slow, low-power flight endurance wants.';
+      cls='status ok';
+    }
+    status.className=cls;
+    status.textContent=lead+advice;
+  }
+
+  function setAll(m,S,AR,CL){ mR.value=m; sR.value=S; arR.value=AR; clR.value=CL; update(); }
+
+  [mR,sR,arR,clR].forEach(function(el){ el.addEventListener('input',update); });
+  document.getElementById('presetEnd').addEventListener('click',function(){ setAll(1.2,0.50,10,1.15); });
+  document.getElementById('presetCompact').addEventListener('click',function(){ setAll(2.5,0.22,8,0.9); });
+  document.getElementById('presetReset').addEventListener('click',function(){ setAll(1.5,0.30,12,1.1); });
+  update();
+})();
+</script>
+</body>
+</html>

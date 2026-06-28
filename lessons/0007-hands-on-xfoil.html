@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>T1 · Hands-on XFOIL</title>
+<link rel="stylesheet" href="../assets/styles.css">
+<script defer src="../assets/widgets.js"></script>
+<style>
+  /* Lesson-T1-specific: the XFOIL command builder */
+  pre.script { margin: 0; white-space: pre; font-size: .95rem; }
+  .builder-foot { font-family: var(--sans); font-size: .8rem; color: var(--ink-soft); margin-top: .7rem; }
+  .builder-foot code { background: var(--paper-2); }
+  .steps code { background: #e7f1f9; color: var(--sky-deep); }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap-wide">
+    <a class="brand" href="../index.html"><span class="dot">✈</span> Wing Design</a>
+    <nav>
+      <a href="../index.html">Lessons</a>
+      <a href="../reference/glossary.html">Glossary</a>
+      <a href="https://github.com/chrisfraser/wing-design">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <p class="kicker">Phase 3 · Analysis Tools · T1</p>
+  <h1 class="lesson-title">Hands-on XFOIL</h1>
+  <p class="lesson-sub">You've trusted other people's polars long enough. This lesson hands you the
+  tool that made them — so you can generate your own, for your airfoil, at <em>your</em> Reynolds number.</p>
+  <div class="lesson-meta">
+    <span>⏱ ~14 minutes</span><span class="sep">•</span>
+    <span>🧰 Hands-on — install &amp; run a real tool</span><span class="sep">•</span>
+    <span class="tag sky">Builds on F6 · Phase 3 begins</span>
+  </div>
+
+  <div class="callout mission">
+    <div class="callout-label">◎ Why this lesson</div>
+    <p>In <a href="0006-reading-real-airfoil-data.html">F6</a> you learned to read three plots and shortlist
+    an airfoil for endurance. But every one of those curves came from <em>someone else's</em> run, at
+    <em>someone else's</em> Reynolds number — and your wing won't fly at theirs. The fix is to stop borrowing
+    polars and start producing them. <strong>XFOIL</strong> is the tool that made most of the low-Reynolds data
+    you've been reading, and it runs in seconds on your laptop. By the end of this lesson you'll drive it
+    yourself.</p>
+  </div>
+
+  <p class="lead">A published polar is a photograph of one wing in one tunnel on one day. To design
+  <em>your</em> wing you need to ask your own questions — this airfoil, this Reynolds number, this angle
+  sweep — and get an answer in seconds. That is exactly what XFOIL is for.</p>
+
+  <h2><span class="num">1</span>What XFOIL is — and why it fits low Re</h2>
+  <p><strong><a href="../reference/glossary.html#xfoil">XFOIL</a></strong> is a free 2-D airfoil analysis
+  code written by Mark Drela at MIT.<span class="cite"><a href="#r-paper">1</a></span> It pairs a
+  <strong><a href="../reference/glossary.html#panel-method">panel method</a></strong> — which models the
+  airfoil as a ring of vortex/source panels to get the inviscid flow fast — with an integral
+  <strong>boundary-layer</strong> solver that tracks where the flow goes laminar, where it transitions to
+  turbulent, and where it separates. Coupling those two and iterating to a converged state is what lets it
+  predict <em>drag</em>, not just lift.</p>
+  <p>That coupling is exactly why XFOIL is the standard tool for our regime. Down at
+  <a href="../reference/glossary.html#reynolds-number">Reynolds numbers</a> of 100k–300k, performance is
+  decided by the boundary layer — laminar separation, transition, the dreaded separation bubble — and a
+  purely inviscid solver is blind to all of it. XFOIL models that physics directly, runs in seconds, and has
+  been validated against decades of wind-tunnel data. For a 1–2 m model wing, it is the right first tool,
+  every time.</p>
+
+  <div class="callout note">
+    <div class="callout-label">◆ Two solvers, one answer</div>
+    <p>The panel method alone gives you an <em>inviscid</em> result: lift, pressure distribution, and
+    <strong>zero profile drag</strong>. The boundary-layer model is what adds the friction and
+    pressure drag that make a polar useful. XFOIL's trick is coupling them so each updates the other until
+    both agree — a <a href="../reference/glossary.html#viscous-polar">viscous polar</a>. Keep that split in
+    mind; the very next command you'll learn is the switch that turns the viscous half on.</p>
+  </div>
+
+  <h2><span class="num">2</span>Get it installed</h2>
+  <p>XFOIL is tiny and self-contained. Grab it from the official MIT page, which carries the binaries, the
+  source, and the documentation:<span class="cite"><a href="#r-download">2</a></span></p>
+  <ul>
+    <li><strong>Windows</strong> — download the precompiled <code>xfoil.exe</code> (plus its support files)
+    from the MIT page and run it from a terminal in that folder.</li>
+    <li><strong>macOS / Linux</strong> — build from the published Fortran source on the same page, or install
+    a community-packaged build (Homebrew on macOS, your distro's package manager on Linux often carry it).</li>
+  </ul>
+  <p>You'll also need an airfoil's coordinate file — a plain-text <code>.dat</code> of x/y points. Download
+  these from the UIUC airfoil coordinate database (e.g. <code>e387.dat</code>, <code>sd7037.dat</code>,
+  <code>s1223.dat</code>) and keep them in the folder you launch XFOIL from. When it starts you'll see a
+  bare <code>XFOIL c&gt;</code> prompt — a tiny command language, not a GUI. The next section is your phrasebook.</p>
+
+  <h2><span class="num">3</span>The workflow, command by command</h2>
+  <p>A polar run is always the same short ritual: load a shape, clean up the panels, enter the operating
+  menu, switch on viscosity, set the conditions, start a results file, and sweep the angle of
+  attack.<span class="cite"><a href="#r-primer">3</a></span><span class="cite"><a href="#r-willner">4</a></span>
+  Type these at the prompt, one per line:</p>
+
+  <ul class="steps">
+    <li>
+      <div class="step-title"><code>LOAD e387.dat</code></div>
+      <div class="step-detail">Read the airfoil coordinates from disk. XFOIL now holds the E387's geometry.</div>
+    </li>
+    <li>
+      <div class="step-title"><code>PANE</code></div>
+      <div class="step-detail">Re-panel the airfoil onto a clean, smoothly-spaced set of nodes. Better
+      paneling means better accuracy and far fewer convergence headaches later.</div>
+    </li>
+    <li>
+      <div class="step-title"><code>OPER</code></div>
+      <div class="step-detail">Enter the <em>operating</em> menu — this is where you set conditions and run
+      analyses. The prompt changes to <code>.OPERi c&gt;</code>.</div>
+    </li>
+    <li>
+      <div class="step-title"><code>VISC 200000</code></div>
+      <div class="step-detail">Switch on the viscous boundary-layer solver <em>and</em> set the Reynolds
+      number in one stroke (here 200,000). This is the command that turns an inviscid sketch into a real
+      drag polar — without it you get no usable C<sub>D</sub>.</div>
+    </li>
+    <li>
+      <div class="step-title"><code>ITER 200</code></div>
+      <div class="step-detail">Raise the iteration limit. Low-Re points near separation can be stubborn;
+      200 gives the viscous–inviscid coupling room to converge before XFOIL gives up.</div>
+    </li>
+    <li>
+      <div class="step-title"><code>MACH 0</code></div>
+      <div class="step-detail">Set the freestream Mach number to zero — incompressible flow, which is correct
+      for slow-flying models and keeps the solution clean.</div>
+    </li>
+    <li>
+      <div class="step-title"><code>VPAR</code> → <code>N 9</code> → <em>(blank line)</em></div>
+      <div class="step-detail">Open the viscous-parameters submenu, set <strong>Ncrit</strong> to 9 (the
+      transition criterion — see below), then press <kbd>Enter</kbd> on an empty line to step back out to
+      <code>OPER</code>.</div>
+    </li>
+    <li>
+      <div class="step-title"><code>PACC</code> → <code>e387_Re200k.txt</code> → <em>(blank line)</em></div>
+      <div class="step-detail">Toggle <em>polar accumulation</em> on. XFOIL asks for a save filename — give
+      it one — then asks for a separate dump file, which you decline with a blank line. Every point you run
+      from now on is appended to that file.</div>
+    </li>
+    <li>
+      <div class="step-title"><code>ASEQ -4 14 0.5</code></div>
+      <div class="step-detail">Run an <strong>alpha sequence</strong>: sweep the angle of attack from −4° to
+      14° in 0.5° steps. XFOIL solves each angle and writes C<sub>L</sub>, C<sub>D</sub>, and C<sub>M</sub>
+      into the polar file — that's your finished curve.</div>
+    </li>
+    <li>
+      <div class="step-title"><em>(blank line)</em> → <code>QUIT</code></div>
+      <div class="step-detail">Press <kbd>Enter</kbd> to leave <code>OPER</code>, then <code>QUIT</code> to
+      exit. Your <code>e387_Re200k.txt</code> now holds the polar — plot it in XFOIL, a spreadsheet, or
+      whatever you like.</div>
+    </li>
+  </ul>
+
+  <p>Typed end to end, the whole session reads like this — the two blank lines are real and load-bearing
+  (they're the <kbd>Enter</kbd> presses that back out of <code>VPAR</code> and decline the dump file):</p>
+
+  <pre><code>LOAD e387.dat
+PANE
+OPER
+VISC 200000
+ITER 200
+MACH 0
+VPAR
+N 9
+
+PACC
+e387_Re200k.txt
+
+ASEQ -4 14 0.5</code></pre>
+
+  <div class="callout note">
+    <div class="callout-label">◆ What Ncrit means — and why VISC is non-negotiable</div>
+    <p><strong><a href="../reference/glossary.html#ncrit">Ncrit</a></strong> is the exponent in XFOIL's
+    e<sup>N</sup> transition model. A tiny disturbance in the laminar boundary layer grows exponentially;
+    XFOIL trips the flow to turbulent once that growth reaches a factor of e<sup>Ncrit</sup>. So Ncrit is
+    really a knob for <em>how calm the air is</em>: higher means quieter air and later transition.</p>
+    <p>Sensible values: <strong>Ncrit ≈ 9</strong> for a clean, low-turbulence wind tunnel or very smooth
+    air; <strong>≈ 7</strong> for average free-flight; <strong>~5 or lower</strong> for turbulent, gusty, or
+    rough/dirty conditions. Pick the one that matches where your drone actually flies — it shifts the drag
+    polar noticeably.</p>
+    <p>And the non-negotiable part: <code>VISC &lt;Re&gt;</code> is <strong>mandatory</strong> for a drag
+    polar. Skip it and XFOIL stays inviscid — it will happily report lift and C<sub>M</sub> but
+    <strong>zero profile drag</strong>, which is useless for endurance work. Viscous on, Reynolds set: always.</p>
+  </div>
+
+  <h2><span class="num">4</span>Build your own run</h2>
+  <p>Set the airfoil and conditions you actually care about, and this builder assembles the exact XFOIL
+  script to paste at the prompt. Change anything and the script updates live.</p>
+
+  <div class="calc">
+    <div class="calc-title">🧮 XFOIL command builder</div>
+    <p style="font-family:var(--sans);font-size:.86rem;color:var(--ink-soft);margin:-.3rem 0 .9rem">
+      No solving happens here — it just writes a correct, copyable command list from your inputs. Run it for
+      real by pasting at the <code>XFOIL c&gt;</code> prompt, or save it as <code>run.txt</code> and pipe it
+      in with <code>xfoil &lt; run.txt</code>.</p>
+    <div class="controls">
+      <div class="control">
+        <label for="foilSel">Airfoil (.dat file)</label>
+        <select id="foilSel">
+          <option value="e387">e387 — Eppler E387 (classic low-Re benchmark)</option>
+          <option value="sd7037" selected>sd7037 — Selig/Donovan SD7037 (efficient all-rounder)</option>
+          <option value="s1223">s1223 — Selig S1223 (high-lift, slow flight)</option>
+        </select>
+      </div>
+      <div class="control">
+        <label>Reynolds number <output id="reOut">200,000</output></label>
+        <input type="range" id="reRange" min="50000" max="500000" step="10000" value="200000">
+      </div>
+      <div class="control">
+        <label>Ncrit (transition criterion) <output id="ncOut">9</output></label>
+        <input type="range" id="ncRange" min="5" max="11" step="0.5" value="9">
+      </div>
+      <div class="control">
+        <label>Alpha sweep — start <output id="aMinOut">-4°</output></label>
+        <input type="range" id="aMinRange" min="-8" max="2" step="1" value="-4">
+      </div>
+      <div class="control">
+        <label>Alpha sweep — end <output id="aMaxOut">14°</output></label>
+        <input type="range" id="aMaxRange" min="6" max="20" step="1" value="14">
+      </div>
+      <div class="control">
+        <label for="aStepSel">Alpha step</label>
+        <select id="aStepSel">
+          <option value="0.25">0.25° — fine</option>
+          <option value="0.5" selected>0.5° — standard</option>
+          <option value="1">1.0° — quick</option>
+        </select>
+      </div>
+    </div>
+    <div class="readout">
+      <pre class="script" id="xfScript">…</pre>
+    </div>
+    <div class="btn-row">
+      <button class="simbtn" id="copyBtn">📋 Copy script</button>
+    </div>
+    <div class="status hint" id="status">Adjust the inputs and the script rebuilds itself.</div>
+    <p class="builder-foot">Saves to <code id="fnameOut">sd7037_Re200k.txt</code>. The two blank lines back
+    out of <code>VPAR</code> and decline the polar dump file — keep them.</p>
+  </div>
+
+  <h2><span class="num">5</span>Trust, but verify: validate against measured data</h2>
+  <p>XFOIL is fast, free, and remarkably good — which makes it easy to forget it is still a <em>model</em>.
+  Before you bet a wing on a polar, check it against real wind-tunnel measurements at <em>your</em> Reynolds
+  number. The UIUC <em>Summary of Low-Speed Airfoil Data</em> is the gold standard for exactly the foils and
+  Reynolds numbers we care about.<span class="cite"><a href="#r-uiuc">5</a></span></p>
+
+  <div class="callout warning">
+    <div class="callout-label">⚠ XFOIL can be optimistic about drag at very low Re</div>
+    <p>Inside a <strong>laminar separation bubble</strong> — common below Re ≈ 200k — XFOIL's boundary-layer
+    model tends to <em>under-predict</em> the drag the bubble actually costs, so its C<sub>D</sub> can read
+    lower than the tunnel measures and its peak L/D higher. Lift is usually closer to the truth than drag.
+    The habit that keeps you honest: <strong>trust XFOIL for trends</strong> (which airfoil is better, how a
+    change moves the polar) but <strong>verify the magnitudes</strong> against measured
+    <a href="../reference/glossary.html#drag-polar">drag polars</a> before committing. Run XFOIL at the same
+    Re and Ncrit as the published data and compare the curves directly.</p>
+  </div>
+
+  <h2><span class="num">6</span>Check yourself</h2>
+  <p>Answer from memory — that effort is what turns a fact you just read into one you'll keep.</p>
+
+  <div class="quiz"
+       data-explain-right="VISC switches on viscosity and sets Re — no VISC, no drag."
+       data-explain-wrong="Re-read §3 and the Ncrit note — VISC is what makes the polar viscous.">
+    <div class="q-kicker">Question 1 of 3</div>
+    <div class="q-text">What does <code>VISC 200000</code> do, and why is it required for a drag polar?</div>
+    <div class="q-options">
+      <button class="opt" data-correct data-feedback="Right. VISC turns on the viscous boundary-layer solver and sets the Reynolds number for it. Without it XFOIL stays inviscid and reports zero profile drag.">It turns on the viscous boundary-layer solver and sets the Reynolds number for it</button>
+      <button class="opt" data-feedback="No — without VISC, XFOIL never solves a boundary layer at all, so there is no profile drag to compute, inviscidly or otherwise.">It only stores the Reynolds number; drag is still found from the inviscid solution</button>
+      <button class="opt" data-feedback="That's the MACH command. VISC is about viscosity and Reynolds number, not compressibility corrections.">It sets the freestream Mach number so XFOIL can correct for compressibility</button>
+      <button class="opt" data-feedback="Tripping the boundary layer is done via Ncrit or forced-transition settings, not VISC. VISC enables viscosity and sets Re.">It applies a fixed surface-roughness height to trip the boundary layer early</button>
+    </div>
+    <div class="q-feedback"></div>
+  </div>
+
+  <div class="quiz"
+       data-explain-right="Ncrit is the e^N transition exponent; ~9 is clean air."
+       data-explain-wrong="See the Ncrit callout — it is the transition criterion, not panels or iterations.">
+    <div class="q-kicker">Question 2 of 3</div>
+    <div class="q-text">What does <strong>Ncrit</strong> represent, and what's a sensible everyday value?</div>
+    <div class="q-options">
+      <button class="opt" data-correct data-feedback="Exactly. Ncrit is the exponent in the e^N transition model — roughly how much a disturbance amplifies before tripping turbulent. ~9 is clean, calm air; lower for turbulent.">The exponent in the e<sup>N</sup> transition model; about 9 for clean, calm air</button>
+      <button class="opt" data-feedback="That's the panel count (set by PANE/PPAR), not Ncrit. Ncrit governs where the boundary layer trips to turbulent.">The number of panels XFOIL wraps around the airfoil before it solves</button>
+      <button class="opt" data-feedback="That's ITER, the iteration limit. Ncrit is the transition criterion that decides laminar-to-turbulent switchover.">The maximum iterations allowed before XFOIL gives up on a single point</button>
+      <button class="opt" data-feedback="Ncrit isn't a Reynolds number and an airfoil still makes lift below any 'critical' value — it's the e^N transition exponent.">The critical Reynolds number below which the airfoil can make no lift</button>
+    </div>
+    <div class="q-feedback"></div>
+  </div>
+
+  <div class="quiz"
+       data-explain-right="XFOIL can be optimistic on drag at low Re — measured data anchors it."
+       data-explain-wrong="See §5 — the issue is XFOIL's drag inside separation bubbles, not speed or units.">
+    <div class="q-kicker">Question 3 of 3</div>
+    <div class="q-text">Why validate an XFOIL polar against measured wind-tunnel data at low Reynolds number?</div>
+    <div class="q-options">
+      <button class="opt" data-correct data-feedback="Yes. Inside low-Re separation bubbles XFOIL tends to under-predict drag, so measured UIUC data anchors the magnitudes you'd otherwise over-trust.">XFOIL can under-predict drag inside low-Re separation bubbles, so measured data anchors it</button>
+      <button class="opt" data-feedback="XFOIL is already the fast option — a run takes seconds. Speed isn't the reason to cross-check it against tunnel data.">Measured data runs far faster than XFOIL, so it is simply the quicker option here</button>
+      <button class="opt" data-feedback="XFOIL reports dimensionless coefficients by design, and so does the tunnel data — units aren't the issue. Drag accuracy at low Re is.">Wind tunnels report lift in newtons, which XFOIL is fundamentally unable to output</button>
+      <button class="opt" data-feedback="XFOIL reads coordinates fine — that's the LOAD step. You validate because its drag can be optimistic inside bubbles, not for geometry.">XFOIL cannot read airfoil coordinates, so the tunnel supplies the missing geometry</button>
+    </div>
+    <div class="q-feedback"></div>
+  </div>
+
+  <div class="recap">
+    <h3>What you can now say</h3>
+    <ol>
+      <li><strong>XFOIL</strong> couples a <strong>panel method</strong> (fast inviscid flow) with a
+      <strong>boundary-layer</strong> solver — that pairing is what lets it predict drag at low Re.</li>
+      <li>The polar ritual: <code>LOAD → PANE → OPER → VISC Re → ITER → MACH 0 → VPAR/N → PACC/file → ASEQ</code>.</li>
+      <li><code>VISC &lt;Re&gt;</code> is <strong>mandatory</strong>: no VISC means an inviscid run with
+      <strong>zero profile drag</strong>.</li>
+      <li><strong>Ncrit</strong> is the e<sup>N</sup> transition exponent — ≈9 clean, ≈7 average free-flight,
+      ~5 turbulent — and it shifts the whole polar.</li>
+      <li>XFOIL can be <strong>optimistic on drag</strong> inside low-Re separation bubbles, so always
+      validate magnitudes against measured UIUC data.</li>
+    </ol>
+  </div>
+
+  <div class="sourcebox">
+    <div class="icon">📖</div>
+    <div>
+      <div class="label">Primary source · read this next</div>
+      <div class="title"><a href="https://web.mit.edu/aeroutil_v1.0/xfoil_doc.txt" target="_blank" rel="noopener">XFOIL User Primer (Drela &amp; Youngren, MIT)</a></div>
+      <div class="desc">The official command reference. Skim the <em>OPER</em> section for <code>VISC</code>,
+      <code>ITER</code>, <code>PACC</code>, and <code>ASEQ</code>, and the <em>VPAR</em> section for Ncrit —
+      everything in this lesson maps straight onto it. Keep it open beside the prompt. ~15-minute skim.</div>
+    </div>
+  </div>
+
+  <div class="ask-teacher">
+    💬 <b>I'm your teacher — ask me anything.</b> Stuck on a point that won't converge, unsure which Ncrit to
+    use for your field, or want to see the e<sup>N</sup> transition idea unpacked? Bring it to chat.
+    Confused beats stuck.
+  </div>
+
+  <div class="crosslinks">
+    <b>Glossary:</b>
+    <a href="../reference/glossary.html#xfoil">XFOIL</a> ·
+    <a href="../reference/glossary.html#panel-method">panel method</a> ·
+    <a href="../reference/glossary.html#ncrit">Ncrit</a> ·
+    <a href="../reference/glossary.html#viscous-polar">viscous polar</a> ·
+    <a href="../reference/glossary.html#reynolds-number">Reynolds number</a> ·
+    <a href="../reference/glossary.html#drag-polar">drag polar</a>.
+    <b>Builds on →</b> <strong>F6</strong> (reading real airfoil data). <b>Builds toward →</b>
+    <strong>T2</strong> (planform &amp; wing loading).
+  </div>
+
+  <h2 id="refs"><span class="num">§</span>References</h2>
+  <ol style="font-family:var(--sans);font-size:.84rem;color:var(--ink-soft);line-height:1.5">
+    <li id="r-paper">Drela — <a href="https://link.springer.com/chapter/10.1007/978-3-642-84010-4_1" target="_blank" rel="noopener">XFOIL: An Analysis and Design System for Low Reynolds Number Airfoils</a> (1989). The paper that introduced the coupled panel + boundary-layer method.</li>
+    <li id="r-download">Drela &amp; Youngren — <a href="https://web.mit.edu/drela/Public/web/xfoil/" target="_blank" rel="noopener">XFOIL home (download + docs)</a>, MIT. Binaries, source, and documentation for every platform.</li>
+    <li id="r-primer">Drela &amp; Youngren — <a href="https://web.mit.edu/aeroutil_v1.0/xfoil_doc.txt" target="_blank" rel="noopener">XFOIL User Primer</a>. Official command-by-command reference. <b>Primary source.</b></li>
+    <li id="r-willner">Willner — <a href="http://www.v0id.at/downloads/XFLR5-tut-v1.pdf" target="_blank" rel="noopener">A Tutorial for XFLR5</a> (PDF). A beginner walkthrough of the same XFOIL workflow; see also the <a href="https://docs.rosflight.org/latest/user-guide/tutorials/user-manual-xflr5/" target="_blank" rel="noopener">ROSflight XFLR5 manual</a>.</li>
+    <li id="r-uiuc">Selig et al. — <a href="https://m-selig.ae.illinois.edu/uiuc_lsat/Low-Speed-Airfoil-Data-V1.pdf" target="_blank" rel="noopener">Summary of Low-Speed Airfoil Data, Vol. 1</a> (UIUC). Measured low-Re polars — the ground truth to check XFOIL against.</li>
+  </ol>
+
+  <nav class="lesson-nav">
+    <a href="0006-reading-real-airfoil-data.html">
+      <div class="dir">← Prev · F6</div>
+      <div class="ttl">Reading Real Airfoil Data</div>
+    </a>
+    <a class="next" href="0008-planform-and-wing-loading.html">
+      <div class="dir">Next · T2</div>
+      <div class="ttl">Planform &amp; Wing Loading →</div>
+    </a>
+  </nav>
+
+  <p class="pagefoot">Lesson T1 of the Wing Design course ·
+  <a href="../index.html">all lessons</a> ·
+  <a href="https://github.com/chrisfraser/wing-design">source on GitHub</a></p>
+</main>
+
+<script>
+/* ============================ XFOIL command builder ============================ */
+(function(){
+  var foilSel=document.getElementById('foilSel');
+  var reRange=document.getElementById('reRange'), reOut=document.getElementById('reOut');
+  var ncRange=document.getElementById('ncRange'), ncOut=document.getElementById('ncOut');
+  var aMinRange=document.getElementById('aMinRange'), aMinOut=document.getElementById('aMinOut');
+  var aMaxRange=document.getElementById('aMaxRange'), aMaxOut=document.getElementById('aMaxOut');
+  var aStepSel=document.getElementById('aStepSel');
+  var pre=document.getElementById('xfScript'), fnameOut=document.getElementById('fnameOut');
+  var copyBtn=document.getElementById('copyBtn'), status=document.getElementById('status');
+  if(!pre) return;
+
+  function fmtNcrit(n){ return Number.isInteger(n) ? String(n) : n.toFixed(1); }
+  function commaInt(n){ return n.toLocaleString('en-US'); }
+
+  function build(){
+    var foil=foilSel.value;
+    var re=parseInt(reRange.value,10);
+    var nc=parseFloat(ncRange.value);
+    var amin=parseFloat(aMinRange.value);
+    var amax=parseFloat(aMaxRange.value);
+    var astep=aStepSel.value;              // keep the string so "0.5" stays "0.5"
+    var fname=foil+'_Re'+Math.round(re/1000)+'k.txt';
+
+    // mirror live values into the labels
+    reOut.textContent=commaInt(re);
+    ncOut.textContent=fmtNcrit(nc);
+    aMinOut.textContent=amin+'°';
+    aMaxOut.textContent=amax+'°';
+    fnameOut.textContent=fname;
+
+    // assemble the exact XFOIL command script (blank lines are real Enter presses)
+    var lines=[
+      'LOAD '+foil+'.dat',
+      'PANE',
+      'OPER',
+      'VISC '+re,
+      'ITER 200',
+      'MACH 0',
+      'VPAR',
+      'N '+fmtNcrit(nc),
+      '',                                  // Enter: back out of VPAR to OPER
+      'PACC',
+      fname,
+      '',                                  // Enter: decline the polar dump file
+      'ASEQ '+amin+' '+amax+' '+astep
+    ];
+    pre.textContent=lines.join('\n');
+
+    status.className='status hint';
+    status.textContent='Viscous polar for '+foil+' at Re '+commaInt(re)+', Ncrit '+fmtNcrit(nc)+
+      ' — α from '+amin+'° to '+amax+'° in '+astep+'° steps.';
+  }
+
+  function copy(){
+    var text=pre.textContent;
+    function ok(){ status.className='status ok'; status.textContent='✓ Copied — paste it at the XFOIL c> prompt, or save as run.txt and run  xfoil < run.txt'; }
+    function fallback(){
+      var ta=document.createElement('textarea'); ta.value=text;
+      ta.style.position='fixed'; ta.style.opacity='0'; document.body.appendChild(ta); ta.focus(); ta.select();
+      try{ document.execCommand('copy'); ok(); }
+      catch(e){ status.className='status warn'; status.textContent='Couldn’t copy automatically — select the script text and press Ctrl/Cmd-C.'; }
+      document.body.removeChild(ta);
+    }
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(ok, fallback);
+    } else { fallback(); }
+  }
+
+  [reRange,ncRange,aMinRange,aMaxRange].forEach(function(el){ el.addEventListener('input',build); });
+  foilSel.addEventListener('change',build);
+  aStepSel.addEventListener('change',build);
+  copyBtn.addEventListener('click',copy);
+  build();
+})();
+</script>
+</body>
+</html>

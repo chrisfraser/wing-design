@@ -87,9 +87,9 @@
     <p class="phase-intro">The defining feature of a 1–2 m drone: it flies at low Reynolds number, where
     textbook airfoils misbehave. Learn to read airfoil data and pick a foil that thrives here.</p>
     <ul class="lesson-list">
-      <li class="lesson-card todo"><span class="code">F4</span><span><span class="t">Reynolds Number — Why Your Drone Is Different</span><span class="d">The low-Re regime, laminar separation bubbles, and why a foil great at full scale can fail on your wing.</span></span><span class="status-pill soon">Proposed</span></li>
-      <li class="lesson-card todo"><span class="code">F5</span><span><span class="t">Anatomy of an Airfoil</span><span class="d">Camber, thickness, chord and the mean line — the shape vocabulary, and what each knob does to the polar.</span></span><span class="status-pill soon">Proposed</span></li>
-      <li class="lesson-card todo"><span class="code">F6</span><span><span class="t">Reading Real Airfoil Data</span><span class="d">UIUC &amp; airfoiltools: compare candidate low-Re foils on measured polars and pick a shortlist.</span></span><span class="status-pill soon">Proposed</span></li>
+      <a class="lesson-card" href="lessons/0004-reynolds-number.html"><span class="code">F4</span><span><span class="t">Reynolds Number — Why Your Drone Is Different</span><span class="d">The low-Re regime, laminar separation bubbles, and why a foil great at full scale can fail on your wing.</span></span><span class="status-pill ready">Ready</span></a>
+      <a class="lesson-card" href="lessons/0005-anatomy-of-an-airfoil.html"><span class="code">F5</span><span><span class="t">Anatomy of an Airfoil</span><span class="d">Camber, thickness, chord and the mean line — a live NACA generator showing what each knob does.</span></span><span class="status-pill ready">Ready</span></a>
+      <a class="lesson-card" href="lessons/0006-reading-real-airfoil-data.html"><span class="code">F6</span><span><span class="t">Reading Real Airfoil Data</span><span class="d">Compare real low-Re foils (E387, SD7037, S1223) on their polars and pick the endurance shortlist.</span></span><span class="status-pill ready">Ready</span></a>
     </ul>
   </div>
 
@@ -103,9 +103,9 @@
     <p class="phase-intro">Put numbers on your choices. Run the standard low-Re airfoil tool, then take a
     whole wing — your aspect-ratio and planform decisions — into a 3-D analysis.</p>
     <ul class="lesson-list">
-      <li class="lesson-card todo"><span class="code">T1</span><span><span class="t">Hands-on XFOIL</span><span class="d">Install it, run a viscous polar on a real foil at your Reynolds number, and validate against UIUC data.</span></span><span class="status-pill soon">Proposed</span></li>
-      <li class="lesson-card todo"><span class="code">T2</span><span><span class="t">Planform &amp; Wing Loading</span><span class="d">Turn the aspect-ratio insight into a real chord, span, area and design speed for your weight.</span></span><span class="status-pill soon">Proposed</span></li>
-      <li class="lesson-card todo"><span class="code">T3</span><span><span class="t">Whole-Wing Analysis in XFLR5</span><span class="d">From 2-D airfoil to 3-D wing: lifting-line/VLM, span efficiency, and your wing's real C<sub>L</sub><sup>1.5</sup>/C<sub>D</sub>.</span></span><span class="status-pill soon">Proposed</span></li>
+      <a class="lesson-card" href="lessons/0007-hands-on-xfoil.html"><span class="code">T1</span><span><span class="t">Hands-on XFOIL</span><span class="d">Run a viscous polar on a real foil at your Reynolds number — with a live command builder.</span></span><span class="status-pill ready">Ready</span></a>
+      <a class="lesson-card" href="lessons/0008-planform-and-wing-loading.html"><span class="code">T2</span><span><span class="t">Planform &amp; Wing Loading</span><span class="d">Turn the aspect-ratio insight into a real chord, span, area and design speed for your weight.</span></span><span class="status-pill ready">Ready</span></a>
+      <a class="lesson-card" href="lessons/0009-whole-wing-analysis-xflr5.html"><span class="code">T3</span><span><span class="t">Whole-Wing Analysis in XFLR5</span><span class="d">From 2-D airfoil to 3-D wing: lifting-line/VLM, span efficiency, and your wing's real C<sub>L</sub><sup>1.5</sup>/C<sub>D</sub>.</span></span><span class="status-pill ready">Ready</span></a>
     </ul>
   </div>
 
@@ -119,16 +119,17 @@
     <p class="phase-intro">Combine everything into one wing design defended with numbers — then learn when
     XFOIL/XFLR5 is enough and when to escalate to full CFD.</p>
     <ul class="lesson-list">
-      <li class="lesson-card todo"><span class="code">D1</span><span><span class="t">Synthesize the Endurance Wing</span><span class="d">Airfoil + aspect ratio + planform + wing loading into one coherent design, judged on C<sub>L</sub><sup>1.5</sup>/C<sub>D</sub>.</span></span><span class="status-pill soon">Proposed</span></li>
-      <li class="lesson-card todo"><span class="code">D2</span><span><span class="t">When to Reach for CFD</span><span class="d">OpenFOAM/SU2 vs panel methods, the low-Re transition-modeling trap, and a sane validation workflow.</span></span><span class="status-pill soon">Proposed</span></li>
+      <a class="lesson-card" href="lessons/0010-synthesize-the-endurance-wing.html"><span class="code">D1</span><span><span class="t">Synthesize the Endurance Wing</span><span class="d">The capstone: a live design dashboard combining airfoil, AR, loading & Reynolds — judged on C<sub>L</sub><sup>1.5</sup>/C<sub>D</sub>.</span></span><span class="status-pill ready">Ready</span></a>
+      <a class="lesson-card" href="lessons/0011-when-to-reach-for-cfd.html"><span class="code">D2</span><span><span class="t">When to Reach for CFD</span><span class="d">OpenFOAM/SU2 vs panel methods, the low-Re transition-modeling trap, and a sane validation workflow.</span></span><span class="status-pill ready">Ready</span></a>
     </ul>
   </div>
 
   <div class="callout note">
     <div class="callout-label">⌁ How this works</div>
-    <p>I build the next lesson when you're ready for it, pitched to what you've just learned. <strong>Phase 1
-    (foundations) is done</strong>; the lessons marked <em>Proposed</em> are the roadmap ahead — tell me
-    which to build next, or to reorder them. Done with a lesson, or want to jump ahead? Say so in chat.</p>
+    <p>All eleven lessons are live, F1 → D2 — the full arc from first principles to a validated design.
+    Work straight through, or jump to whatever you need. The natural next move is <em>hands-on</em>: run
+    XFOIL or XFLR5 on a foil you chose and bring me the numbers. Done with a lesson, or want one expanded?
+    Say so in chat.</p>
   </div>
 
   <p class="pagefoot">

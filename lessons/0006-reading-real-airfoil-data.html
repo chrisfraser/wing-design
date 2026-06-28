@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>F6 · Reading Real Airfoil Data</title>
+<link rel="stylesheet" href="../assets/styles.css">
+<script defer src="../assets/widgets.js"></script>
+<style>
+  /* Lesson-F6-specific: the airfoil face-off polar */
+  canvas { width:100%; display:block; border-radius:8px; background:var(--night); }
+  .foil-readouts { display:grid; grid-template-columns:repeat(2,1fr); gap:.3rem 1.2rem; margin-top:.8rem; font-family:var(--mono); font-size:.95rem; color:#d8ecf5; }
+  .foil-readouts b { color:#ffd479; font-variant-numeric:tabular-nums; }
+  .foil-chips { display:flex; flex-wrap:wrap; gap:.5rem; margin-top:.9rem; }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap-wide">
+    <a class="brand" href="../index.html"><span class="dot">✈</span> Wing Design</a>
+    <nav>
+      <a href="../index.html">Lessons</a>
+      <a href="../reference/glossary.html">Glossary</a>
+      <a href="https://github.com/chrisfraser/wing-design">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <p class="kicker">Phase 2 · Airfoils &amp; the Low-Reynolds Regime · F6</p>
+  <h1 class="lesson-title">Reading Real Airfoil Data</h1>
+  <p class="lesson-sub">A published airfoil is really three plots in a trench coat. Learn to read them — the
+  lift curve, the polar, and the endurance curve — and you can put three real low-Reynolds foils head to
+  head and shortlist the one your drone wants.</p>
+  <div class="lesson-meta">
+    <span>⏱ ~13 minutes</span><span class="sep">•</span>
+    <span>📊 Reading data — no new math</span><span class="sep">•</span>
+    <span class="tag sky">Builds on F4 &amp; F5</span>
+  </div>
+
+  <div class="callout mission">
+    <div class="callout-label">◎ Why this lesson</div>
+    <p>In <a href="0005-anatomy-of-an-airfoil.html">F5</a> you learned to read an airfoil's
+    <em>shape</em> — camber, thickness, the NACA code. But shape only hints at behaviour. To actually
+    <strong>choose</strong> a section you have to read its <em>performance data</em>: the curves that say
+    how much lift, how much drag, and how gently it stalls — and crucially, <strong>at your Reynolds
+    number</strong>. This lesson teaches you to read those plots, then pits three famous low-Re foils
+    against each other and shortlists one for endurance. Next (<strong>T1</strong>) you'll generate this
+    data yourself.</p>
+  </div>
+
+  <p class="lead">You don't pick an airfoil from a beauty contest of shapes — you pick it from its
+  <strong>polars</strong>. Every serious airfoil comes with a small bundle of plots, and once you can read
+  them, comparing two sections is as objective as comparing two lap times.</p>
+
+  <h2><span class="num">1</span>An airfoil's data is three plots</h2>
+  <p>Whether it comes from a wind tunnel or a solver, an airfoil's "data sheet" is the same three curves —
+  each answering a different question:<span class="cite"><a href="#r-uiuc">1</a></span></p>
+  <ul>
+    <li>The <strong>lift curve</strong>, <a href="../reference/glossary.html#lift-curve">C<sub>L</sub> vs
+    α</a>: how lift grows with angle, the slope of that growth, and where it rolls over into
+    <a href="../reference/glossary.html#stall">stall</a>. The top of this curve is
+    <strong>C<sub>L,max</sub></strong>; whether the top is a gentle dome or a sharp peak tells you how
+    forgiving the stall is.</li>
+    <li>The <strong><a href="../reference/glossary.html#drag-polar">drag polar</a></strong>,
+    C<sub>L</sub> vs C<sub>D</sub>: lift plotted against the drag it costs. Low-drag sections show a
+    <strong><a href="../reference/glossary.html#drag-bucket">drag bucket</a></strong> — a range of
+    C<sub>L</sub> where C<sub>D</sub> stays near its minimum, the section's efficient operating band. You
+    want your cruise lift to sit <em>inside</em> that bucket.</li>
+    <li>The <strong><a href="../reference/glossary.html#endurance-parameter">endurance curve</a></strong>,
+    C<sub>L</sub><sup>1.5</sup>/C<sub>D</sub> vs C<sub>L</sub>: the figure of merit from
+    <a href="0001-lift-drag-and-the-endurance-number.html">F1</a>, plotted across the foil's range. Its
+    peak is the lift coefficient where this section flies <em>longest</em>.</li>
+  </ul>
+  <p>The polar hides a beautiful trick. On it, <strong>L/D = C<sub>L</sub>/C<sub>D</sub></strong> is just
+  the slope of a line drawn from the origin to your operating point — so <strong>maximum L/D is the
+  steepest such line, the one that grazes the curve as a tangent.</strong><span class="cite"><a href="#r-uiuc">1</a></span>
+  That single geometric fact is how you read the best-range point straight off the plot.</p>
+
+  <h2><span class="num">2</span>What endurance asks of the plots</h2>
+  <p>Your mission is time aloft, so you read these plots with one priority order. For an endurance wing you
+  want, in this order:</p>
+  <ul>
+    <li>A <strong>high peak C<sub>L</sub><sup>1.5</sup>/C<sub>D</sub></strong> — the endurance figure of
+    merit. This, not max L/D, is the headline (recall <a href="0001-lift-drag-and-the-endurance-number.html">F1</a>:
+    range wants max L/D, endurance wants max C<sub>L</sub><sup>1.5</sup>/C<sub>D</sub>, a higher-lift,
+    slower point).</li>
+    <li>A <strong>low, wide drag bucket</strong> that <em>spans your <a href="../reference/glossary.html#design-lift-coefficient">design
+    lift coefficient</a></em> — so the section stays efficient at the C<sub>L</sub> you actually cruise
+    at, with margin for gusts.</li>
+    <li>A <strong>gentle stall</strong> — a rounded top to the lift curve, so an over-pull or a gust
+    doesn't drop the wing.</li>
+    <li>All of the above read <strong>at <em>your</em> <a href="../reference/glossary.html#reynolds-number">Reynolds
+    number</a></strong> (~150–300k for a 1–2 m drone). A polar is not a property of the shape alone — the
+    same foil is a different animal at a different Re, as <a href="0004-reynolds-number.html">F4</a>
+    warned.</li>
+  </ul>
+
+  <div class="formula">
+range  <span class="op">→</span>  max <span class="var">C<sub>L</sub></span> <span class="op">/</span> <span class="var">C<sub>D</sub></span>     <span class="op">|</span>     endurance  <span class="op">→</span>  max <span class="var">C<sub>L</sub></span><sup><span class="var">1.5</span></sup> <span class="op">/</span> <span class="var">C<sub>D</sub></span>
+<small>Two different points on the <b>same polar</b>. On the C<sub>L</sub>–C<sub>D</sub> plot, max L/D is the origin tangent; the endurance peak sits <b>above and to the right</b> of it — higher lift, slower flight.</small>
+  </div>
+
+  <h2><span class="num">3</span>The face-off — three real foils at Re 200,000</h2>
+  <p>Here are three low-Re classics, with their <strong>real, published metrics</strong> at
+  Re&nbsp;=&nbsp;200,000.<span class="cite"><a href="#r-aftools">2</a></span> The
+  <a href="0005-anatomy-of-an-airfoil.html">Eppler&nbsp;E387</a> is the wind-tunnel reference foil; the
+  <strong>Selig&nbsp;SD7037</strong> is a popular thin model-glider section; the
+  <strong>Selig&nbsp;S1223</strong> is a famously high-lift, high-camber foil built for slow
+  flight.<span class="cite"><a href="#r-s1223">3</a></span> Pick each and watch its polar — and the
+  origin tangent that reads off its max L/D.</p>
+
+  <div class="calc">
+    <div class="calc-title">📊 Airfoil face-off — drag polars at Re 200k</div>
+    <p style="font-family:var(--sans);font-size:.86rem;color:var(--ink-soft);margin:-.3rem 0 .9rem">
+      Lift up, drag across. The dashed gold line runs from the origin to the foil's
+      <strong>max-L/D</strong> point — <em>its steepness IS the best L/D</em>. The gold dot is that
+      max-L/D point; the green dot is the higher, slower <strong>endurance</strong> point
+      (max&nbsp;C<sub>L</sub><sup>1.5</sup>/C<sub>D</sub>). The selected foil is bright; the other two stay
+      faint for comparison. The curve shapes are illustrative; the readout numbers are the real data.</p>
+    <div class="btn-row">
+      <button class="simbtn active" id="selE387">Eppler E387</button>
+      <button class="simbtn" id="selSD7037">Selig SD7037</button>
+      <button class="simbtn" id="selS1223">Selig S1223</button>
+    </div>
+    <div class="readout">
+      <canvas id="foilCanvas" width="760" height="380" aria-label="Drag polars (lift coefficient versus drag coefficient) for three low-Reynolds airfoils at Reynolds number 200000, with the origin-tangent max-L/D line for the selected foil"></canvas>
+      <div class="foil-readouts">
+        <span>airfoil <b id="foName">Eppler E387</b></span>
+        <span>thickness / camber <b id="foGeom">9.1% / 3.2%</b></span>
+        <span>C<sub>d,min</sub> <b id="foCdmin">0.0092</b></span>
+        <span>C<sub>L,max</sub> <b id="foClmax">1.32</b></span>
+        <span>(L/D)<sub>max</sub> <b id="foLD">84.4 @ C<sub>L</sub> 1.11</b></span>
+        <span>(C<sub>L</sub><sup>1.5</sup>/C<sub>D</sub>)<sub>max</sub> <b id="foFoM">89.0 @ C<sub>L</sub> 1.11</b></span>
+      </div>
+      <div class="foil-chips">
+        <span class="tag sky">🏁 Range champ · <span id="champRange">—</span></span>
+        <span class="tag build">⏱ Endurance champ · <span id="champEnd">—</span></span>
+      </div>
+    </div>
+    <div class="status hint" id="status">Pick each foil and compare. Watch where the green endurance dot sits relative to the gold max-L/D dot…</div>
+  </div>
+
+  <h2><span class="num">4</span>The verdict — and the split nobody warns you about</h2>
+  <p>Line the real numbers up and a clean story you expected — "one foil is best" — falls apart:</p>
+
+  <table>
+    <caption>Computed 2-D section data at Re = 200,000 (XFOIL, N<sub>crit</sub> = 9, M = 0). Source: airfoiltools.com.<span class="cite"><a href="#r-aftools">2</a></span></caption>
+    <thead>
+      <tr><th>Airfoil</th><th>thick / camber</th><th class="num">C<sub>d,min</sub></th><th class="num">C<sub>L,max</sub></th><th class="num">(L/D)<sub>max</sub> @ C<sub>L</sub></th><th class="num">(C<sub>L</sub><sup>1.5</sup>/C<sub>D</sub>)<sub>max</sub> @ C<sub>L</sub></th></tr>
+    </thead>
+    <tbody>
+      <tr><td><b>Eppler E387</b></td><td>9.1% / 3.2%</td><td class="num">0.0092</td><td class="num">1.32</td><td class="num"><b>84.4</b> @ 1.11</td><td class="num">89.0 @ 1.11</td></tr>
+      <tr><td><b>Selig SD7037</b></td><td>9.2% / 2.5%</td><td class="num">0.0090</td><td class="num">1.33</td><td class="num">74.8 @ 0.87</td><td class="num">72.7 @ 1.03</td></tr>
+      <tr><td><b>Selig S1223</b></td><td>12.1% / 8.1%</td><td class="num">0.0176</td><td class="num">2.29</td><td class="num">73.6 @ 1.62</td><td class="num"><b>98.5</b> @ 2.03</td></tr>
+    </tbody>
+  </table>
+
+  <p>Notice the <strong>split</strong>. The <strong>E387 wins max L/D (84.4)</strong> — so it is the
+  <em>range</em> champion, the foil that glides farthest per joule. But the <strong>S1223 wins the
+  endurance figure of merit (98.5)</strong>, because its enormous 8.1% camber makes huge lift, and
+  endurance rewards high lift flown slowly. The catch is written right beside that win: the S1223 pays for
+  it with nearly <strong>double the minimum drag</strong> (0.0176 vs 0.0092) and an endurance point way up
+  at <strong>C<sub>L</sub> ≈ 2.03</strong> — flying that slow, near the top of the lift curve, leaves
+  little margin and gets <em>more</em> sensitive as Reynolds drops. The <strong>SD7037</strong> is the
+  modest all-rounder: the lowest C<sub>d,min</sub>, but neither the L/D nor the endurance leader.</p>
+
+  <div class="callout key">
+    <div class="callout-label">★ There is no single "best" airfoil</div>
+    <p>"Best" depends on the <em>mission</em>. For <strong>range</strong>, the E387's max L/D wins. For
+    <strong>endurance</strong> — <em>our</em> mission — the S1223's high-lift
+    C<sub>L</sub><sup>1.5</sup>/C<sub>D</sub> wins, at the price of higher drag, a very high design
+    C<sub>L</sub>, and slower, more delicate flight. The SD7037 splits the difference. Pick the metric that
+    matches the job, then read the polar at the Reynolds number you'll actually fly.</p>
+  </div>
+
+  <h3>The low-Re collapse — why "at your Reynolds" is in bold</h3>
+  <p>Drop the Reynolds number to <strong>100,000</strong> and every one of these foils gets dramatically
+  worse — the <a href="../reference/glossary.html#laminar-separation-bubble">laminar separation
+  bubble</a> grows, thickening the boundary layer and piling on drag. Both the L/D and the endurance
+  figure of merit collapse by roughly a third:<span class="cite"><a href="#r-aftools">2</a></span></p>
+
+  <table>
+    <caption>The low-Re collapse: (L/D)<sub>max</sub> and (C<sub>L</sub><sup>1.5</sup>/C<sub>D</sub>)<sub>max</sub>, Re 200k → 100k.</caption>
+    <thead>
+      <tr><th>Airfoil</th><th class="num">(L/D)<sub>max</sub> · 200k → 100k</th><th class="num">(C<sub>L</sub><sup>1.5</sup>/C<sub>D</sub>)<sub>max</sub> · 200k → 100k</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><b>Eppler E387</b></td><td class="num">84.4 → 60.7</td><td class="num">89.0 → 65.6</td></tr>
+      <tr><td><b>Selig SD7037</b></td><td class="num">74.8 → 55.2</td><td class="num">72.7 → 54.8</td></tr>
+      <tr><td><b>Selig S1223</b></td><td class="num">73.6 → 54.5</td><td class="num">98.5 → 68.0</td></tr>
+    </tbody>
+  </table>
+
+  <p>This is the core low-Reynolds lesson: <strong>a foil's polar is not a fixed property of its shape —
+  it is a property of the shape <em>and</em> the Reynolds number.</strong> A section that looks brilliant
+  at Re&nbsp;500k can be mediocre at Re&nbsp;100k. Always compare foils at the Re your wing will fly, and
+  remember that shrinking the chord (to chase aspect ratio, <a href="0004-reynolds-number.html">F4</a>)
+  pushes you down into this collapse.</p>
+
+  <h2><span class="num">5</span>These are XFOIL numbers — sanity-check them</h2>
+  <p>Every number above is <strong>computed</strong>, not measured — XFOIL (or a similar viscous panel
+  code) at N<sub>crit</sub>&nbsp;=&nbsp;9. That's fine for <em>comparing</em> foils on equal terms, but
+  XFOIL runs <strong>optimistic</strong>: it tends to over-predict L/D and C<sub>L,max</sub> versus a real
+  wind tunnel, especially at low Re where the separation bubble is hard to model.</p>
+
+  <div class="callout warning">
+    <div class="callout-label">⚠ Computed ≠ measured — always validate</div>
+    <p>The E387 has been wind-tunnel tested for decades. Measured values come in <em>below</em> the
+    solver: real <strong>(L/D)<sub>max</sub> ≈ 60–65</strong> and <strong>C<sub>L,max</sub> ≈
+    1.15–1.20</strong> at Re&nbsp;200k<span class="cite"><a href="#r-nasa">4</a></span> — noticeably less
+    than the XFOIL 84.4 and 1.32 in our table. Treat computed polars as a <em>ranking tool</em>, not gospel
+    numbers, and sanity-check against measured <a href="https://m-selig.ae.illinois.edu/uiuc_lsat/Low-Speed-Airfoil-Data-V1.pdf"
+    target="_blank" rel="noopener">UIUC wind-tunnel data</a> before you trust an absolute figure.</p>
+  </div>
+
+  <h2><span class="num">6</span>Check yourself</h2>
+  <p>Answer from memory — that effort is what turns a fact you just read into one you'll keep.</p>
+
+  <div class="quiz"
+       data-explain-right="Max L/D is the steepest origin line — the tangent."
+       data-explain-wrong="Re-read §1 — L/D is the slope of a line from the origin to the point.">
+    <div class="q-kicker">Question 1 of 3</div>
+    <div class="q-text">On a drag polar (C<sub>L</sub> up, C<sub>D</sub> across), the maximum-L/D point is where…</div>
+    <div class="q-options">
+      <button class="opt" data-correct data-feedback="Exactly. L/D = C_L/C_D is the slope of a line from the origin to the point, so max L/D is the steepest such line — the one tangent to the curve.">a straight line drawn from the origin just touches the curve as a tangent</button>
+      <button class="opt" data-feedback="That's C_L,max — the top of the curve, the stall point. It usually sits at a lower L/D than the tangent point, not the highest.">the curve reaches its highest lift coefficient, at the very top</button>
+      <button class="opt" data-feedback="That's the bottom of the drag bucket, minimum C_d — a different, usually lower-lift point than where the origin line is steepest.">the curve reaches its lowest drag coefficient, the bucket floor</button>
+      <button class="opt" data-feedback="The slope of the curve itself isn't L/D — L/D is the slope of the line back to the origin. Those steepen at different places.">the curve's own slope is at its steepest along the polar</button>
+    </div>
+    <div class="q-feedback"></div>
+  </div>
+
+  <div class="quiz"
+       data-explain-right="Endurance is decided by C_L^1.5/C_D, not L/D."
+       data-explain-wrong="Look again at §4 — pick by the endurance figure of merit, not max L/D.">
+    <div class="q-kicker">Question 2 of 3</div>
+    <div class="q-text">From the Re-200k table, which foil should the endurance drone shortlist, and why?</div>
+    <div class="q-options">
+      <button class="opt" data-correct data-feedback="Right. S1223 tops the endurance figure of merit (98.5). Endurance is minimum-power, so it flies at a higher C_L (~2.0) and slower than a range-optimised wing.">the S1223 — it has the highest C<sub>L</sub><sup>1.5</sup>/C<sub>D</sub> (98.5), and it flies at a higher C<sub>L</sub></button>
+      <button class="opt" data-feedback="The E387 wins max L/D (84.4) — that's the RANGE optimum, distance per charge, not the longest time aloft. Endurance follows C_L^1.5/C_D.">the E387 — it has the highest (L/D)<sub>max</sub> (84.4), which is what time aloft rewards</button>
+      <button class="opt" data-feedback="Lowest C_d,min (the SD7037, 0.0090) is least drag at low lift — handy, but it isn't the endurance figure of merit, and the SD7037 leads neither metric.">the SD7037 — it has the lowest C<sub>d,min</sub> (0.0090), so it must last longest</button>
+      <button class="opt" data-feedback="Endurance does NOT follow max L/D — that's range. The (L/D)max leader is the E387, but endurance is decided by C_L^1.5/C_D, where the S1223 wins.">the (L/D)<sub>max</sub> leader, since endurance always tracks the best L/D foil</button>
+    </div>
+    <div class="q-feedback"></div>
+  </div>
+
+  <div class="quiz"
+       data-explain-right="Polars are Reynolds-specific, and XFOIL runs optimistic."
+       data-explain-wrong="Re-read §4 and §5 — the same foil is worse at lower Re, and computed beats measured.">
+    <div class="q-kicker">Question 3 of 3</div>
+    <div class="q-text">What is true about the airfoil polars you just compared?</div>
+    <div class="q-options">
+      <button class="opt" data-correct data-feedback="Yes. The same foil degrades at lower Re (the bubble grows), so always read at your Re — and XFOIL over-predicts versus the wind tunnel, so validate against measured data.">they're Reynolds-specific — the same foil is worse at lower Re — and these XFOIL values run optimistic</button>
+      <button class="opt" data-feedback="No — a polar is a property of the shape AND the Reynolds number. At Re 100k all three foils collapsed by roughly a third.">a polar is a fixed property of the shape, valid at any Reynolds number and speed</button>
+      <button class="opt" data-feedback="Backwards — XFOIL over-predicts, so measured wind-tunnel L/D comes in below the computed value (E387: ~60–65 measured vs 84.4 computed).">XFOIL under-predicts, so real wind-tunnel L/D always beats the computed numbers</button>
+      <button class="opt" data-feedback="The opposite — lower Reynolds grows the laminar separation bubble, which thickens the boundary layer and raises drag, hurting the foil.">lower Reynolds always helps the foil, since a thinner boundary layer cuts the drag</button>
+    </div>
+    <div class="q-feedback"></div>
+  </div>
+
+  <div class="recap">
+    <h3>What you can now say</h3>
+    <ol>
+      <li>An airfoil's data is <strong>three plots</strong>: the lift curve (C<sub>L</sub>–α, with stall),
+      the <strong>drag polar</strong> (C<sub>L</sub>–C<sub>D</sub>, with its low-drag bucket), and the
+      endurance curve (C<sub>L</sub><sup>1.5</sup>/C<sub>D</sub>).</li>
+      <li>On the polar, <strong>max L/D is the steepest line from the origin</strong> — the tangent; the
+      <strong>endurance peak sits above and right of it</strong>, at higher lift and slower speed.</li>
+      <li>For endurance you want a <strong>high C<sub>L</sub><sup>1.5</sup>/C<sub>D</sub> peak</strong>, a
+      <strong>drag bucket spanning your design C<sub>L</sub></strong>, and a gentle stall —
+      <strong>read at your Reynolds number</strong>.</li>
+      <li>There's no single best foil: the <strong>E387 wins range</strong> (L/D 84.4), the <strong>S1223
+      wins endurance</strong> (FoM 98.5, at C<sub>L</sub>≈2.0), the SD7037 splits the difference. The
+      mission picks the metric.</li>
+      <li>These are <strong>computed (XFOIL) numbers — optimistic</strong>; drop Re from 200k to 100k and
+      every foil loses ~30%. Always sanity-check against measured wind-tunnel data.</li>
+    </ol>
+  </div>
+
+  <div class="sourcebox">
+    <div class="icon">📖</div>
+    <div>
+      <div class="label">Primary source · read this next</div>
+      <div class="title"><a href="https://m-selig.ae.illinois.edu/uiuc_lsat/Low-Speed-Airfoil-Data-V1.pdf" target="_blank" rel="noopener">UIUC — “Summary of Low-Speed Airfoil Data,” Volume 1 (Selig et al.)</a></div>
+      <div class="desc">The ground-truth, <em>measured</em> low-Reynolds polars for the E387, SD7037 and many
+      others — the data you should hold computed XFOIL numbers up against. Find the E387 section, read its
+      C<sub>L</sub>–α and drag-polar plots at several Reynolds numbers, and watch the polar shift and the
+      drag bucket shrink as Re falls. That single comparison is this whole lesson made concrete.</div>
+    </div>
+  </div>
+
+  <div class="ask-teacher">
+    💬 <b>I'm your teacher — ask me anything.</b> Want to see how the origin-tangent construction picks
+    max L/D, why the S1223's high design C<sub>L</sub> makes it fragile as Re drops, or how to find a foil's
+    drag bucket and design C<sub>L</sub> on a real polar plot? Bring it to chat. Confused beats stuck.
+  </div>
+
+  <div class="crosslinks">
+    <b>Glossary:</b>
+    <a href="../reference/glossary.html#drag-polar">drag polar</a> ·
+    <a href="../reference/glossary.html#drag-bucket">drag bucket</a> ·
+    <a href="../reference/glossary.html#design-lift-coefficient">design lift coefficient</a> ·
+    <a href="../reference/glossary.html#endurance-parameter">endurance parameter</a> ·
+    <a href="../reference/glossary.html#reynolds-number">Reynolds number</a>.
+    <b>Builds on →</b> <strong>F4</strong> (low Reynolds) &amp; <strong>F5</strong> (airfoil shape) ·
+    <b>Builds toward →</b> <strong>T1</strong> (generate this data yourself in XFOIL).
+  </div>
+
+  <h2 id="refs"><span class="num">§</span>References</h2>
+  <ol style="font-family:var(--sans);font-size:.84rem;color:var(--ink-soft);line-height:1.5">
+    <li id="r-uiuc">Selig et al. — <a href="https://m-selig.ae.illinois.edu/uiuc_lsat/Low-Speed-Airfoil-Data-V1.pdf" target="_blank" rel="noopener">Summary of Low-Speed Airfoil Data, Vol. 1</a> (University of Illinois). Measured low-Reynolds lift curves and drag polars — how to read the three plots, and the ground truth for the E387. <b>Primary source.</b></li>
+    <li id="r-aftools">Airfoil Tools — <a href="http://airfoiltools.com/" target="_blank" rel="noopener">airfoiltools.com</a> (community). Source of the computed 2-D section metrics in this lesson (XFOIL, N<sub>crit</sub> = 9, M = 0, at Re 200k and 100k). Open in a browser to search, plot and Reynolds-sweep any of these foils.</li>
+    <li id="r-s1223">Guglielmo &amp; Selig — <a href="https://m-selig.ae.illinois.edu/pubs/GuglielmoSelig-1997-JofAC-S1223.pdf" target="_blank" rel="noopener">High-Lift Low-Reynolds-Number Airfoil Design</a> (J. of Aircraft, 1997). Design and wind-tunnel testing of the S1223 — the high-camber, high-lift foil for slow, high-endurance flight.</li>
+    <li id="r-nasa">McGhee, Walker &amp; Millard — <a href="https://ntrs.nasa.gov/citations/19890001471" target="_blank" rel="noopener">NASA TM 4062: Experimental Results for the Eppler 387 Airfoil at Low Reynolds Numbers</a> (NASA Langley, 1988). Wind-tunnel E387 data — the measured reality that computed polars run optimistic against.</li>
+  </ol>
+
+  <nav class="lesson-nav">
+    <a href="0005-anatomy-of-an-airfoil.html">
+      <div class="dir">← Prev · F5</div>
+      <div class="ttl">Anatomy of an Airfoil</div>
+    </a>
+    <a class="next" href="0007-hands-on-xfoil.html">
+      <div class="dir">Next · T1</div>
+      <div class="ttl">Hands-on XFOIL →</div>
+    </a>
+  </nav>
+
+  <p class="pagefoot">Lesson F6 of the Wing Design course ·
+  <a href="../index.html">all lessons</a> ·
+  <a href="https://github.com/chrisfraser/wing-design">source on GitHub</a></p>
+</main>
+
+<script>
+/* ============================ Airfoil face-off (Re 200k) ============================ */
+(function(){
+  // Real, hardcoded XFOIL (Ncrit=9, M=0) metrics at Re=200,000 from airfoiltools.com.
+  // clmd = assumed min-drag CL for the STYLIZED curve only (shape illustrative).
+  var FOILS = {
+    E387:   { name:'Eppler E387',  short:'E387',   thick:9.1, camber:3.2, cdmin:0.0092, clmax:1.32, ldmax:84.4, clLD:1.11, fom:89.0, clEN:1.11, clmd:0.6, labelDY:-2 },
+    SD7037: { name:'Selig SD7037', short:'SD7037', thick:9.2, camber:2.5, cdmin:0.0090, clmax:1.33, ldmax:74.8, clLD:0.87, fom:72.7, clEN:1.03, clmd:0.6, labelDY:14 },
+    S1223:  { name:'Selig S1223',  short:'S1223',  thick:12.1,camber:8.1, cdmin:0.0176, clmax:2.29, ldmax:73.6, clLD:1.62, fom:98.5, clEN:2.03, clmd:1.3, labelDY:-2 }
+  };
+  var ORDER = ['E387','SD7037','S1223'];
+
+  // k chosen so the stylized polar passes through the published (L/D)max point.
+  ORDER.forEach(function(key){
+    var f = FOILS[key];
+    var cdAtLD = f.clLD / f.ldmax;
+    f.k = (cdAtLD - f.cdmin) / ((f.clLD - f.clmd)*(f.clLD - f.clmd));
+  });
+  function cdOf(f, cl){ return f.cdmin + f.k*(cl - f.clmd)*(cl - f.clmd); }
+
+  // Champs computed from the real numbers.
+  var rangeChamp = ORDER.slice().sort(function(a,b){ return FOILS[b].ldmax - FOILS[a].ldmax; })[0];
+  var endChamp   = ORDER.slice().sort(function(a,b){ return FOILS[b].fom   - FOILS[a].fom;   })[0];
+
+  var canvas=document.getElementById('foilCanvas'), ctx=canvas?canvas.getContext('2d'):null;
+  var status=document.getElementById('status');
+  var bE=document.getElementById('selE387'), bS=document.getElementById('selSD7037'), bC=document.getElementById('selS1223');
+  if(!ctx) return;
+
+  var W=canvas.width, H=canvas.height, padL=58, padR=20, padT=30, padB=42;
+  var xMax=0.065, yMax=2.4;
+  function xOf(cd){ return padL + (cd/xMax)*(W-padL-padR); }
+  function yOf(cl){ return (H-padB) - (cl/yMax)*(H-padT-padB); }
+
+  var selected='E387';
+
+  function curve(f, color, lw){
+    ctx.strokeStyle=color; ctx.lineWidth=lw; ctx.beginPath();
+    var clLow=Math.max(0, 2*f.clmd - f.clmax), first=true;
+    for(var cl=clLow; cl<=f.clmax+1e-9; cl+=0.02){
+      var X=xOf(cdOf(f,cl)), Y=yOf(cl);
+      if(first){ ctx.moveTo(X,Y); first=false; } else ctx.lineTo(X,Y);
+    }
+    ctx.stroke();
+  }
+
+  function dot(cd, cl, color, label, dy){
+    var X=xOf(cd), Y=yOf(cl);
+    ctx.beginPath(); ctx.arc(X,Y,5,0,Math.PI*2); ctx.fillStyle=color; ctx.fill();
+    ctx.strokeStyle='#fff'; ctx.lineWidth=1.3; ctx.stroke();
+    if(label){
+      ctx.fillStyle=color; ctx.font='bold 11px Inter, system-ui'; ctx.textAlign='left';
+      ctx.fillText(label, X+9, Y+(dy||4));
+    }
+  }
+
+  function draw(){
+    var f=FOILS[selected];
+    ctx.clearRect(0,0,W,H); ctx.fillStyle='#0a1c30'; ctx.fillRect(0,0,W,H);
+
+    // grid
+    ctx.font='11px Inter, system-ui';
+    ctx.textAlign='center';
+    for(var gx=0.01; gx<=xMax+1e-9; gx+=0.01){
+      ctx.strokeStyle='rgba(143,185,198,.12)'; ctx.beginPath(); ctx.moveTo(xOf(gx),padT); ctx.lineTo(xOf(gx),H-padB); ctx.stroke();
+      ctx.fillStyle='#5b7e93'; ctx.fillText(gx.toFixed(2), xOf(gx), H-padB+15);
+    }
+    ctx.textAlign='right';
+    for(var gy=0.3; gy<=yMax+1e-9; gy+=0.3){
+      ctx.strokeStyle='rgba(143,185,198,.10)'; ctx.beginPath(); ctx.moveTo(padL,yOf(gy)); ctx.lineTo(W-padR,yOf(gy)); ctx.stroke();
+      ctx.fillStyle='#5b7e93'; ctx.fillText(gy.toFixed(1), padL-7, yOf(gy)+4);
+    }
+    // axis titles
+    ctx.fillStyle='#8fb9c6'; ctx.textAlign='center';
+    ctx.fillText('drag coefficient  C_D  →', (padL+W-padR)/2, H-5);
+    ctx.save(); ctx.translate(15,(padT+H-padB)/2); ctx.rotate(-Math.PI/2);
+    ctx.fillText('lift coefficient  C_L  →', 0, 0); ctx.restore();
+    // canvas honesty label
+    ctx.textAlign='left'; ctx.fillStyle='#5b7e93'; ctx.font='11px Inter, system-ui';
+    ctx.fillText('stylized polars — shape illustrative; metrics are XFOIL data · Re 200k', padL, 17);
+
+    // faint (unselected) curves first
+    ORDER.forEach(function(key){
+      if(key===selected) return;
+      var g=FOILS[key];
+      curve(g, 'rgba(143,185,198,.30)', 1.6);
+      var tx=xOf(cdOf(g,g.clmax)), ty=yOf(g.clmax);
+      ctx.fillStyle='#5b7e93'; ctx.font='11px Inter, system-ui'; ctx.textAlign='left';
+      ctx.fillText(g.short, tx+6, ty+g.labelDY);
+    });
+
+    // selected: origin-tangent max-L/D line (under the curve)
+    var cdLD=cdOf(f,f.clLD);
+    ctx.strokeStyle='rgba(255,212,121,.85)'; ctx.lineWidth=1.6; ctx.setLineDash([5,3]);
+    ctx.beginPath(); ctx.moveTo(xOf(0),yOf(0)); ctx.lineTo(xOf(cdLD),yOf(f.clLD)); ctx.stroke();
+    ctx.setLineDash([]);
+
+    // selected bright curve
+    curve(f, '#4ea3da', 2.8);
+    // name label + CLmax tick at top of the selected curve
+    var topX=xOf(cdOf(f,f.clmax)), topY=yOf(f.clmax);
+    ctx.fillStyle='#4ea3da'; ctx.font='bold 12px Inter, system-ui'; ctx.textAlign='left';
+    ctx.fillText(f.short, topX+8, topY+f.labelDY);
+    ctx.fillStyle='#8fb9c6'; ctx.font='10px Inter, system-ui';
+    ctx.fillText('C_L,max '+f.clmax.toFixed(2), topX+8, topY+f.labelDY+13);
+
+    // endurance point (green) then max-L/D point (gold) on top
+    var cdEN=cdOf(f,f.clEN);
+    dot(cdEN, f.clEN, '#3fbf63', 'max C_L^1.5/C_D', -6);
+    dot(cdLD, f.clLD, '#ffd479', '(L/D)max', 14);
+  }
+
+  function update(){
+    var f=FOILS[selected];
+    document.getElementById('foName').textContent = f.name;
+    document.getElementById('foGeom').textContent = f.thick.toFixed(1)+'% / '+f.camber.toFixed(1)+'%';
+    document.getElementById('foCdmin').textContent = f.cdmin.toFixed(4);
+    document.getElementById('foClmax').textContent = f.clmax.toFixed(2);
+    document.getElementById('foLD').innerHTML  = f.ldmax.toFixed(1)+' @ C<sub>L</sub> '+f.clLD.toFixed(2);
+    document.getElementById('foFoM').innerHTML = f.fom.toFixed(1)+' @ C<sub>L</sub> '+f.clEN.toFixed(2);
+    draw();
+
+    if(selected==='S1223'){
+      status.className='status ok';
+      status.textContent='S1223 wins the endurance figure of merit (98.5) — but it flies at C_L≈2.03, slow and near stall, and fades fastest as Re drops. Our endurance pick, with eyes open.';
+    } else if(selected==='E387'){
+      status.className='status hint';
+      status.textContent='E387 owns max L/D (84.4) — the range champ — and posts a strong endurance FoM (89.0) at a sensible C_L≈1.11. A safe, well-mannered all-rounder.';
+    } else {
+      status.className='status hint';
+      status.textContent='SD7037 is the modest all-rounder: the lowest C_d,min (0.0090), but it leads neither L/D nor the endurance FoM. A thin, easy-flying glider section.';
+    }
+  }
+
+  function setFoil(key, btn){
+    selected=key;
+    [bE,bS,bC].forEach(function(b){ b.classList.remove('active'); });
+    btn.classList.add('active');
+    update();
+  }
+  bE.addEventListener('click',function(){ setFoil('E387',bE); });
+  bS.addEventListener('click',function(){ setFoil('SD7037',bS); });
+  bC.addEventListener('click',function(){ setFoil('S1223',bC); });
+
+  // champ chips, computed from the real metrics
+  document.getElementById('champRange').textContent = FOILS[rangeChamp].short+' (L/D '+FOILS[rangeChamp].ldmax.toFixed(1)+')';
+  document.getElementById('champEnd').textContent   = FOILS[endChamp].short+' (C_L^1.5/C_D '+FOILS[endChamp].fom.toFixed(1)+')';
+
+  update();
+})();
+</script>
+</body>
+</html>

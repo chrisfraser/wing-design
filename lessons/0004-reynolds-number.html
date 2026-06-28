@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>F4 · Reynolds Number — Why Your Drone Is Different</title>
+<link rel="stylesheet" href="../assets/styles.css">
+<script defer src="../assets/widgets.js"></script>
+<style>
+  /* Lesson-F4-specific: the Reynolds explorer */
+  canvas { width:100%; display:block; border-radius:8px; background:var(--night); }
+  .re-readouts { display:grid; grid-template-columns:repeat(2,1fr); gap:.3rem 1.2rem; margin-top:.7rem; font-family:var(--mono); font-size:.95rem; color:#d8ecf5; }
+  .re-readouts b { color:#ffd479; font-variant-numeric:tabular-nums; }
+  .verdict-chip { display:inline-block; font-family:var(--sans); font-weight:700; font-size:.8rem; letter-spacing:.03em; padding:.28rem .75rem; border-radius:999px; color:#fff; margin-top:.85rem; background:#3f7d4e; }
+  tr.here td { background:#fffdf4; }
+  tr.here td:first-child { font-weight:700; color:var(--night); }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap-wide">
+    <a class="brand" href="../index.html"><span class="dot">✈</span> Wing Design</a>
+    <nav>
+      <a href="../index.html">Lessons</a>
+      <a href="../reference/glossary.html">Glossary</a>
+      <a href="https://github.com/chrisfraser/wing-design">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <p class="kicker">Phase 2 · Airfoils &amp; the Low-Reynolds Regime · F4</p>
+  <h1 class="lesson-title">Reynolds Number — Why Your Drone Is Different</h1>
+  <p class="lesson-sub">A 1–2 m drone flies in a strange pocket of the atmosphere where the air feels
+  thick and textbook airfoils quietly misbehave. This lesson names that pocket — and shows why your
+  best endurance lever has a hidden price.</p>
+  <div class="lesson-meta">
+    <span>⏱ ~12 minutes</span><span class="sep">•</span>
+    <span>🧮 One formula, big consequences</span><span class="sep">•</span>
+    <span class="tag build">Builds on F3</span>
+  </div>
+
+  <div class="callout mission">
+    <div class="callout-label">◎ Why this lesson</div>
+    <p>In <a href="0003-the-two-kinds-of-drag.html">F3</a> you found the master endurance lever: raise
+    <a href="../reference/glossary.html#aspect-ratio">aspect ratio</a> to crush induced drag. But that
+    lesson ended on a warning — a higher aspect ratio means a <em>narrower chord</em>, and a narrower
+    chord lowers the <strong>Reynolds number</strong> the airfoil sees. This lesson turns that warning
+    into a number you can compute, and explains why, below a critical value, a perfectly good airfoil
+    suddenly stops working. It's the reason your drone needs airfoils most aerodynamics courses never
+    mention.</p>
+  </div>
+
+  <p class="lead">Scale changes physics. A housefly and a Cessna both fly, but the air behaves so
+  differently around each that what works for one is useless for the other. The single number that
+  measures <em>which world you're in</em> is the Reynolds number — and your drone sits in the awkward
+  middle, closer to the fly than the Cessna.</p>
+
+  <h2><span class="num">1</span>What the Reynolds number is</h2>
+  <p>The Reynolds number compares the two competing tendencies in any flow: <strong>inertia</strong>,
+  which carries the air's momentum smoothly past the wing, and <strong>viscosity</strong>, the air's
+  internal stickiness, which smears that momentum out and drags on every surface. Their ratio is one
+  dimensionless number.<span class="cite"><a href="#r-selig">1</a></span></p>
+
+  <div class="formula">
+<span class="var">Re</span> <span class="op">=</span> <span class="op">(</span> ρ <span class="op">·</span> <span class="var">V</span> <span class="op">·</span> <span class="var">c</span> <span class="op">)</span> <span class="op">/</span> μ     <span class="op">=</span>     <span class="var">V</span> <span class="op">·</span> <span class="var">c</span> <span class="op">/</span> <span class="var">ν</span>
+<small>ρ = air density, <b>V</b> = airspeed, <b>c</b> = chord (the airfoil's “size” in the flow), μ = dynamic viscosity. The two stickiness terms collapse into one constant, the <b>kinematic viscosity</b> ν = μ/ρ ≈ <b>1.5×10⁻⁵ m²/s</b> for air at sea level — so for us, <b>Re = V·c / ν</b>. Bigger, faster wings → high Re (inertia wins). Tiny, slow wings → low Re (viscosity wins).</small>
+  </div>
+
+  <p>Two consequences fall straight out of that formula, and you'll feel both for the rest of the course.
+  First, Reynolds number is set by <em>chord</em>, not span — so a long, slender wing of the same area
+  flies at a <em>lower</em> Re than a stubby one. Second, flying <em>slower</em> (which endurance wants,
+  from <a href="0001-lift-drag-and-the-endurance-number.html">F1</a>) also lowers Re. Endurance design
+  keeps nudging you toward the low-Reynolds danger zone from two directions at once.</p>
+
+  <h2><span class="num">2</span>The regime ladder — and where you sit</h2>
+  <p>Run the numbers for different fliers and they sort into a ladder spanning four orders of magnitude.
+  Each rung is a genuinely different aerodynamic world.<span class="cite"><a href="#r-uiuc">2</a></span></p>
+
+  <table>
+    <caption>Reynolds regimes, smallest to largest. Your 1–2 m drone lives on the third rung — the
+    tricky one.</caption>
+    <thead>
+      <tr><th>Flier</th><th class="num">Reynolds number</th><th>What the air “feels” like</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Insects, micro-drones</td><td class="num">&lt; 10⁴</td><td>Honey-thick; viscosity dominates and lift is hard-won</td></tr>
+      <tr><td>Small birds, indoor models</td><td class="num">10⁴ – 5×10⁴</td><td>Still very viscous; airfoils underperform badly</td></tr>
+      <tr class="here"><td>RC models &amp; small UAVs — <em>your wing</em></td><td class="num">5×10⁴ – 5×10⁵<br>(~100k–400k typical)</td><td>The tricky transition: separation bubbles, high sensitivity</td></tr>
+      <tr><td>Full-scale general aviation</td><td class="num">10⁶ – 10⁷</td><td>Textbook territory; airfoils behave as the books promise</td></tr>
+    </tbody>
+  </table>
+
+  <p>This is the whole point of the lesson. Almost every airfoil chart, rule of thumb, and intuition in a
+  standard aerodynamics text was measured up on that bottom rung, at Re in the millions. Your drone flies
+  one or two rungs down, where those same airfoils can lose a third of their performance — or more.</p>
+
+  <h2><span class="num">3</span>Why low Reynolds is hard</h2>
+  <p>The trouble lives in the <a href="../reference/glossary.html#boundary-layer">boundary layer</a> — the
+  thin sheet of slowed air clinging to the wing's surface. At high Re this layer trips quickly into a
+  <em>turbulent</em> state, which is energetic and sticks to the surface well. At low Re it stays
+  <em>laminar</em>: smooth, orderly, and weak. A laminar layer has little energy to fight the rising
+  pressure over the rear of the airfoil, so it lets go — it
+  <a href="../reference/glossary.html#laminar-separation-bubble">separates</a> from the surface.<span class="cite"><a href="#r-selig">1</a></span></p>
+
+  <div class="callout warning">
+    <div class="callout-label">✗ The laminar separation bubble</div>
+    <p>Often the separated flow trips to turbulent in mid-air and <em>reattaches</em> a little
+    further back, trapping a stagnant <strong>laminar separation bubble</strong> under it. That bubble
+    is dead weight: it thickens the effective shape, <strong>raises drag</strong>, <strong>lowers the
+    maximum lift coefficient</strong>, and <strong>cuts the airfoil's best L/D</strong> — exactly the
+    figure your endurance number lives on. Drop Re far enough and the bubble bursts without reattaching,
+    and the airfoil simply gives up.<span class="cite"><a href="#r-aiaa">3</a></span></p>
+  </div>
+
+  <p>Climb back <em>above</em> the critical range and the picture flips: the boundary layer transitions
+  early, stays attached, the bubble shrinks and vanishes, and the airfoil “wakes up” to something close
+  to its high-Reynolds promise. So airfoil performance isn't flat across Reynolds number — it
+  <strong>rises with Re, with a knee around 100k–150k and a steep cliff below ~80k</strong>. The explorer
+  below lets you walk that curve.</p>
+
+  <h2><span class="num">4</span>See it: the Reynolds explorer</h2>
+  <p>Set an airspeed and a chord; the tool computes <strong>Re = V·c/ν</strong> live, drops a marker on the
+  logarithmic Reynolds ladder, and reads off a representative airfoil-“health” curve. Watch the verdict
+  chip change colour as you cross the thresholds — and notice how little chord it takes to fall off the
+  cliff.</p>
+
+  <div class="calc">
+    <div class="calc-title">🧮 Reynolds explorer — where does your wing land?</div>
+    <p style="font-family:var(--sans);font-size:.86rem;color:var(--ink-soft);margin:-.3rem 0 .9rem">
+      <strong>Top:</strong> a logarithmic Reynolds axis with the four regime bands; the gold marker is
+      <em>you</em>. <strong>Bottom:</strong> a representative low-Re airfoil-health curve — normalized
+      max-performance as a percentage of its high-Reynolds value. The red / amber / green background marks
+      the verdict zones. (Want to see real measured polars at your exact Reynolds? Compare foils on
+      <a href="http://airfoiltools.com/" target="_blank" rel="noopener">airfoiltools.com</a>.<span class="cite"><a href="#r-aft">4</a></span>)</p>
+    <div class="controls">
+      <div class="control">
+        <label>Airspeed V <output id="vOut">12.0 m/s</output></label>
+        <input type="range" id="vRange" min="3" max="25" step="0.5" value="12">
+      </div>
+      <div class="control">
+        <label>Chord c <output id="cOut">0.20 m</output></label>
+        <input type="range" id="cRange" min="0.08" max="0.45" step="0.01" value="0.20">
+      </div>
+    </div>
+    <div class="readout">
+      <canvas id="reCanvas" width="720" height="440" aria-label="Top: a logarithmic Reynolds-number axis from ten-thousand to ten-million with labelled regime bands for insects, small birds and indoor models, RC models and small UAVs, and full-scale general aviation, and a marker at the current Reynolds number. Bottom: a representative airfoil-health curve, normalized performance versus Reynolds number, with red, amber and green verdict zones."></canvas>
+      <div class="re-readouts">
+        <span>V = <b id="vVal">12 m/s</b></span>
+        <span>c = <b id="cVal">0.20 m</b></span>
+        <span>Re = <b id="reVal">160,000</b></span>
+        <span>est. max-perf ≈ <b id="perfVal">78%</b></span>
+      </div>
+      <div id="chip" class="verdict-chip">Re ≥ 150k · healthy</div>
+    </div>
+    <div class="btn-row">
+      <button class="simbtn" id="bNarrow">🪶 Narrow chord (high AR) · 0.09 m</button>
+      <button class="simbtn" id="bWide">🛩 Wide chord (low AR) · 0.32 m</button>
+      <button class="simbtn" id="bReset">↺ Reset · 12 m/s · 0.20 m</button>
+    </div>
+    <div class="status ok" id="status">✓ 12 m/s × 0.20 m chord → Re 160k: healthy — above ~150k a good airfoil behaves close to its book numbers.</div>
+  </div>
+
+  <h2><span class="num">5</span>The catch: aspect ratio isn't free</h2>
+  <p>Now the two halves of the course collide. F3 told you to stretch the wing — high aspect ratio is the
+  single biggest lever on induced drag. But aspect ratio is span²/area, and for a fixed area, more span
+  means a <em>thinner chord</em>. Thinner chord means lower Reynolds number, which means a sicker airfoil.
+  You cannot freely have both.</p>
+
+  <div class="callout key">
+    <div class="callout-label">★ The key tension</div>
+    <p>Raising <a href="../reference/glossary.html#aspect-ratio">aspect ratio</a> shrinks the chord, which
+    <strong>lowers the Reynolds number</strong> your airfoil sees — so AR is <em>not</em> a free lunch.
+    Push aspect ratio too far on a small drone and you win on induced drag but lose more on the airfoil,
+    as its separation bubble grows and its L/D collapses. The endurance-optimal wing is a negotiated
+    settlement between these two pulls, and you can't even start the negotiation until you can compute the
+    Reynolds number — which you now can.</p>
+  </div>
+
+  <h2><span class="num">6</span>Check yourself</h2>
+  <p>Answer from memory — that effort is what turns a fact you just read into one you'll keep.</p>
+
+  <div class="quiz"
+       data-explain-right="Reynolds number is the ratio of inertial to viscous forces."
+       data-explain-wrong="Re-read §1 — Re weighs inertia against viscosity, not lift against drag.">
+    <div class="q-kicker">Question 1 of 3</div>
+    <div class="q-text">The Reynolds number Re = V·c/ν is best understood as the ratio of…</div>
+    <div class="q-options">
+      <button class="opt" data-correct data-feedback="Yes. Re weighs the flow's inertia (carrying momentum past the wing) against its viscosity (the stickiness that smears momentum out). Flying faster or using a wider chord raises it.">inertial forces to viscous forces in the flow</button>
+      <button class="opt" data-feedback="That ratio is lift-to-drag, the efficiency number from F1 — a different quantity entirely. Re is about inertia versus stickiness.">the lift force to the drag force on the wing</button>
+      <button class="opt" data-feedback="Airspeed over the speed of sound is the Mach number, which governs compressibility — irrelevant at your slow speeds. Re is inertia versus viscosity.">the airspeed to the local speed of sound</button>
+      <button class="opt" data-feedback="Span over chord is roughly the aspect ratio, a planform shape — not Reynolds number. Re compares inertial to viscous forces.">the wing's span to the wing's chord length</button>
+    </div>
+    <div class="q-feedback"></div>
+  </div>
+
+  <div class="quiz"
+       data-explain-right="Low Re lets the laminar layer separate into a drag-raising bubble."
+       data-explain-wrong="See §3 — at low Re the laminar layer separates and forms a bubble that hurts performance.">
+    <div class="q-kicker">Question 2 of 3</div>
+    <div class="q-text">As Reynolds number drops into your wing's range and below, the laminar boundary
+    layer tends to…</div>
+    <div class="q-options">
+      <button class="opt" data-correct data-feedback="Right. The weak laminar layer can't fight the rising rear pressure, so it separates into a bubble that raises drag, lowers C_Lmax, and cuts the airfoil's best L/D.">separate into a bubble that raises drag and cuts L/D</button>
+      <button class="opt" data-feedback="It's the opposite: the laminar layer holds on worse at low Re, not better. Separation and bubbles are what make low Re hard.">cling on harder, lowering drag and raising the L/D</button>
+      <button class="opt" data-feedback="A turbulent layer actually sticks better, but it doesn't appear instantly and it never removes drag — turbulence carries drag of its own.">turn turbulent at once, removing the drag entirely</button>
+      <button class="opt" data-feedback="The layer doesn't politely fade away; it stays, goes laminar, and separates. That separation is precisely the problem.">thin away so much it stops affecting the airfoil</button>
+    </div>
+    <div class="q-feedback"></div>
+  </div>
+
+  <div class="quiz"
+       data-explain-right="More aspect ratio means a narrower chord, which lowers Reynolds number."
+       data-explain-wrong="Look again at §5 — higher AR narrows the chord, and chord sets Reynolds number.">
+    <div class="q-kicker">Question 3 of 3</div>
+    <div class="q-text">Why isn't “just raise the aspect ratio” a free win for your endurance wing?</div>
+    <div class="q-options">
+      <button class="opt" data-correct data-feedback="Exactly. AR = span²/area, so for a fixed area more span means a thinner chord — and Re = V·c/ν falls with chord, pushing the airfoil toward its bubble-dominated cliff.">higher AR narrows the chord, which lowers the Reynolds number</button>
+      <button class="opt" data-feedback="Higher AR makes the chord narrower, not wider, and it lowers induced drag rather than raising drag directly. The real cost is the dropping Reynolds number.">higher AR widens the chord, which raises the airfoil's drag</button>
+      <button class="opt" data-feedback="Aspect ratio is span²/area; raising it at fixed area doesn't shrink the area or set stall speed. The hidden cost is the lower Reynolds number.">higher AR cuts the wing area, which raises the stall speed</button>
+      <button class="opt" data-feedback="Aspect ratio can't change the density of the air. Its real penalty is geometric: a narrower chord and therefore a lower Reynolds number.">higher AR raises the air density flowing over the wing</button>
+    </div>
+    <div class="q-feedback"></div>
+  </div>
+
+  <div class="recap">
+    <h3>What you can now say</h3>
+    <ol>
+      <li><strong>Re = V·c/ν</strong> is the ratio of inertial to viscous forces; for air ν ≈ 1.5×10⁻⁵ m²/s. It rises with speed and chord, and falls when either drops.</li>
+      <li>Fliers sort onto a four-rung Reynolds ladder; your 1–2 m drone lives at roughly <strong>100k–400k</strong> — the tricky low-Re transition, not the textbook millions.</li>
+      <li>At low Re the laminar boundary layer separates into a <strong>laminar separation bubble</strong> that raises drag, lowers C<sub>Lmax</sub>, and cuts max L/D.</li>
+      <li>Airfoil performance <strong>rises with Re</strong>: healthy above ~150k, marginal from ~80k–150k, and bubble-dominated and risky below ~80k.</li>
+      <li>Aspect ratio is <strong>not free</strong>: more AR → narrower chord → lower Re. The endurance lever and the Reynolds penalty pull against each other.</li>
+    </ol>
+  </div>
+
+  <div class="sourcebox">
+    <div class="icon">📖</div>
+    <div>
+      <div class="label">Primary source · read this next</div>
+      <div class="title"><a href="https://m-selig.ae.illinois.edu/pubs/Selig-2003-VKI-LRN-Airfoil-Design-Lecture-Series.pdf" target="_blank" rel="noopener">Selig — “Low Reynolds Number Airfoil Design” (UIUC, VKI Lecture Series)</a></div>
+      <div class="desc">The best single reference on <em>exactly</em> your regime: why the laminar separation bubble forms, how it wrecks low-Re performance, and how airfoils are shaped to tame it. Skim the bubble figures and the Re-sweep polars — they are the real version of the schematic curve you just played with.</div>
+    </div>
+  </div>
+
+  <div class="ask-teacher">
+    💬 <b>I'm your teacher — ask me anything.</b> Want the boundary-layer story behind <em>why</em> a
+    laminar layer separates where a turbulent one wouldn't, or curious how to read a real Reynolds-swept
+    polar on airfoiltools? Bring it to chat. Confused beats stuck.
+  </div>
+
+  <div class="crosslinks">
+    <b>Glossary:</b>
+    <a href="../reference/glossary.html#reynolds-number">Reynolds number</a> ·
+    <a href="../reference/glossary.html#boundary-layer">boundary layer</a> ·
+    <a href="../reference/glossary.html#laminar-separation-bubble">laminar separation bubble</a> ·
+    <a href="../reference/glossary.html#aspect-ratio">aspect ratio</a>.
+    <b>Builds on →</b> <strong>F3</strong> (the two kinds of drag) ·
+    <b>Builds toward →</b> <strong>F5</strong> (anatomy of an airfoil) and <strong>F6</strong> (reading real airfoil data at your Reynolds).
+  </div>
+
+  <h2 id="refs"><span class="num">§</span>References</h2>
+  <ol style="font-family:var(--sans);font-size:.84rem;color:var(--ink-soft);line-height:1.5">
+    <li id="r-selig">Selig — <a href="https://m-selig.ae.illinois.edu/pubs/Selig-2003-VKI-LRN-Airfoil-Design-Lecture-Series.pdf" target="_blank" rel="noopener">Low Reynolds Number Airfoil Design</a> (University of Illinois, VKI Lecture Series, 2003). The definitive primer on bubbles, low-Re polars and airfoil design in our regime. <b>Primary source.</b></li>
+    <li id="r-uiuc">UIUC Applied Aerodynamics Group — <a href="https://m-selig.ae.illinois.edu/" target="_blank" rel="noopener">low-Reynolds wind-tunnel data &amp; tools</a> (University of Illinois). Twenty-five years of measured low-Re airfoil performance; the source for the regime ranges quoted here.</li>
+    <li id="r-aiaa">Winslow, Otsuka, Govindarajan &amp; Chopra — <a href="https://arc.aiaa.org/doi/10.2514/1.C034415" target="_blank" rel="noopener">Basic Understanding of Airfoil Characteristics at Low Reynolds Numbers</a> (<em>Journal of Aircraft</em>, AIAA). How drag rises and L/D falls as Reynolds number drops through 10⁴–10⁶.</li>
+    <li id="r-aft">Airfoil Tools — <a href="http://airfoiltools.com/" target="_blank" rel="noopener">airfoiltools.com</a>. Search, compare and plot real airfoils with Reynolds-swept polars in the browser (open it directly — it blocks scripted access).</li>
+  </ol>
+
+  <nav class="lesson-nav">
+    <a href="0003-the-two-kinds-of-drag.html">
+      <div class="dir">← Prev · F3</div>
+      <div class="ttl">The Two Kinds of Drag</div>
+    </a>
+    <a class="next" href="0005-anatomy-of-an-airfoil.html">
+      <div class="dir">Next · F5</div>
+      <div class="ttl">Anatomy of an Airfoil →</div>
+    </a>
+  </nav>
+
+  <p class="pagefoot">Lesson F4 of the Wing Design course ·
+  <a href="../index.html">all lessons</a> ·
+  <a href="https://github.com/chrisfraser/wing-design">source on GitHub</a></p>
+</main>
+
+<script>
+/* ============================ Reynolds explorer ============================ */
+(function(){
+  var NU = 1.5e-5;                 // kinematic viscosity of air, sea level (m^2/s)
+
+  /* ---- Representative low-Re airfoil "health" curve (normalized %) --------
+     Schematic logistic in log-Re space: steep cliff below ~80k, knee around
+     100k-150k, plateau toward the high-Re asymptote. After Selig (UIUC). ---- */
+  function log10(x){ return Math.log(x)/Math.LN10; }
+  function health(re){ return 100/(1 + Math.exp(-4.2*(log10(re) - 4.903))); }
+
+  function verdict(re){
+    if(re>=1.5e5) return {word:'healthy',  chip:'Re ≥ 150k · healthy',     bg:'#3f7d4e', dot:'#3fbf63', cls:'ok'};
+    if(re>=8e4)   return {word:'marginal', chip:'80k–150k · marginal',     bg:'#c0852e', dot:'#e8b54a', cls:'warn'};
+    return                {word:'risky',   chip:'< 80k · risky (bubble)',       bg:'#c1492b', dot:'#e0775f', cls:'warn'};
+  }
+
+  function fmtRe(re){
+    if(re>=1e6) return (re/1e6).toFixed(2).replace(/\.?0+$/,'')+'M';
+    return Math.round(re/1000)+'k';
+  }
+  function fmtV(v){ return (v%1===0)? v.toFixed(0) : v.toFixed(1); }
+
+  var vR=document.getElementById('vRange'), cR=document.getElementById('cRange');
+  var vOut=document.getElementById('vOut'), cOut=document.getElementById('cOut');
+  var vVal=document.getElementById('vVal'), cVal=document.getElementById('cVal');
+  var reVal=document.getElementById('reVal'), perfVal=document.getElementById('perfVal');
+  var chip=document.getElementById('chip'), status=document.getElementById('status');
+  var canvas=document.getElementById('reCanvas'), ctx=canvas?canvas.getContext('2d'):null;
+  if(!ctx) return;
+
+  var W=canvas.width, H=canvas.height, padL=58, padR=22;
+  var L0=3, L1=7;                  // Reynolds axis: 1e3 .. 1e7 (log)
+  function xOfRe(re){ var l=Math.max(L0,Math.min(L1,log10(re))); return padL + (l-L0)/(L1-L0)*(W-padL-padR); }
+
+  var bandTop=44, bandBot=100;
+  var chartTop=164, chartBot=380;
+  function yOfPct(p){ return chartBot - (p/100)*(chartBot-chartTop); }
+
+  var decades=[[1e3,'10³'],[1e4,'10⁴'],[1e5,'10⁵'],[1e6,'10⁶'],[1e7,'10⁷']];
+  var bands=[
+    {lo:1e3, hi:1e4,  fill:'rgba(91,126,147,.28)',  l1:'insects'},
+    {lo:1e4, hi:5e4,  fill:'rgba(78,163,218,.18)',  l1:'small birds', l2:'& indoor'},
+    {lo:5e4, hi:5e5,  fill:'rgba(255,212,121,.20)', l1:'RC models &', l2:'small UAVs', here:true},
+    {lo:1e6, hi:1e7,  fill:'rgba(63,191,99,.16)',   l1:'full-scale GA'}
+  ];
+
+  function draw(re){
+    var v=verdict(re), hp=health(re), mx=xOfRe(re);
+    ctx.clearRect(0,0,W,H); ctx.fillStyle='#0a1c30'; ctx.fillRect(0,0,W,H);
+
+    /* ---- top title ---- */
+    ctx.textAlign='left'; ctx.fillStyle='#8fb9c6'; ctx.font='bold 11px Inter, system-ui';
+    ctx.fillText('WHERE YOUR WING SITS ON THE REYNOLDS LADDER', padL, 22);
+    ctx.font='11px Inter, system-ui';
+
+    /* ---- decade gridlines spanning both panels ---- */
+    for(var d=0; d<decades.length; d++){
+      var gx=xOfRe(decades[d][0]);
+      ctx.strokeStyle='rgba(143,185,198,.12)'; ctx.lineWidth=1;
+      ctx.beginPath(); ctx.moveTo(gx,bandTop); ctx.lineTo(gx,chartBot); ctx.stroke();
+      ctx.fillStyle='#5b7e93'; ctx.textAlign='center'; ctx.font='11px Inter, system-ui';
+      ctx.fillText(decades[d][1], gx, chartBot+18);
+    }
+
+    /* ---- regime bands ---- */
+    for(var b=0; b<bands.length; b++){
+      var bd=bands[b], x0=xOfRe(bd.lo), x1=xOfRe(bd.hi), cxb=(x0+x1)/2;
+      ctx.fillStyle=bd.fill; ctx.fillRect(x0, bandTop, x1-x0, bandBot-bandTop);
+      if(bd.here){ ctx.strokeStyle='rgba(255,212,121,.85)'; ctx.lineWidth=1.6; ctx.strokeRect(x0+0.5, bandTop+0.5, x1-x0-1, bandBot-bandTop-1); }
+      ctx.textAlign='center';
+      ctx.fillStyle= bd.here ? '#ffe6a8' : '#bcd2dd';
+      ctx.font= bd.here ? 'bold 11px Inter, system-ui' : '11px Inter, system-ui';
+      if(bd.l2){ ctx.fillText(bd.l1, cxb, bandTop+24); ctx.fillText(bd.l2, cxb, bandTop+38); }
+      else { ctx.fillText(bd.l1, cxb, bandTop+31); }
+      if(bd.here){ ctx.fillStyle='#ffd479'; ctx.font='bold 10px Inter, system-ui'; ctx.fillText('▲ you are here', cxb, bandBot-7); }
+    }
+
+    /* ---- marker line through both panels ---- */
+    ctx.strokeStyle=v.dot; ctx.lineWidth=2; ctx.setLineDash([4,3]);
+    ctx.beginPath(); ctx.moveTo(mx, bandTop); ctx.lineTo(mx, chartBot); ctx.stroke(); ctx.setLineDash([]);
+
+    /* ---- marker tag (current Re) just below the bands ---- */
+    var tag='Re = '+fmtRe(re);
+    ctx.font='bold 12px Inter, system-ui'; var tw=ctx.measureText(tag).width;
+    var bw=tw+18, bx=Math.max(padL, Math.min(W-padR-bw, mx-bw/2)), by=bandBot+8;
+    ctx.fillStyle=v.dot;
+    ctx.beginPath(); ctx.moveTo(mx, bandBot+1); ctx.lineTo(mx-6, by+1); ctx.lineTo(mx+6, by+1); ctx.closePath(); ctx.fill();
+    if(ctx.roundRect){ ctx.beginPath(); ctx.roundRect(bx, by, bw, 22, 6); ctx.fill(); }
+    else ctx.fillRect(bx, by, bw, 22);
+    ctx.fillStyle='#0a1c30'; ctx.textAlign='center'; ctx.fillText(tag, bx+bw/2, by+15);
+    ctx.font='11px Inter, system-ui';
+
+    /* ---- chart title ---- */
+    ctx.textAlign='left'; ctx.fillStyle='#8fb9c6'; ctx.font='bold 11px Inter, system-ui';
+    ctx.fillText('REPRESENTATIVE AIRFOIL “HEALTH” vs REYNOLDS', padL, 148);
+    ctx.font='11px Inter, system-ui';
+
+    /* ---- verdict zones (chart background) ---- */
+    var zR=xOfRe(8e4), zA=xOfRe(1.5e5), zEnd=W-padR;
+    ctx.fillStyle='rgba(193,73,43,.12)';  ctx.fillRect(padL, chartTop, zR-padL, chartBot-chartTop);
+    ctx.fillStyle='rgba(192,133,46,.12)'; ctx.fillRect(zR, chartTop, zA-zR, chartBot-chartTop);
+    ctx.fillStyle='rgba(63,125,78,.12)';  ctx.fillRect(zA, chartTop, zEnd-zA, chartBot-chartTop);
+
+    /* ---- chart y gridlines + labels (0..100%) ---- */
+    ctx.textAlign='right';
+    for(var p=0; p<=100; p+=25){
+      var gy=yOfPct(p);
+      ctx.strokeStyle='rgba(143,185,198,.10)'; ctx.lineWidth=1;
+      ctx.beginPath(); ctx.moveTo(padL, gy); ctx.lineTo(W-padR, gy); ctx.stroke();
+      ctx.fillStyle='#5b7e93'; ctx.fillText(p+'%', padL-7, gy+4);
+    }
+
+    /* ---- verdict threshold dividers ---- */
+    [[8e4,'80k'],[1.5e5,'150k']].forEach(function(t){
+      var tx=xOfRe(t[0]);
+      ctx.strokeStyle='rgba(143,185,198,.30)'; ctx.lineWidth=1; ctx.setLineDash([3,3]);
+      ctx.beginPath(); ctx.moveTo(tx, chartTop); ctx.lineTo(tx, chartBot); ctx.stroke(); ctx.setLineDash([]);
+      ctx.fillStyle='#7e98a6'; ctx.textAlign='center'; ctx.font='10px Inter, system-ui';
+      ctx.fillText(t[1], tx, chartTop-4);
+    });
+    ctx.font='11px Inter, system-ui';
+
+    /* ---- health curve ---- */
+    ctx.strokeStyle='#4ea3da'; ctx.lineWidth=2.6; ctx.beginPath();
+    var first=true;
+    for(var l=L0; l<=L1+1e-9; l+=0.02){
+      var rr=Math.pow(10,l), X=xOfRe(rr), Y=yOfPct(health(rr));
+      if(first){ ctx.moveTo(X,Y); first=false; } else ctx.lineTo(X,Y);
+    }
+    ctx.stroke();
+
+    /* ---- live point on the curve ---- */
+    var px=mx, py=yOfPct(hp);
+    ctx.strokeStyle='rgba(255,255,255,.35)'; ctx.lineWidth=1; ctx.setLineDash([2,3]);
+    ctx.beginPath(); ctx.moveTo(padL, py); ctx.lineTo(px, py); ctx.stroke(); ctx.setLineDash([]);
+    ctx.beginPath(); ctx.arc(px, py, 6, 0, Math.PI*2);
+    ctx.fillStyle=v.dot; ctx.fill(); ctx.strokeStyle='#fff'; ctx.lineWidth=1.5; ctx.stroke();
+    ctx.fillStyle='#d8ecf5'; ctx.textAlign='left'; ctx.font='bold 11px Inter, system-ui';
+    var lab=Math.round(hp)+'%';
+    ctx.fillText(lab, Math.min(px+10, W-padR-ctx.measureText(lab).width), py-8);
+    ctx.font='11px Inter, system-ui';
+
+    /* ---- axis titles + honesty label ---- */
+    ctx.fillStyle='#8fb9c6'; ctx.textAlign='center';
+    ctx.fillText('Reynolds number  Re  (log scale)  →', (padL+W-padR)/2, H-8);
+    ctx.save(); ctx.translate(16, (chartTop+chartBot)/2); ctx.rotate(-Math.PI/2);
+    ctx.fillText('max-perf  (% of high-Re value)', 0, 0); ctx.restore();
+    ctx.fillStyle='#5b7e93'; ctx.textAlign='right'; ctx.font='italic 10px Inter, system-ui';
+    ctx.fillText('schematic — representative low-Re airfoil behaviour, after Selig (UIUC)', W-padR-4, chartBot-9);
+  }
+
+  function update(){
+    var v=parseFloat(vR.value), c=parseFloat(cR.value), re=v*c/NU, vd=verdict(re);
+    vOut.textContent=fmtV(v)+' m/s'; cOut.textContent=c.toFixed(2)+' m';
+    vVal.textContent=fmtV(v)+' m/s'; cVal.textContent=c.toFixed(2)+' m';
+    reVal.textContent=Math.round(re).toLocaleString('en-US');
+    perfVal.textContent=Math.round(health(re))+'%';
+    chip.textContent=vd.chip; chip.style.background=vd.bg;
+    draw(re);
+
+    var head=fmtV(v)+' m/s × '+c.toFixed(2)+' m chord → Re '+fmtRe(re)+': ';
+    status.className='status '+vd.cls;
+    if(vd.word==='healthy'){
+      status.textContent='✓ '+head+'healthy — above ~150k a good airfoil behaves close to its book numbers.';
+    } else if(vd.word==='marginal'){
+      status.textContent='⚠ '+head+'marginal — a low-Re-specific airfoil matters here; expect a laminar separation bubble.';
+    } else {
+      status.textContent='⚠ '+head+'risky — bubble-dominated, so drag is high and Cₗₘₐₓ slumps. Widen the chord or fly faster.';
+    }
+  }
+
+  vR.addEventListener('input', update);
+  cR.addEventListener('input', update);
+  document.getElementById('bNarrow').addEventListener('click', function(){ cR.value='0.09'; update(); });
+  document.getElementById('bWide').addEventListener('click', function(){ cR.value='0.32'; update(); });
+  document.getElementById('bReset').addEventListener('click', function(){ vR.value='12'; cR.value='0.20'; update(); });
+  update();
+})();
+</script>
+</body>
+</html>

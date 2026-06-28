@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>F5 · Anatomy of an Airfoil</title>
+<link rel="stylesheet" href="../assets/styles.css">
+<script defer src="../assets/widgets.js"></script>
+<style>
+  /* Lesson-F5-specific: the NACA 4-digit generator */
+  canvas { width:100%; display:block; border-radius:8px; background:var(--night); }
+  .naca-readouts { display:grid; grid-template-columns:repeat(2,1fr); gap:.3rem 1.2rem; margin-top:.8rem; font-family:var(--mono); font-size:.95rem; color:#d8ecf5; }
+  .naca-readouts b { color:#ffd479; font-variant-numeric:tabular-nums; }
+  .naca-note { font-family:var(--sans); font-size:.86rem; color:#8fb9c6; margin-top:.7rem; line-height:1.45; }
+  .naca-note b { color:#d8ecf5; }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap-wide">
+    <a class="brand" href="../index.html"><span class="dot">✈</span> Wing Design</a>
+    <nav>
+      <a href="../index.html">Lessons</a>
+      <a href="../reference/glossary.html">Glossary</a>
+      <a href="https://github.com/chrisfraser/wing-design">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <p class="kicker">Phase 2 · Airfoils &amp; the Low-Reynolds Regime · F5</p>
+  <h1 class="lesson-title">Anatomy of an Airfoil</h1>
+  <p class="lesson-sub">An airfoil is just a handful of geometric knobs with names. Learn the names — and
+  what twisting each one does — and a cryptic code like “NACA 2412” turns into a recipe you can read.</p>
+  <div class="lesson-meta">
+    <span>⏱ ~11 minutes</span><span class="sep">•</span>
+    <span>🧮 A little geometry — the shape made literal</span><span class="sep">•</span>
+    <span class="tag sky">Builds on F2 &amp; F4</span>
+  </div>
+
+  <div class="callout mission">
+    <div class="callout-label">◎ Why this lesson</div>
+    <p>In <a href="0004-reynolds-number.html">F4</a> you learned that your 1–2 m drone flies deep in the
+    <strong>low-Reynolds</strong> regime, where airfoil shape matters more than it does for a full-size
+    aircraft. Next lesson (<strong>F6</strong>) you'll compare real airfoils and shortlist one for endurance —
+    but you can't read an airfoil's data sheet until you can read its <em>shape</em>. This lesson hands you
+    the vocabulary and the famous <strong>NACA 4-digit</strong> code, then shows what each shape knob actually
+    does to lift, stall and drag.</p>
+  </div>
+
+  <p class="lead">Strip a wing down to a single slice and you get an <strong>airfoil</strong> — the 2-D
+  cross-section that does the lifting. Every airfoil, from a paper dart to an airliner, is described by the
+  same five or six measurements. Master them once and they never change.</p>
+
+  <h2><span class="num">1</span>The parts of an airfoil</h2>
+  <p>Lay the section flat with the nose pointing into the wind and there are only a few things to name:<span class="cite"><a href="#r-abbott">1</a></span></p>
+  <ul>
+    <li>The <strong><a href="../reference/glossary.html#leading-edge">leading edge</a></strong> (LE, the rounded
+    nose) and the <strong><a href="../reference/glossary.html#trailing-edge">trailing edge</a></strong> (TE, the
+    sharp tail) — where the air arrives and where it leaves.</li>
+    <li>The <strong><a href="../reference/glossary.html#chord-line">chord line</a></strong>: the straight line
+    from LE to TE. Its length is the <strong>chord</strong>, <em>c</em> — the airfoil's “ruler.” Every other
+    measurement is quoted as a percentage of <em>c</em>.</li>
+    <li>The <strong><a href="../reference/glossary.html#mean-camber-line">mean camber line</a></strong>: the
+    line running halfway between the upper and lower surfaces. How far it bows away from the chord line is the
+    section's <strong><a href="../reference/glossary.html#camber">camber</a></strong> — its built-in curvature.</li>
+    <li>The <strong><a href="../reference/glossary.html#thickness">thickness</a></strong> distribution: how fat
+    the section is, measured perpendicular to the camber line, all the way along.</li>
+  </ul>
+  <p>From those lines come the four numbers that define a 4-digit section: the <strong>maximum camber</strong>
+  and <strong>where</strong> along the chord it peaks, and the <strong>maximum thickness</strong> and where
+  <em>it</em> peaks. A <a href="../reference/glossary.html#camber">symmetric</a> airfoil is the special case
+  where the camber line lies exactly on the chord line — zero camber.</p>
+
+  <h2><span class="num">2</span>The NACA 4-digit code</h2>
+  <p>In the 1930s, NACA (NASA's predecessor) ran families of airfoils through wind tunnels and gave each a
+  number that <em>is</em> its geometry.<span class="cite"><a href="#r-tr460">2</a></span> The 4-digit code packs
+  three of our measurements into four digits — <strong>M&nbsp;P&nbsp;XX</strong>:</p>
+
+  <div class="formula">
+<span class="var">NACA</span>  <span class="var">M</span> <span class="var">P</span> <span class="var">X X</span>
+<small><b>M</b> = maximum camber, in <b>% of chord</b> (1 digit).  <b>P</b> = position of that max camber, in <b>tenths of chord</b> (1 digit).  <b>XX</b> = maximum thickness, in <b>% of chord</b> (2 digits). The max thickness always sits at 30% chord for this family.</small>
+  </div>
+
+  <p>So <strong>NACA&nbsp;2412</strong> reads: <strong>2%</strong> camber, peaking at <strong>4→40%</strong> of
+  the chord, with a <strong>12%</strong>-thick body. <strong>NACA&nbsp;0012</strong> has a leading
+  <strong>0</strong> — no camber — so it's a symmetric 12% section. Same alphabet, two very different wings.
+  The exact surface is generated from a thickness formula plus a two-piece camber-line formula; the generator
+  below uses precisely those equations.<span class="cite"><a href="#r-abbott">1</a></span></p>
+
+  <h2><span class="num">3</span>Generate a section — turn the knobs</h2>
+  <p>Drag the three sliders and watch the geometry redraw live. The blue outline is the airfoil; the muted line
+  is the <strong>chord line</strong>; the dashed gold line is the <strong>mean camber line</strong>. Notice how
+  the max-camber marker slides with <em>P</em>, while the max-thickness marker stays anchored near 30% chord.</p>
+
+  <div class="calc">
+    <div class="calc-title">🧮 NACA 4-digit generator</div>
+    <p style="font-family:var(--sans);font-size:.86rem;color:var(--ink-soft);margin:-.3rem 0 .9rem">
+      Build any 4-digit section from its three knobs. The code, thickness and camber update as you go —
+      and the one-line verdict tells you what kind of wing you've just drawn.</p>
+    <div class="controls">
+      <div class="control">
+        <label>Max camber · M <output id="mOut">2%</output></label>
+        <input type="range" id="mRange" min="0" max="9" step="1" value="2">
+      </div>
+      <div class="control">
+        <label>Camber position · P <output id="pOut">40% c</output></label>
+        <input type="range" id="pRange" min="1" max="9" step="1" value="4">
+      </div>
+      <div class="control">
+        <label>Max thickness · XX <output id="tOut">12%</output></label>
+        <input type="range" id="tRange" min="6" max="24" step="1" value="12">
+      </div>
+    </div>
+    <div class="readout">
+      <canvas id="nacaCanvas" width="760" height="320" aria-label="Airfoil drawn from the NACA 4-digit parameters, with chord line, mean camber line, and labelled max-thickness and max-camber positions"></canvas>
+      <div class="naca-readouts">
+        <span>code <b id="codeVal">NACA 2412</b></span>
+        <span>thickness <b id="thkVal">12% c</b></span>
+        <span>max camber <b id="camVal">2% c</b></span>
+        <span>camber at <b id="posVal">40% c</b></span>
+      </div>
+      <div class="naca-note" id="noteVal">—</div>
+    </div>
+    <div class="btn-row">
+      <button class="simbtn" id="pre0012">NACA 0012 · symmetric</button>
+      <button class="simbtn active" id="pre2412">NACA 2412 · classic</button>
+      <button class="simbtn" id="pre4415">NACA 4415 · cambered &amp; thick</button>
+      <button class="simbtn" id="pre6409">NACA 6409 · high-lift</button>
+    </div>
+    <div class="status hint" id="status">Drag the camber slider up and watch the dashed line bow above the chord…</div>
+  </div>
+
+  <h2><span class="num">4</span>What each knob actually does</h2>
+  <p>The shape isn't decoration — every knob trades one flying quality for another. Here is what each digit
+  buys you:</p>
+
+  <table>
+    <caption>The four shape knobs of a NACA 4-digit section and what turning each one up does.</caption>
+    <thead>
+      <tr><th>Shape knob</th><th>In the code</th><th>Turn it up and…</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><b>Max camber</b> M</td><td>1st digit</td>
+        <td>the whole <a href="../reference/glossary.html#lift-curve">lift curve</a> shifts <em>up</em> — more
+        C<sub>L</sub> at every angle, and a more negative <a href="../reference/glossary.html#zero-lift-angle">zero-lift angle</a>.</td>
+      </tr>
+      <tr>
+        <td><b>Camber position</b> P</td><td>2nd digit</td>
+        <td>the lift load moves fore or aft; further back can raise peak lift but adds nose-down pitching moment.</td>
+      </tr>
+      <tr>
+        <td><b>Max thickness</b> XX</td><td>3rd–4th digits</td>
+        <td>the stall softens and there's room for a spar — but profile drag climbs, and worse so at low Reynolds.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Camber lifts the whole curve</h3>
+  <p>Add camber and the air gets turned harder even when the section is pointed straight into the wind. The
+  result: at any given <a href="../reference/glossary.html#angle-of-attack">angle of attack</a> the section makes
+  <em>more</em> lift than a symmetric one, and it keeps making lift down to a negative angle — its
+  <a href="../reference/glossary.html#zero-lift-angle">zero-lift angle</a> goes more negative.<span class="cite"><a href="#r-abbott">1</a></span>
+  In the language of <a href="0002-how-a-wing-really-makes-lift.html">F2</a>, more camber shifts the entire
+  C<sub>L</sub>–α line bodily upward. For a slow endurance wing that wants to fly at a high lift coefficient,
+  that built-in lift is exactly what you're shopping for.</p>
+
+  <h3>Thickness: gentler stall, but a drag bill</h3>
+  <p>A thicker section has a blunter nose, so the airflow separates more gradually — the
+  <a href="../reference/glossary.html#stall">stall</a> arrives softly rather than as a sudden drop, and the fat
+  body gives your spar somewhere to live. The price is <strong>more drag</strong>. And here's the sting that
+  ties back to <a href="0004-reynolds-number.html">F4</a>: at the low Reynolds numbers your drone flies at, the
+  boundary layer is thick and fragile, so that thickness penalty <em>bites harder</em> than the textbook
+  high-Reynolds numbers suggest.<span class="cite"><a href="#r-abbott">1</a></span> Thin enough to keep drag
+  down, thick enough to stall gently and hold a spar — that balance is the whole game, and it's why most
+  low-Re model sections land around 8–12% thick.</p>
+
+  <div class="callout key">
+    <div class="callout-label">★ The shape-to-behaviour map</div>
+    <p><strong>Camber</strong> sets <em>how much</em> lift (shifts the curve up). <strong>Thickness</strong> sets
+    <em>how gently it stalls</em> and how much drag you pay. Reading those two knobs off a NACA code tells you,
+    before you ever open a wind-tunnel plot, roughly how a section will behave.</p>
+  </div>
+
+  <h2><span class="num">5</span>Check yourself</h2>
+  <p>Answer from memory — that effort is what turns a fact you just read into one you'll keep.</p>
+
+  <div class="quiz"
+       data-explain-right="Read the digits as M, P, XX."
+       data-explain-wrong="Re-read §2 — the digits are camber %, camber position in tenths, then thickness %.">
+    <div class="q-kicker">Question 1 of 3</div>
+    <div class="q-text">In <b>NACA 2412</b>, what do the digits 2, 4 and 12 stand for?</div>
+    <div class="q-options">
+      <button class="opt" data-correct data-feedback="Exactly. M=2 → 2% max camber, P=4 → camber peaks at 40% chord, XX=12 → 12% max thickness.">2% maximum camber, peaking at 40% of the chord, and 12% maximum thickness</button>
+      <button class="opt" data-feedback="You've swapped the first two roles — the 2 is camber percent and the 4 is its position in tenths, not the reverse.">4% maximum camber, peaking at 20% of the chord, and 12% maximum thickness</button>
+      <button class="opt" data-feedback="That reverses the whole code — thickness is the last two digits (12%), not the first, and camber is only 2%.">12% maximum camber, peaking at 24% of the chord, and 2% maximum thickness</button>
+      <button class="opt" data-feedback="Close on the numbers but the roles are jumbled — 2 is camber, 4 is camber position, 12 is thickness.">2% maximum thickness, 4% camber, with the thickness peaking at 12% chord</button>
+    </div>
+    <div class="q-feedback"></div>
+  </div>
+
+  <div class="quiz"
+       data-explain-right="Camber shifts the lift curve bodily upward."
+       data-explain-wrong="Look again at §4 — adding camber adds lift at every angle.">
+    <div class="q-kicker">Question 2 of 3</div>
+    <div class="q-text">Compared with a symmetric section, a more <em>cambered</em> airfoil…</div>
+    <div class="q-options">
+      <button class="opt" data-correct data-feedback="Right. More camber lifts the whole C_L–α curve up: more lift at a given angle, and a more negative zero-lift angle.">makes more lift at a given angle of attack, with a more negative zero-lift angle</button>
+      <button class="opt" data-feedback="Backwards — camber raises the lift at every angle, it doesn't lower it, and the zero-lift angle goes more negative not positive.">makes less lift at a given angle, with a more positive zero-lift angle</button>
+      <button class="opt" data-feedback="It does change the lift — camber's whole job is to shift the lift curve up; the curve is not left where a symmetric section sits.">produces an identical lift curve, since camber changes only the drag</button>
+      <button class="opt" data-feedback="No — a symmetric section is the zero-camber case; adding camber moves you away from zero lift at 0°, not toward it.">reaches zero lift at exactly zero degrees, just like a symmetric one</button>
+    </div>
+    <div class="q-feedback"></div>
+  </div>
+
+  <div class="quiz"
+       data-explain-right="Thickness trades drag for a gentler stall and structure."
+       data-explain-wrong="Re-read §4 — thickness buys forgiveness and spar room, but costs drag.">
+    <div class="q-kicker">Question 3 of 3</div>
+    <div class="q-text">Choosing a <em>thicker</em> section mainly trades…</div>
+    <div class="q-options">
+      <button class="opt" data-correct data-feedback="Yes. A thicker section stalls more gently and gives room for a spar, but it pays in extra drag — a penalty that bites harder at low Reynolds.">a gentler stall and room for a spar against more drag, especially at low Reynolds</button>
+      <button class="opt" data-feedback="The opposite — thicker sections generally make MORE drag, not less, so this gets the cost backwards.">less drag and a sharper stall against a heavier, weaker structure</button>
+      <button class="opt" data-feedback="Thickness isn't free lift — it doesn't shift the lift curve up the way camber does; camber sets the lift level.">a big jump in lift at a given angle against a small rise in weight</button>
+      <button class="opt" data-feedback="Thickness barely touches the zero-lift angle — that's camber's lever. Thickness is about stall behaviour, structure and drag.">a more negative zero-lift angle against a slightly rougher surface finish</button>
+    </div>
+    <div class="q-feedback"></div>
+  </div>
+
+  <div class="recap">
+    <h3>What you can now say</h3>
+    <ol>
+      <li>An airfoil is named by a few lines: <strong>chord line</strong>, <strong>mean camber line</strong>,
+      and a <strong>thickness</strong> distribution between leading and trailing edges.</li>
+      <li>The <strong>NACA 4-digit</strong> code is <strong>M P XX</strong>: max camber %, camber position in
+      tenths, max thickness % — e.g. <strong>2412</strong> = 2% camber at 40% chord, 12% thick.</li>
+      <li>A leading <strong>0</strong> (like <strong>0012</strong>) means <strong>symmetric</strong> — no camber.</li>
+      <li>More <strong>camber</strong> shifts the lift curve up: more C<sub>L</sub> at a given angle and a more
+      negative zero-lift angle.</li>
+      <li>More <strong>thickness</strong> softens the stall and houses a spar, but costs drag — and that penalty
+      grows at your low Reynolds numbers.</li>
+    </ol>
+  </div>
+
+  <div class="sourcebox">
+    <div class="icon">📖</div>
+    <div>
+      <div class="label">Primary source · read this next</div>
+      <div class="title"><a href="https://store.doverpublications.com/products/9780486605869" target="_blank" rel="noopener">Abbott &amp; von Doenhoff — “Theory of Wing Sections”</a></div>
+      <div class="desc">The classic NACA reference: where the 4-digit (and 5-digit, and 6-series) families come
+      from, the exact thickness and camber-line equations, and tabulated section data. Read the opening chapters
+      on geometry and the effect of camber and thickness — they underpin everything in this lesson.</div>
+    </div>
+  </div>
+
+  <div class="ask-teacher">
+    💬 <b>I'm your teacher — ask me anything.</b> Want the thickness formula's five coefficients explained, or
+    why the 4-digit family fixes max thickness at 30% chord, or how camber position trades peak lift against
+    pitching moment? Bring it to chat. Confused beats stuck.
+  </div>
+
+  <div class="crosslinks">
+    <b>Glossary:</b>
+    <a href="../reference/glossary.html#chord-line">chord line</a> ·
+    <a href="../reference/glossary.html#mean-camber-line">mean camber line</a> ·
+    <a href="../reference/glossary.html#thickness">thickness</a> ·
+    <a href="../reference/glossary.html#camber">camber</a> ·
+    <a href="../reference/glossary.html#naca-4-digit">NACA 4-digit</a>.
+    <b>Builds on →</b> <strong>F2</strong> (the lift curve) &amp; <strong>F4</strong> (low Reynolds) ·
+    <b>Builds toward →</b> <strong>F6</strong> (reading real airfoil data).
+  </div>
+
+  <h2 id="refs"><span class="num">§</span>References</h2>
+  <ol style="font-family:var(--sans);font-size:.84rem;color:var(--ink-soft);line-height:1.5">
+    <li id="r-abbott">Abbott &amp; von Doenhoff — <a href="https://store.doverpublications.com/products/9780486605869" target="_blank" rel="noopener">Theory of Wing Sections</a> (Dover). NACA airfoil geometry, the 4-digit thickness and camber-line equations, and the effect of camber and thickness on section behaviour. <b>Primary source.</b></li>
+    <li id="r-tr460">Jacobs, Ward &amp; Pinkerton — <a href="https://ntrs.nasa.gov/citations/19930091108" target="_blank" rel="noopener">NACA Report No. 460: The Characteristics of 78 Related Airfoil Sections</a> (NACA, 1933). The wind-tunnel study that defined and named the 4-digit family.</li>
+    <li id="r-uiuc">Selig — <a href="https://m-selig.ae.illinois.edu/ads/coord_database.html" target="_blank" rel="noopener">UIUC Airfoil Coordinate Database</a> (University of Illinois). ~1,650 real airfoil geometries — including the NACA sections — to feed XFOIL and XFLR5 in later lessons.</li>
+  </ol>
+
+  <nav class="lesson-nav">
+    <a href="0004-reynolds-number.html">
+      <div class="dir">← Prev · F4</div>
+      <div class="ttl">Reynolds Number — Why Your Drone Is Different</div>
+    </a>
+    <a class="next" href="0006-reading-real-airfoil-data.html">
+      <div class="dir">Next · F6</div>
+      <div class="ttl">Reading Real Airfoil Data →</div>
+    </a>
+  </nav>
+
+  <p class="pagefoot">Lesson F5 of the Wing Design course ·
+  <a href="../index.html">all lessons</a> ·
+  <a href="https://github.com/chrisfraser/wing-design">source on GitHub</a></p>
+</main>
+
+<script>
+/* ============================ NACA 4-digit generator ============================ */
+(function(){
+  var mR=document.getElementById('mRange'), pR=document.getElementById('pRange'), tR=document.getElementById('tRange');
+  var mO=document.getElementById('mOut'), pO=document.getElementById('pOut'), tO=document.getElementById('tOut');
+  var canvas=document.getElementById('nacaCanvas'), ctx=canvas?canvas.getContext('2d'):null;
+  var status=document.getElementById('status');
+  if(!ctx) return;
+
+  var W=canvas.width, H=canvas.height, mL=46, mR2=46, mT=34, mB=40;
+  var N=80;
+
+  function thick(x,t){ return (t/0.2)*(0.2969*Math.sqrt(x) - 0.1260*x - 0.3516*x*x + 0.2843*x*x*x - 0.1015*x*x*x*x); }
+  function camber(x,m,p){
+    if(m===0||p===0) return {yc:0, dy:0};
+    if(x<p) return { yc:(m/(p*p))*(2*p*x - x*x),            dy:(2*m/(p*p))*(p - x) };
+    return        { yc:(m/((1-p)*(1-p)))*((1-2*p)+2*p*x - x*x), dy:(2*m/((1-p)*(1-p)))*(p - x) };
+  }
+
+  function build(m,p,t){
+    var up=[], lo=[], cam=[], xt=0, maxt=-1, xc=0, maxc=0;
+    for(var i=0;i<=N;i++){
+      var beta=Math.PI*i/N, x=0.5*(1-Math.cos(beta));
+      var yt=thick(x,t), cc=camber(x,m,p), th=Math.atan(cc.dy), s=Math.sin(th), co=Math.cos(th);
+      up.push([x - yt*s, cc.yc + yt*co]);
+      lo.push([x + yt*s, cc.yc - yt*co]);
+      cam.push([x, cc.yc]);
+      if(2*yt>maxt){ maxt=2*yt; xt=x; }
+      if(cc.yc>maxc){ maxc=cc.yc; xc=x; }
+    }
+    return {up:up, lo:lo, cam:cam, xt:xt, xc:xc};
+  }
+
+  function draw(m,p,t){
+    var g=build(m,p,t);
+    // fit: equal x/y scale, centred, with margins
+    var yMin=Infinity, yMax=-Infinity, k;
+    for(k=0;k<=N;k++){ if(g.up[k][1]>yMax)yMax=g.up[k][1]; if(g.lo[k][1]<yMin)yMin=g.lo[k][1]; }
+    var pad=0.02; yMax+=pad; yMin-=pad;
+    var availW=W-mL-mR2, availH=H-mT-mB, yRange=yMax-yMin;
+    var scale=Math.min(availW/1.0, availH/yRange);
+    var plotW=scale*1.0, plotH=scale*yRange;
+    var oX=mL + (availW-plotW)/2, oY=mT + (availH-plotH)/2;
+    function px(x){ return oX + x*scale; }
+    function py(y){ return oY + (yMax-y)*scale; }
+
+    ctx.clearRect(0,0,W,H); ctx.fillStyle='#0a1c30'; ctx.fillRect(0,0,W,H);
+
+    // faint vertical grid every 0.1 chord
+    ctx.lineWidth=1;
+    for(var gx=0; gx<=1.0001; gx+=0.1){
+      ctx.strokeStyle='rgba(143,185,198,.08)';
+      ctx.beginPath(); ctx.moveTo(px(gx),mT); ctx.lineTo(px(gx),H-mB); ctx.stroke();
+    }
+    // chord % labels along the bottom
+    ctx.font='10px Inter, system-ui'; ctx.textAlign='center'; ctx.fillStyle='#5b7e93';
+    [0,0.25,0.5,0.75,1].forEach(function(f){ ctx.fillText((f*100)+'% c', px(f), H-mB+15); });
+
+    // max-thickness vertical guide (muted)
+    ctx.setLineDash([4,3]); ctx.lineWidth=1.2;
+    ctx.strokeStyle='rgba(143,185,198,.45)';
+    ctx.beginPath(); ctx.moveTo(px(g.xt),oY); ctx.lineTo(px(g.xt),oY+plotH); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle='#8fb9c6'; ctx.font='bold 10px Inter, system-ui'; ctx.textAlign='center';
+    ctx.fillText('max thickness · '+Math.round(g.xt*100)+'% c', px(g.xt), mT-8);
+
+    // max-camber vertical guide (accent) — only when cambered
+    if(m>0 && p>0){
+      ctx.setLineDash([4,3]); ctx.lineWidth=1.2;
+      ctx.strokeStyle='rgba(255,212,121,.55)';
+      ctx.beginPath(); ctx.moveTo(px(g.xc),oY); ctx.lineTo(px(g.xc),oY+plotH); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle='#ffd479'; ctx.font='bold 10px Inter, system-ui'; ctx.textAlign='center';
+      ctx.fillText('max camber · '+Math.round(g.xc*100)+'% c', px(g.xc), H-mB+30);
+    }
+
+    // chord line (muted, solid)
+    ctx.strokeStyle='#8fb9c6'; ctx.lineWidth=1.3;
+    ctx.beginPath(); ctx.moveTo(px(0),py(0)); ctx.lineTo(px(1),py(0)); ctx.stroke();
+    ctx.fillStyle='#8fb9c6'; ctx.font='10px Inter, system-ui'; ctx.textAlign='right';
+    ctx.fillText('chord line', px(1), py(0)+(m>0?-6:14));
+
+    // mean camber line (dashed gold)
+    if(m>0 && p>0){
+      ctx.strokeStyle='#ffd479'; ctx.lineWidth=1.6; ctx.setLineDash([6,4]);
+      ctx.beginPath();
+      for(k=0;k<=N;k++){ var X=px(g.cam[k][0]), Y=py(g.cam[k][1]); if(k===0)ctx.moveTo(X,Y); else ctx.lineTo(X,Y); }
+      ctx.stroke(); ctx.setLineDash([]);
+    }
+
+    // airfoil outline + soft fill
+    ctx.beginPath();
+    for(k=0;k<=N;k++){ var ux=px(g.up[k][0]), uy=py(g.up[k][1]); if(k===0)ctx.moveTo(ux,uy); else ctx.lineTo(ux,uy); }
+    for(k=N;k>=0;k--){ ctx.lineTo(px(g.lo[k][0]), py(g.lo[k][1])); }
+    ctx.closePath();
+    ctx.fillStyle='rgba(78,163,218,.10)'; ctx.fill();
+    ctx.strokeStyle='#4ea3da'; ctx.lineWidth=2.4; ctx.stroke();
+
+    // LE / TE labels
+    ctx.fillStyle='#cfe6f2'; ctx.font='bold 11px Inter, system-ui';
+    ctx.textAlign='right'; ctx.fillText('LE', px(0)-6, py(0)+4);
+    ctx.textAlign='left';  ctx.fillText('TE', px(1)+6, py(0)+4);
+
+    return g;
+  }
+
+  function note(M,P,T){
+    var cam = (M===0) ? 'Symmetric — zero lift at 0° angle of attack.'
+            : (M<=3) ? 'Mild camber — a small built-in lift boost.'
+            : (M<=6) ? 'Moderate camber — the lift curve sits well above a symmetric section.'
+            :          'Strong camber — high lift and a sharply negative zero-lift angle.';
+    var thk = (T<8)  ? 'Thin: low drag but an abrupt stall and little spar room.'
+            : (T<=12)? 'Moderate thickness: a sensible low-Reynolds balance.'
+            :          'Thick: gentle stall and spar room, but more drag — and the penalty grows at low Reynolds.';
+    return '<b>'+cam+'</b> '+thk;
+  }
+
+  function update(){
+    var M=parseInt(mR.value,10), P=parseInt(pR.value,10), T=parseInt(tR.value,10);
+    var m=M/100, p=(M===0?0:P/10), t=T/100;
+    // slider outputs
+    mO.textContent=M+'%';
+    pO.textContent=(M===0?'— (symmetric)':(P*10)+'% c');
+    tO.textContent=T+'%';
+    // readouts
+    var pDigit=(M===0?0:P);
+    document.getElementById('codeVal').textContent='NACA '+M+pDigit+(T<10?'0'+T:T);
+    document.getElementById('thkVal').textContent=T+'% c';
+    document.getElementById('camVal').textContent=M+'% c';
+    document.getElementById('posVal').textContent=(M===0?'—':(P*10)+'% c');
+    document.getElementById('noteVal').innerHTML=note(M,P,T);
+    draw(m,p,t);
+    // teaching status
+    if(M===0){
+      status.className='status hint';
+      status.textContent='Symmetric: the camber line lies on the chord. Add camber to lift the dashed line — and the whole lift curve — upward.';
+    } else if(T>=16){
+      status.className='status warn';
+      status.textContent='A fat '+T+'% section stalls gently and holds a spar — but it pays in drag, and at low Reynolds that bill is steeper than the books say.';
+    } else {
+      status.className='status ok';
+      status.textContent='NACA '+M+pDigit+(T<10?'0'+T:T)+': '+M+'% camber at '+(P*10)+'% chord, '+T+'% thick. Read the shape, predict the behaviour.';
+    }
+  }
+
+  function preset(M,P,T,btn){
+    mR.value=M; pR.value=P; tR.value=T;
+    [pre0012,pre2412,pre4415,pre6409].forEach(function(b){ b.classList.remove('active'); });
+    btn.classList.add('active');
+    update();
+  }
+  var pre0012=document.getElementById('pre0012'), pre2412=document.getElementById('pre2412'),
+      pre4415=document.getElementById('pre4415'), pre6409=document.getElementById('pre6409');
+  pre0012.addEventListener('click',function(){ preset(0,4,12,pre0012); });
+  pre2412.addEventListener('click',function(){ preset(2,4,12,pre2412); });
+  pre4415.addEventListener('click',function(){ preset(4,4,15,pre4415); });
+  pre6409.addEventListener('click',function(){ preset(6,4,9,pre6409); });
+
+  function clearPresets(){ [pre0012,pre2412,pre4415,pre6409].forEach(function(b){ b.classList.remove('active'); }); }
+  [mR,pR,tR].forEach(function(s){ s.addEventListener('input',function(){ clearPresets(); update(); }); });
+
+  update();
+})();
+</script>
+</body>
+</html>

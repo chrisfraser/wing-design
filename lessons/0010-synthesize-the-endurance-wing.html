@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>D1 · Synthesize the Endurance Wing</title>
+<link rel="stylesheet" href="../assets/styles.css">
+<script defer src="../assets/widgets.js"></script>
+<style>
+  /* Lesson-D1-specific: the capstone dashboard — trade-space map + readouts + constraint chips */
+  canvas { width:100%; display:block; border-radius:8px; background:var(--night); cursor:crosshair; touch-action:none; }
+  .dash-head { display:flex; align-items:baseline; gap:.6rem; flex-wrap:wrap; margin:.9rem 0 .2rem; }
+  .dash-head .grade { font-family:var(--sans); font-size:.78rem; font-weight:700; letter-spacing:.04em; text-transform:uppercase; padding:.12rem .55rem; border-radius:999px; border:1px solid; }
+  .dash-head .grade.g0 { color:#a83a22; background:rgba(193,73,43,.12);  border-color:#e6bfb4; }
+  .dash-head .grade.g1 { color:#8a6420; background:rgba(192,133,46,.15); border-color:#e6cfa0; }
+  .dash-head .grade.g2 { color:#2e6b3d; background:rgba(63,125,78,.13);  border-color:#bcd9c2; }
+  .dash-head .grade.g3 { color:#2e6b3d; background:rgba(63,125,78,.20);  border-color:#9fceab; }
+  .dash-readouts { display:grid; grid-template-columns:repeat(3,1fr); gap:.4rem 1.2rem; margin-top:.5rem; font-family:var(--mono); font-size:.92rem; color:#d8ecf5; }
+  .dash-readouts b { color:#ffd479; font-variant-numeric:tabular-nums; }
+  .dash-readouts .u { color:#8fb9c6; font-size:.8rem; }
+  .chips { display:flex; flex-wrap:wrap; gap:.5rem; margin-top:.9rem; }
+  .chip { font-family:var(--sans); font-size:.74rem; font-weight:700; padding:.22rem .62rem; border-radius:999px; border:1px solid; letter-spacing:.01em; }
+  .chip.ok   { background:rgba(63,125,78,.13);  color:#2e6b3d; border-color:#bcd9c2; }
+  .chip.warn { background:rgba(192,133,46,.15); color:#8a6420; border-color:#e6cfa0; }
+  .chip.bad  { background:rgba(193,73,43,.12);  color:#a83a22; border-color:#e6bfb4; }
+  .binding { font-family:var(--mono); font-size:.9rem; color:#ffd479; line-height:1.45; margin-top:.85rem; padding:.6rem .75rem; background:rgba(255,212,121,.07); border-left:3px solid #ffd479; border-radius:6px; }
+  .wx { font-family:var(--mono); font-size:.94rem; background:var(--night); color:#d8ecf5; border-radius:8px; padding:.9rem 1.05rem; margin:1.2rem 0; line-height:1.7; }
+  .wx b { color:#ffd479; font-variant-numeric:tabular-nums; }
+  .wx .u { color:#8fb9c6; font-size:.82rem; }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap-wide">
+    <a class="brand" href="../index.html"><span class="dot">✈</span> Wing Design</a>
+    <nav>
+      <a href="../index.html">Lessons</a>
+      <a href="../reference/glossary.html">Glossary</a>
+      <a href="https://github.com/chrisfraser/wing-design">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <p class="kicker">Phase 4 · Design Synthesis &amp; CFD · D1</p>
+  <h1 class="lesson-title">Synthesize the Endurance Wing</h1>
+  <p class="lesson-sub">This is the capstone. Everything the course taught — airfoil, aspect ratio, area,
+  Reynolds, span efficiency — collapses into one wing you can defend with a single number.</p>
+  <div class="lesson-meta">
+    <span>⏱ ~18 minutes</span><span class="sep">•</span>
+    <span>🧮 Synthesis — bring every earlier lesson</span><span class="sep">•</span>
+    <span class="tag build">Builds on F1 – T3</span>
+  </div>
+
+  <div class="callout mission">
+    <div class="callout-label">◎ Why this lesson</div>
+    <p>In <a href="0009-whole-wing-analysis-xflr5.html">T3</a> you took a 2-D airfoil polar all the way to a
+    whole-wing C<sub>L</sub><sup>1.5</sup>/C<sub>D</sub>, complete with a span-efficiency penalty. Every
+    lesson before it handed you one more knob: the
+    <a href="../reference/glossary.html#endurance-parameter">figure of merit</a> (F1), real
+    <a href="0006-reading-real-airfoil-data.html">airfoil data</a> (F6),
+    <a href="../reference/glossary.html#aspect-ratio">aspect ratio</a> (F3),
+    <a href="../reference/glossary.html#wing-loading">wing loading</a> (T2),
+    <a href="../reference/glossary.html#reynolds-number">Reynolds number</a> (F4) and
+    <a href="../reference/glossary.html#span-efficiency">span efficiency</a> (T3). Today you turn the knobs
+    <em>together</em> and watch them fight. The output is not another fact — it is a finished wing, sized in
+    metres, judged on its endurance number, and defended against the constraints that try to kill it.</p>
+  </div>
+
+  <p class="lead">A wing design is never a single right answer; it is the best deal you can broker between
+  forces that pull in opposite directions. High aspect ratio cuts induced drag but starves Reynolds. A high
+  lift coefficient floats slowly but creeps toward the stall. The capstone skill is reading all of those at
+  once and naming the one constraint that is actually binding — then trading against <em>it</em>, not against
+  whatever happens to be on your mind.</p>
+
+  <h2><span class="num">1</span>The design loop, one last time</h2>
+  <p>You already own every step. The only new thing is doing them in a circle until the numbers stop
+  improving — and knowing which way to turn when one of them goes red.</p>
+
+  <ol class="steps">
+    <li><div class="step-title">Pick an airfoil <span class="muted">(F6)</span></div>
+      <div class="step-detail">Choose a low-Reynolds section and read its two numbers: minimum drag
+      C<sub>d0</sub> and maximum lift C<sub>Lmax</sub>. A range champ like the E387 is slippery; a high-lift
+      foil like the S1223 lifts hard but drags.</div></li>
+    <li><div class="step-title">Pick an aspect ratio <span class="muted">(F3)</span></div>
+      <div class="step-detail">Higher AR slashes induced drag and lifts the figure of merit — but at a fixed
+      area it shrinks the chord, and the chord is what sets Reynolds.</div></li>
+    <li><div class="step-title">Pick area &amp; wing loading <span class="muted">(T2)</span></div>
+      <div class="step-detail">Wing loading W/S fixes cruise speed; area and AR then fix span and chord. Low
+      loading flies slow and sips power — the heart of endurance.</div></li>
+    <li><div class="step-title">Check Reynolds <span class="muted">(F4)</span></div>
+      <div class="step-detail">Is the chord long enough for clean low-Re flow? Below ~100k a laminar
+      separation bubble wrecks the airfoil you so carefully chose.</div></li>
+    <li><div class="step-title">Check stall margin <span class="muted">(F1 · T2)</span></div>
+      <div class="step-detail">Cruise must sit comfortably above V<sub>stall</sub>. A design
+      C<sub>L</sub> pushed too close to C<sub>Lmax</sub> leaves no room for a gust.</div></li>
+    <li><div class="step-title">Read the figure of merit — then iterate</div>
+      <div class="step-detail">Compute the whole-wing C<sub>L</sub><sup>1.5</sup>/C<sub>D</sub>. If a light
+      is red, trade against <em>that</em> constraint and loop back to step&nbsp;1.</div></li>
+  </ol>
+
+  <h2><span class="num">2</span>The number that judges it all</h2>
+  <p>From <a href="0001-lift-drag-and-the-endurance-number.html">F1</a>: a propeller (or electric) aircraft
+  loiters longest at minimum power, which lands at maximum C<sub>L</sub><sup>1.5</sup>/C<sub>D</sub> — slower
+  and at a higher lift coefficient than the max-L/D point that wins range.<span class="cite"><a href="#r-marchman">1</a></span>
+  This is the whole-wing version, so the drag is the whole-wing drag from
+  <a href="0009-whole-wing-analysis-xflr5.html">T3</a>:</p>
+
+  <div class="formula">
+maximise   <span class="var">C<sub>L</sub></span><sup><span class="var">1.5</span></sup> <span class="op">/</span> <span class="var">C<sub>D</sub></span>      <span class="var">C<sub>D</sub></span> <span class="op">=</span> <span class="var">C<sub>d0</sub></span> <span class="op">+</span> <span class="var">C<sub>L</sub></span>² <span class="op">/</span> (π <span class="op">·</span> <span class="var">AR</span> <span class="op">·</span> <span class="var">e</span>)
+<small>C<sub>d0</sub> is the airfoil's profile drag (from F6); the second term is <b>induced drag</b> (F3), softened by span efficiency <b>e</b> (T3). Raising AR shrinks the induced term, so at a fixed C<sub>L</sub> the figure of merit climbs with AR — which is exactly why endurance wings grow long and slender until something stops them.</small>
+  </div>
+
+  <div class="formula">
+ρ <span class="op">=</span> 1.225 <span class="var">kg/m³</span>    ν <span class="op">=</span> 1.5×10⁻⁵ <span class="var">m²/s</span>    g <span class="op">=</span> 9.81 <span class="var">m/s²</span>    e <span class="op">=</span> 0.85
+
+<span class="var">W</span> <span class="op">=</span> <span class="var">m</span><span class="op">·</span><span class="var">g</span>    <span class="var">b</span> <span class="op">=</span> √(<span class="var">AR</span><span class="op">·</span><span class="var">S</span>)    <span class="var">c</span> <span class="op">=</span> √(<span class="var">S</span>/<span class="var">AR</span>)
+<span class="var">V</span> <span class="op">=</span> √(2<span class="var">W</span> / (ρ<span class="op">·</span><span class="var">S</span><span class="op">·</span><span class="var">C<sub>L</sub></span>))    <span class="var">V<sub>stall</sub></span> <span class="op">=</span> √(2<span class="var">W</span> / (ρ<span class="op">·</span><span class="var">S</span><span class="op">·</span><span class="var">C<sub>Lmax</sub></span>))    <span class="var">Re</span> <span class="op">=</span> <span class="var">V</span><span class="op">·</span><span class="var">c</span> / ν
+<small>These are the same equations from T2 and T3, now run all at once on one design point. The span efficiency <b>e = 0.85</b> is a deliberately conservative whole-wing value: a well-tapered wing reaches e ≈ 0.95–0.99 (T3), so treat 0.85 as a safety margin, not a target.<span class="cite"><a href="#r-anderson">2</a></span></small>
+  </div>
+
+  <h2><span class="num">3</span>The capstone dashboard</h2>
+  <p>Here is the whole course on one card. The five sliders are your design. The dark map is the
+  <strong>trade space</strong>: wing loading across the bottom, aspect ratio up the side, and the colour of
+  every cell is the endurance figure of merit you would score there — dark where it is poor, cyan where it is
+  decent, gold along the high-AR ridge where it is excellent. Three hatched regions are
+  <em>forbidden</em>: coral where Reynolds falls below 100k, slate where the span grows past 2.2&nbsp;m, and
+  orange where cruise creeps under 1.2×&nbsp;stall. Your design is the gold dot — drag it anywhere, or move
+  the sliders. The readout names the one constraint that is actually binding.</p>
+
+  <div class="calc">
+    <div class="calc-title">🧮 Endurance-wing design dashboard — assemble one defended wing</div>
+    <p style="font-family:var(--sans);font-size:.86rem;color:var(--ink-soft);margin:-.3rem 0 .9rem">
+      Drag the <strong>gold dot</strong> on the map to set aspect ratio (up/down) and wing loading
+      (left/right); the chord, span and Reynolds follow. Change <em>mass</em>, <em>design&nbsp;C<sub>L</sub></em>
+      or the <em>airfoil</em> and the whole field — heatmap and forbidden zones — is recomputed. The goal:
+      land the dot on the brightest gold you can reach while every constraint chip stays green.</p>
+    <div class="controls">
+      <div class="control">
+        <label>Mass m <output id="mOut">1.6 kg</output></label>
+        <input type="range" id="mRange" min="0.4" max="4" step="0.1" value="1.6">
+      </div>
+      <div class="control">
+        <label>Aspect ratio AR <output id="arOut">9</output></label>
+        <input type="range" id="arRange" min="5" max="22" step="1" value="9">
+      </div>
+      <div class="control">
+        <label>Wing loading W/S <output id="wsOut">55 N/m²</output></label>
+        <input type="range" id="wsRange" min="20" max="140" step="1" value="55">
+      </div>
+      <div class="control">
+        <label for="foilSel">Airfoil section (sets C<sub>d0</sub> &amp; C<sub>Lmax</sub>)</label>
+        <select id="foilSel">
+          <option value="0">SD7037 — modest all-rounder (C&#x209C;&#x2080;=0.0090, C&#x2097;&#x2098;&#x2090;&#x2093;=1.33)</option>
+          <option value="1">Eppler E387 — range/benchmark (C&#x209C;&#x2080;=0.0092, C&#x2097;&#x2098;&#x2090;&#x2093;=1.32)</option>
+          <option value="2">SD7032 — gentle, higher lift (C&#x209C;&#x2080;=0.0094, C&#x2097;&#x2098;&#x2090;&#x2093;=1.43)</option>
+          <option value="3">Selig S1223 — high-lift, draggy (C&#x209C;&#x2080;=0.0176, C&#x2097;&#x2098;&#x2090;&#x2093;=2.29)</option>
+        </select>
+      </div>
+      <div class="control">
+        <label>Design lift coefficient C<sub>L</sub> <output id="clOut">0.95</output></label>
+        <input type="range" id="clRange" min="0.4" max="1.4" step="0.05" value="0.95">
+      </div>
+    </div>
+    <div class="readout">
+      <canvas id="mapCanvas" width="760" height="440" aria-label="A trade-space heatmap: wing loading on the horizontal axis, aspect ratio on the vertical axis. Cell colour shows the endurance figure of merit, dark for poor up to gold for excellent. Hatched overlays mark forbidden regions where Reynolds is below 100k, span exceeds 2.2 metres, or stall margin is under 1.2 times. A draggable gold dot marks the current design."></canvas>
+      <div class="dash-head">
+        <span class="unit">endurance figure of merit</span>
+        <span class="big" id="fomVal">—</span>
+        <span class="grade g2" id="gradeVal">—</span>
+      </div>
+      <div class="dash-readouts">
+        <span>cruise V <b id="vVal">—</b> <span class="u">m/s</span></span>
+        <span>stall V<sub>s</sub> <b id="vsVal">—</b> <span class="u">m/s</span></span>
+        <span>Reynolds <b id="reVal">—</b></span>
+        <span>span b <b id="bVal">—</b> <span class="u">m</span></span>
+        <span>chord c <b id="cVal">—</b> <span class="u">m</span></span>
+        <span>C<sub>D</sub> <b id="cdVal">—</b></span>
+      </div>
+      <div class="chips">
+        <span class="chip" id="chRe">Reynolds</span>
+        <span class="chip" id="chStall">stall margin</span>
+        <span class="chip" id="chSpan">span</span>
+      </div>
+      <div class="binding" id="binding">—</div>
+    </div>
+    <div class="btn-row">
+      <button class="simbtn" id="btnWorked">📐 Load worked example</button>
+      <button class="simbtn" id="btnReset">↺ Reset</button>
+    </div>
+    <div class="status hint" id="status">Drag the gold dot toward the bright ridge — but keep it out of the hatched zones.</div>
+  </div>
+
+  <h2><span class="num">4</span>Reading the verdict</h2>
+  <p>The figure of merit alone is a trap: the gold ridge sits at the very top of the map, deep inside the
+  Reynolds and span forbidden zones. A wing that scores 30 but cannot fly is worth nothing. So the dashboard
+  never lets you read the number without also reading the chips — and when a chip turns red, there is exactly
+  one right way to push back on it.</p>
+
+  <table>
+    <caption>What each red light means, and the lever that actually moves it. The wrong lever wastes a design cycle.</caption>
+    <thead>
+      <tr><th>Red light</th><th>What went wrong</th><th>The fix that works</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Reynolds &lt; 100k</td><td>The chord is too short for clean low-Re flow — a bubble is forming.</td><td><strong>Lower the AR</strong> (a wider chord), ease the design C<sub>L</sub>, or add mass. <em>Not</em> a thinner airfoil — thickness doesn't change Reynolds.</td></tr>
+      <tr><td>Span &gt; 2.2 m</td><td>Too big to build, transport, or launch from a bench.</td><td><strong>Raise the wing loading</strong> (smaller area) or lower the AR.</td></tr>
+      <tr><td>Stall margin &lt; 1.2×</td><td>Cruise is dangerously close to the stall; a gust could drop you.</td><td><strong>Lower the design C<sub>L</sub></strong>, or pick a higher-C<sub>Lmax</sub> airfoil (the S1223).</td></tr>
+      <tr><td>Figure of merit low</td><td>Too much induced or profile drag for the lift.</td><td><strong>Raise the AR</strong> (watch Reynolds) or choose a lower-C<sub>d0</sub> section.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout note">
+    <div class="callout-label">⚠ The Reynolds trap that fools everyone</div>
+    <p>"Just make the wing bigger" feels like it should raise Reynolds — more wing, more chord. It doesn't.
+    Plug the level-flight speed into Re&nbsp;=&nbsp;V·c/ν and the area cancels clean away:</p>
+    <div class="formula" style="margin:.7rem 0 .4rem">
+<span class="var">Re</span> <span class="op">=</span> √( 2<span class="op">·</span><span class="var">m</span><span class="op">·</span><span class="var">g</span> / (ρ <span class="op">·</span> <span class="var">C<sub>L</sub></span> <span class="op">·</span> <span class="var">AR</span>) ) <span class="op">/</span> ν
+    </div>
+    <p style="margin-bottom:0">At a fixed mass and design C<sub>L</sub>, <strong>Reynolds depends only on aspect
+    ratio.</strong> Grow the area and the wing loading and span drop, but cruise slows in exact proportion —
+    the chord gets longer and the air gets slower, and they cancel. That is why, on the map, the Reynolds zone
+    is a flat horizontal ceiling: the only in-flight lever for it is AR (or changing mass / C<sub>L</sub>).
+    The "bigger chord" you actually need comes from <em>lowering AR</em>.</p>
+  </div>
+
+  <h2><span class="num">5</span>A worked example, defended</h2>
+  <p>Tempting first cut: a light 1.5&nbsp;kg airframe, the friendly SD7037 section, a slender AR&nbsp;=&nbsp;11,
+  an area of 0.33&nbsp;m² (so W/S&nbsp;≈&nbsp;45&nbsp;N/m²), cruising at a healthy endurance
+  C<sub>L</sub>&nbsp;=&nbsp;1.0. Press <strong>Load worked example</strong> to drop the dot exactly here, then
+  follow the arithmetic.</p>
+
+  <div class="wx">
+W = m·g = 1.5 × 9.81 = <b>14.7</b> <span class="u">N</span>   ·   W/S = <b>44.6</b> <span class="u">N/m²</span>   ·   S = <b>0.33</b> <span class="u">m²</span><br>
+b = √(11 × 0.33) = <b>1.91</b> <span class="u">m</span>   ·   c = √(0.33 / 11) = <b>0.173</b> <span class="u">m</span><br>
+V = √(2·14.7 / (1.225·0.33·1.0)) = <b>8.5</b> <span class="u">m/s</span>   ·   V<sub>stall</sub> = <b>7.4</b> <span class="u">m/s</span>   ·   margin = <b>1.15×</b><br>
+Re = 8.5 × 0.173 / 1.5e-5 = <b>98,500</b>  (just under 100k)<br>
+C<sub>D</sub> = 0.0090 + 1.0² / (π·11·0.85) = 0.0090 + 0.0341 = <b>0.043</b><br>
+FoM = C<sub>L</sub><sup>1.5</sup> / C<sub>D</sub> = 1.0 / 0.043 = <b>23.2</b>
+  </div>
+
+  <p>The figure of merit is <strong>23 — a "good" score</strong>, and the span is a tidy 1.9&nbsp;m. It looks
+  like a winner. But the chips disagree: the stall margin is a thin amber 1.15×, and <strong>Reynolds is in the
+  red at 98.5k.</strong> That is the binding constraint. The slick AR&nbsp;=&nbsp;11 that earned the high score
+  also pinched the chord down to 17&nbsp;cm — too short for the SD7037 to keep its boundary layer attached, so
+  that pretty C<sub>d0</sub>&nbsp;=&nbsp;0.009 from the polar is fiction at this Reynolds.</p>
+
+  <p>Now trade against the <em>binding</em> constraint, not the score. Drop AR from 11 to <strong>8</strong>:
+  the chord opens to 20&nbsp;cm, Reynolds climbs to ~115k (out of the red), and the figure of merit settles at
+  ~18 — still "good," and now <em>real</em>. That is the entire discipline of this course in one move: the
+  honest 18 beats the fantasy 23. A defensible endurance wing is the largest, slimmest one whose chord still
+  holds an honest Reynolds number — and you just proved yours does.</p>
+
+  <div class="callout key">
+    <div class="callout-label">★ The capstone skill</div>
+    <p>Anyone can maximise a number. The engineer's move is to find the <strong>binding constraint</strong> —
+    the one chip closest to red — and spend the next design cycle on <em>that</em>, accepting a small hit to
+    the figure of merit to buy a wing that actually flies. Repeat until no single trade improves things
+    without breaking another. That converged, constraint-respecting design <em>is</em> your endurance wing.</p>
+  </div>
+
+  <h2><span class="num">6</span>Check yourself</h2>
+  <p>Answer from memory — that effort is what turns a fact you just read into one you'll keep.</p>
+
+  <div class="quiz"
+       data-explain-right="Reynolds tracks chord length; the lever is a wider chord — lower AR or more chord-wise area."
+       data-explain-wrong="Re-read §4 — Reynolds is a chord-length problem, not an airfoil-thickness one.">
+    <div class="q-kicker">Question 1 of 3</div>
+    <div class="q-text">Your Reynolds chip is red. The move that actually lifts it back into the green is to…</div>
+    <div class="q-options">
+      <button class="opt" data-correct data-feedback="Right. Reynolds tracks the chord length, so you grow the chord — lower the aspect ratio (or add chord-wise area). Thinning the airfoil changes its thickness, not the chord, so Re is untouched.">make the chord bigger — lower the aspect ratio or add chord-wise area</button>
+      <button class="opt" data-feedback="A thinner airfoil changes thickness, not chord length — and Re = V·c/ν depends on the chord, so the Reynolds number does not move at all.">switch to a thinner airfoil so the section slips through the air</button>
+      <button class="opt" data-feedback="Raising the design C_L slows cruise and, with AR fixed, actually lowers Reynolds (Re falls as 1/√C_L). That pushes the chip further into the red.">raise the design lift coefficient to fly slower and gentler</button>
+      <button class="opt" data-feedback="Stretching the span at fixed area raises AR, which shrinks the chord and lowers Reynolds — the exact opposite of what a red chip needs.">stretch the span longer while keeping the wing area fixed</button>
+    </div>
+    <div class="q-feedback"></div>
+  </div>
+
+  <div class="quiz"
+       data-explain-right="Endurance is a minimum-power point: higher C_L, slower flight than max-L/D range."
+       data-explain-wrong="Look again at F1 and §2 — endurance flies slower and at a higher lift coefficient than range.">
+    <div class="q-kicker">Question 2 of 3</div>
+    <div class="q-text">Compared with a wing tuned for maximum range (max L/D), your endurance wing should fly…</div>
+    <div class="q-options">
+      <button class="opt" data-correct data-feedback="Yes. Endurance is the minimum-power condition (max C_L^1.5/C_D), which sits at a higher lift coefficient and a slower speed than the minimum-drag, max-L/D point that wins range.">at a higher lift coefficient and a slower speed than the range wing</button>
+      <button class="opt" data-feedback="That is the range setting, not endurance. Flying faster at a lower C_L minimises drag-per-distance, which maximises range, not time aloft.">at a lower lift coefficient and a faster speed than the range wing</button>
+      <button class="opt" data-feedback="They are genuinely different points on the same polar — range and endurance do not coincide for a propeller or electric aircraft.">at the very same lift coefficient and speed as the range wing</button>
+      <button class="opt" data-feedback="Endurance does fly slower, but at a higher C_L, not a lower one — it floats near the top of the lift curve, not the bottom.">at a lower lift coefficient but still a slower speed than range</button>
+    </div>
+    <div class="q-feedback"></div>
+  </div>
+
+  <div class="quiz"
+       data-explain-right="C_L^1.5/C_D rewards lift but is taxed by the induced drag that lift creates."
+       data-explain-wrong="See §2 — the loiter figure of merit is C_L^1.5/C_D, balancing lift against its own induced drag.">
+    <div class="q-kicker">Question 3 of 3</div>
+    <div class="q-text">The single number that grades a wing for loiter time, and why it isn't just "more lift," is…</div>
+    <div class="q-options">
+      <button class="opt" data-correct data-feedback="Exactly. C_L^1.5/C_D rewards a high lift coefficient but is taxed by the induced drag (C_L²/πARe) that the very same lift produces — so it balances the two rather than chasing lift alone.">C<sub>L</sub><sup>1.5</sup>/C<sub>D</sub> — high lift, taxed by the induced drag that lift causes</button>
+      <button class="opt" data-feedback="L/D = C_L/C_D is the range figure of merit (minimum drag per distance). Loiter time is a minimum-power problem, which weights lift more heavily as C_L^1.5/C_D.">L/D = C<sub>L</sub>/C<sub>D</sub> — the ratio that maximises distance per charge</button>
+      <button class="opt" data-feedback="C_Lmax alone ignores the drag cost entirely; a wing flown there is near the stall and dragging hard. The optimum balances lift against drag, not lift alone.">C<sub>Lmax</sub> on its own — simply fly as close to the stall as you can</button>
+      <button class="opt" data-feedback="Chasing the lowest C_D alone drives you to a low-lift, fast-cruise point — good for drag, bad for the slow, high-lift flight that loiter actually wants.">the lowest C<sub>D</sub> on its own — minimise drag and the rest follows</button>
+    </div>
+    <div class="q-feedback"></div>
+  </div>
+
+  <div class="recap">
+    <h3>What you can now say</h3>
+    <ol>
+      <li>A wing design is the closed loop <strong>airfoil → AR → area/loading → Reynolds → stall margin → figure of merit</strong>, iterated until the trades stop paying.</li>
+      <li>Endurance is judged by the whole-wing <strong>C<sub>L</sub><sup>1.5</sup>/C<sub>D</sub></strong>, with <strong>C<sub>D</sub> = C<sub>d0</sub> + C<sub>L</sub>²/(π·AR·e)</strong> — so it climbs with AR until a constraint stops it.</li>
+      <li>The figure of merit is meaningless without the <strong>constraint chips</strong>: the gold ridge lives inside the forbidden zones, and a high score on an unbuildable or out-of-regime wing is worthless.</li>
+      <li>When a light goes red, trade against the <strong>binding constraint</strong>: red Reynolds → wider chord (lower AR); too-big span → higher loading or lower AR; thin stall margin → lower C<sub>L</sub> or a higher-C<sub>Lmax</sub> foil.</li>
+      <li>Because area cancels in <strong>Re = √(2mg/(ρ·C<sub>L</sub>·AR))/ν</strong>, the real Reynolds lever is aspect ratio, not wing size — the worked example's honest AR&nbsp;8 / FoM&nbsp;18 beats its fantasy AR&nbsp;11 / FoM&nbsp;23.</li>
+    </ol>
+  </div>
+
+  <div class="sourcebox">
+    <div class="icon">📖</div>
+    <div>
+      <div class="label">Primary source · read this next</div>
+      <div class="title"><a href="https://pressbooks.lib.vt.edu/aerodynamics/" target="_blank" rel="noopener">Marchman — “Aerodynamics and Aircraft Performance” (Virginia Tech, open textbook)</a> &amp; Anderson — <a href="https://www.mheducation.com/highered/product/aircraft-performance-design-anderson.html" target="_blank" rel="noopener">“Aircraft Performance and Design”</a></div>
+      <div class="desc">Marchman gives the free derivation of the endurance figure of merit and the drag polar; Anderson's design text walks the same synthesis loop — sizing, constraint diagrams, and the iteration that converges on a real aircraft. Read them with the dashboard open and reproduce a design point by hand. ~30-minute read.</div>
+    </div>
+  </div>
+
+  <div class="ask-teacher">
+    💬 <b>I'm your teacher — ask me anything.</b> Want to defend your own dot — your mass, your airfoil, your
+    AR — and have me poke holes in it? Curious why area cancels out of the Reynolds number, or how a real
+    taper would lift e from 0.85 toward 0.97 and nudge the whole map brighter? Bring your design to chat.
+    Confused beats stuck.
+  </div>
+
+  <div class="crosslinks">
+    <b>Glossary:</b>
+    <a href="../reference/glossary.html#endurance-parameter">endurance parameter</a> ·
+    <a href="../reference/glossary.html#wing-loading">wing loading</a> ·
+    <a href="../reference/glossary.html#aspect-ratio">aspect ratio</a> ·
+    <a href="../reference/glossary.html#reynolds-number">Reynolds number</a> ·
+    <a href="../reference/glossary.html#stall-speed">stall speed</a> ·
+    <a href="../reference/glossary.html#design-lift-coefficient">design lift coefficient</a> ·
+    <a href="../reference/glossary.html#span-efficiency">span efficiency</a>.
+    <b>Builds on →</b> everything from <strong>F1</strong> to <strong>T3</strong> ·
+    <b>Builds toward →</b> <strong>D2</strong> (when to reach for CFD).
+  </div>
+
+  <h2 id="refs"><span class="num">§</span>References</h2>
+  <ol style="font-family:var(--sans);font-size:.84rem;color:var(--ink-soft);line-height:1.5">
+    <li id="r-marchman">Marchman — <a href="https://pressbooks.lib.vt.edu/aerodynamics/" target="_blank" rel="noopener">Aerodynamics and Aircraft Performance</a> (Virginia Tech, open textbook). Endurance at max C<sub>L</sub><sup>1.5</sup>/C<sub>D</sub>, the drag polar, and level-flight sizing. <b>Primary source.</b></li>
+    <li id="r-anderson">Anderson — <a href="https://www.mheducation.com/highered/product/aircraft-performance-design-anderson.html" target="_blank" rel="noopener">Aircraft Performance and Design</a> (McGraw-Hill). The synthesis loop: sizing, constraint analysis, and design iteration toward a converged aircraft.</li>
+    <li id="r-tennekes">Tennekes — <a href="https://mitpress.mit.edu/9780262513135/the-simple-science-of-flight/" target="_blank" rel="noopener">The Simple Science of Flight</a> (MIT Press). Why slow, light, and high-aspect-ratio is the endurance recipe — the intuition behind the whole trade space.</li>
+  </ol>
+
+  <nav class="lesson-nav">
+    <a href="0009-whole-wing-analysis-xflr5.html">
+      <div class="dir">← Prev · T3</div>
+      <div class="ttl">Whole-Wing Analysis in XFLR5</div>
+    </a>
+    <a class="next" href="0011-when-to-reach-for-cfd.html">
+      <div class="dir">Next · D2</div>
+      <div class="ttl">When to Reach for CFD →</div>
+    </a>
+  </nav>
+
+  <p class="pagefoot">Lesson D1 of the Wing Design course · the capstone synthesis ·
+  <a href="../index.html">all lessons</a> ·
+  <a href="https://github.com/chrisfraser/wing-design">source on GitHub</a></p>
+</main>
+
+<script>
+/* ===================== Endurance-wing design dashboard ===================== */
+(function(){
+  var RHO=1.225, NU=1.5e-5, G=9.81, E=0.85;
+  var FOILS=[
+    {name:'SD7037',     cd0:0.0090, clmax:1.33},
+    {name:'Eppler E387',cd0:0.0092, clmax:1.32},
+    {name:'SD7032',     cd0:0.0094, clmax:1.43},
+    {name:'Selig S1223',cd0:0.0176, clmax:2.29}
+  ];
+  var ARMIN=5, ARMAX=22, WSMIN=20, WSMAX=140;
+
+  var mR=document.getElementById('mRange'),  mO=document.getElementById('mOut');
+  var arR=document.getElementById('arRange'),arO=document.getElementById('arOut');
+  var wsR=document.getElementById('wsRange'),wsO=document.getElementById('wsOut');
+  var clR=document.getElementById('clRange'),clO=document.getElementById('clOut');
+  var sel=document.getElementById('foilSel');
+
+  var fomVal=document.getElementById('fomVal'), gradeVal=document.getElementById('gradeVal');
+  var vVal=document.getElementById('vVal'),  vsVal=document.getElementById('vsVal');
+  var reVal=document.getElementById('reVal'),bVal=document.getElementById('bVal');
+  var cVal=document.getElementById('cVal'),  cdVal=document.getElementById('cdVal');
+  var chRe=document.getElementById('chRe'), chStall=document.getElementById('chStall'), chSpan=document.getElementById('chSpan');
+  var binding=document.getElementById('binding'), status=document.getElementById('status');
+
+  var canvas=document.getElementById('mapCanvas'), ctx=canvas?canvas.getContext('2d'):null;
+  if(!ctx) return;
+  var W=canvas.width, H=canvas.height;
+  var padL=58, padR=18, padT=58, padB=42;
+  var fieldW=W-padL-padR, fieldH=H-padT-padB;
+  var COLS=60, ROWS=40;
+
+  /* offscreen field (heatmap + zones + axes) — rebuilt only on mass/CL/airfoil change */
+  var off=document.createElement('canvas'); off.width=W; off.height=H;
+  var octx=off.getContext('2d');
+
+  /* hatch patterns for the forbidden zones */
+  function hatch(color, dir){
+    var t=document.createElement('canvas'); t.width=t.height=6;
+    var c=t.getContext('2d'); c.strokeStyle=color; c.lineWidth=1.3; c.beginPath();
+    if(dir>0){ c.moveTo(0,6); c.lineTo(6,0); } else { c.moveTo(0,0); c.lineTo(6,6); }
+    c.stroke(); return ctx.createPattern(t,'repeat');
+  }
+  var reHatch=hatch('rgba(193,73,43,0.62)',1);     /* coral  '/'  Re<100k   */
+  var spHatch=hatch('rgba(120,150,170,0.55)',-1);  /* slate  '\'  span>2.2m */
+  var stHatch=hatch('rgba(224,132,58,0.40)',1);    /* orange '/'  stall<1.2 */
+
+  function fom(AR,CL,f){ return Math.pow(CL,1.5)/(f.cd0 + CL*CL/(Math.PI*AR*E)); }
+  function reynolds(m,CL,AR){ return Math.sqrt(2*m*G/(RHO*CL*AR))/NU; }   /* area cancels */
+  function clamp(v,a,b){ return v<a?a:v>b?b:v; }
+
+  function lerp(a,b,u){ return Math.round(a+(b-a)*u); }
+  function fomColor(t){
+    t=clamp(t,0,1);
+    var c0=[10,28,48], c1=[42,157,176], c2=[255,212,121], r,g,b,u;
+    if(t<0.5){ u=t/0.5;       r=lerp(c0[0],c1[0],u); g=lerp(c0[1],c1[1],u); b=lerp(c0[2],c1[2],u); }
+    else     { u=(t-0.5)/0.5; r=lerp(c1[0],c2[0],u); g=lerp(c1[1],c2[1],u); b=lerp(c1[2],c2[2],u); }
+    return 'rgb('+r+','+g+','+b+')';
+  }
+
+  function xOf(ws){ return padL + (ws-WSMIN)/(WSMAX-WSMIN)*fieldW; }
+  function yOf(ar){ return padT + (ARMAX-ar)/(ARMAX-ARMIN)*fieldH; }
+  function wsFromX(px){ return clamp(WSMIN + (px-padL)/fieldW*(WSMAX-WSMIN), WSMIN, WSMAX); }
+  function arFromY(py){ return clamp(ARMAX - (py-padT)/fieldH*(ARMAX-ARMIN), ARMIN, ARMAX); }
+
+  function grp(n){ return Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g,','); }
+
+  function renderField(){
+    var m=parseFloat(mR.value), CL=parseFloat(clR.value), f=FOILS[+sel.value];
+    octx.fillStyle='#0a1c30'; octx.fillRect(0,0,W,H);
+
+    var fmin=fom(ARMIN,CL,f), fmax=fom(ARMAX,CL,f), span=(fmax-fmin)||1;
+
+    /* heatmap — FoM depends on AR only, so colour by row */
+    for(var r=0;r<ROWS;r++){
+      var AR=ARMAX-(r+0.5)/ROWS*(ARMAX-ARMIN);
+      var t=(fom(AR,CL,f)-fmin)/span;
+      octx.fillStyle=fomColor(t);
+      var py=padT + r/ROWS*fieldH, ph=fieldH/ROWS + 1;
+      octx.fillRect(padL, py, fieldW, ph);
+    }
+
+    /* forbidden zones */
+    var reP=new Path2D(), spP=new Path2D(), stP=new Path2D();
+    var stallGlobal = (Math.sqrt(f.clmax/CL) < 1.2);
+    if(stallGlobal) stP.rect(padL,padT,fieldW,fieldH);
+    for(var r2=0;r2<ROWS;r2++){
+      var AR2=ARMAX-(r2+0.5)/ROWS*(ARMAX-ARMIN);
+      var py2=padT + r2/ROWS*fieldH, ph2=fieldH/ROWS + 1;
+      if(reynolds(m,CL,AR2)<100000) reP.rect(padL,py2,fieldW,ph2);
+      for(var c2=0;c2<COLS;c2++){
+        var WS=WSMIN+(c2+0.5)/COLS*(WSMAX-WSMIN);
+        var S=m*G/WS, b=Math.sqrt(AR2*S);
+        if(b>2.2){ var px=padL + c2/COLS*fieldW, pw=fieldW/COLS + 1; spP.rect(px,py2,pw,ph2); }
+      }
+    }
+    octx.fillStyle=reHatch; octx.fill(reP);
+    octx.fillStyle=spHatch; octx.fill(spP);
+    octx.fillStyle=stHatch; octx.fill(stP);
+
+    /* field border */
+    octx.strokeStyle='rgba(143,185,198,.35)'; octx.lineWidth=1;
+    octx.strokeRect(padL+0.5,padT+0.5,fieldW-1,fieldH-1);
+
+    /* axes ticks + labels */
+    octx.fillStyle='#8fb9c6'; octx.font='11px Inter, system-ui';
+    octx.textAlign='center';
+    for(var ws=20; ws<=140; ws+=20){
+      var x=xOf(ws);
+      octx.strokeStyle='rgba(143,185,198,.18)'; octx.beginPath(); octx.moveTo(x,padT); octx.lineTo(x,padT+fieldH); octx.stroke();
+      octx.fillText(ws, x, padT+fieldH+15);
+    }
+    octx.textAlign='right';
+    for(var ar=5; ar<=22; ar+=3){
+      var y=yOf(ar);
+      octx.strokeStyle='rgba(143,185,198,.14)'; octx.beginPath(); octx.moveTo(padL,y); octx.lineTo(padL+fieldW,y); octx.stroke();
+      octx.fillStyle='#8fb9c6'; octx.fillText(ar, padL-7, y+4);
+    }
+    /* axis titles */
+    octx.fillStyle='#8fb9c6'; octx.textAlign='center';
+    octx.fillText('wing loading  W/S  (N/m²)  →', padL+fieldW/2, H-6);
+    octx.save(); octx.translate(15, padT+fieldH/2); octx.rotate(-Math.PI/2);
+    octx.fillText('aspect ratio  AR  →', 0, 0); octx.restore();
+
+    /* title + legend */
+    octx.textAlign='left'; octx.fillStyle='#cfe4ee'; octx.font='bold 12px Inter, system-ui';
+    octx.fillText('TRADE-SPACE MAP · colour = endurance C_L^1.5/C_D', padL, 22);
+    var lx=padL, ly=40; octx.font='10px Inter, system-ui';
+    function legend(pattern,label,col){
+      octx.fillStyle=pattern; octx.fillRect(lx,ly-9,14,11);
+      octx.strokeStyle='rgba(143,185,198,.4)'; octx.strokeRect(lx+0.5,ly-8.5,13,10);
+      octx.fillStyle=col; octx.fillText(label, lx+19, ly);
+      lx += 22 + octx.measureText(label).width + 16;
+    }
+    legend(reHatch,'Re < 100k','#e0a08e');
+    legend(spHatch,'span > 2.2 m','#b9c9d4');
+    legend(stHatch,'stall < 1.2×','#e6bd8e');
+    octx.fillStyle='#ffd479'; octx.beginPath(); octx.arc(lx+5,ly-3,5,0,Math.PI*2); octx.fill();
+    octx.strokeStyle='#fff'; octx.lineWidth=1.2; octx.stroke();
+    octx.fillStyle='#ffd479'; octx.fillText('your design', lx+14, ly);
+  }
+
+  function paint(ws,ar){
+    ctx.drawImage(off,0,0);
+    var x=xOf(ws), y=yOf(ar);
+    /* crosshair to axes */
+    ctx.strokeStyle='rgba(255,255,255,.30)'; ctx.lineWidth=1; ctx.setLineDash([3,3]);
+    ctx.beginPath(); ctx.moveTo(x,padT+fieldH); ctx.lineTo(x,y); ctx.moveTo(padL,y); ctx.lineTo(x,y); ctx.stroke();
+    ctx.setLineDash([]);
+    /* dot */
+    ctx.beginPath(); ctx.arc(x,y,8,0,Math.PI*2);
+    ctx.fillStyle='#ffd479'; ctx.fill();
+    ctx.strokeStyle='#fff'; ctx.lineWidth=2; ctx.stroke();
+  }
+
+  function setChip(el,state,text){ el.className='chip '+(state===0?'ok':state===1?'warn':'bad'); el.textContent=text; }
+  function gradeOf(f){ return f<12?0:f<18?1:f<24?2:3; }
+  var GRADE=['poor','ok','good','excellent'];
+
+  function compute(){
+    var m=parseFloat(mR.value), AR=parseFloat(arR.value), WS=parseFloat(wsR.value);
+    var CL=parseFloat(clR.value), f=FOILS[+sel.value];
+    mO.textContent=m.toFixed(1)+' kg';
+    arO.textContent=AR.toFixed(0);
+    wsO.textContent=WS.toFixed(0)+' N/m²';
+    clO.textContent=CL.toFixed(2);
+
+    var Wt=m*G, S=Wt/WS;
+    var V=Math.sqrt(2*Wt/(RHO*S*CL));
+    var Vs=Math.sqrt(2*Wt/(RHO*S*f.clmax));
+    var b=Math.sqrt(AR*S), c=Math.sqrt(S/AR);
+    var Re=V*c/NU;
+    var CD=f.cd0 + CL*CL/(Math.PI*AR*E);
+    var FoM=Math.pow(CL,1.5)/CD;
+    var rmar=V/Vs;                 /* stall margin = sqrt(CLmax/CL) */
+
+    var gi=gradeOf(FoM);
+    fomVal.textContent=FoM.toFixed(1);
+    gradeVal.textContent=GRADE[gi]; gradeVal.className='grade g'+gi;
+    vVal.textContent=V.toFixed(1);
+    vsVal.textContent=Vs.toFixed(1);
+    reVal.textContent=grp(Re);
+    bVal.textContent=b.toFixed(2);
+    cVal.textContent=c.toFixed(3);
+    cdVal.textContent=CD.toFixed(4);
+
+    /* constraint states: 0 green, 1 amber, 2 red */
+    var reK=Math.round(Re/1000);
+    var reState  = Re>=150000?0 : Re>=100000?1 : 2;
+    var stState  = rmar>=1.3?0   : rmar>=1.15?1 : 2;
+    var spState  = b<=2.0?0      : b<=2.5?1      : 2;
+    setChip(chRe,   reState, 'Re '+reK+'k · '+(reState===0?'healthy':reState===1?'marginal':'too low'));
+    setChip(chStall,stState, 'stall '+rmar.toFixed(2)+'× · '+(stState===0?'comfortable':stState===1?'thin':'dangerous'));
+    setChip(chSpan, spState, 'span '+b.toFixed(2)+' m · '+(spState===0?'buildable':spState===1?'large':'too big'));
+
+    /* binding = the tightest constraint (smallest headroom toward failure) */
+    var reScore=Re/100000, stScore=rmar/1.15, spScore=2.5/b;
+    var min=Math.min(reScore,stScore,spScore), which, bState, bval, fix;
+    if(min===reScore){ which='Reynolds'; bState=reState; bval=reK+'k';
+      fix='chord too short — lower AR (drag the dot down), trim design C_L, or add mass.'; }
+    else if(min===stScore){ which='stall margin'; bState=stState; bval=rmar.toFixed(2)+'×';
+      fix='design C_L too near C_Lmax — lower C_L or pick a higher-C_Lmax airfoil.'; }
+    else { which='span'; bState=spState; bval=b.toFixed(2)+' m';
+      fix='wing too big — raise wing loading (drag right) or lower AR.'; }
+    var label=(bState>0?'BINDING':'TIGHTEST');
+    binding.textContent=label+': '+which+' ('+bval+') — '+fix;
+
+    /* overall verdict */
+    var worst=Math.max(reState,stState,spState);
+    if(worst===2){ status.className='status warn';
+      status.textContent='FoM '+FoM.toFixed(1)+' ('+GRADE[gi]+') but a constraint is in the RED — not a flight-worthy design yet. Trade against the binding constraint.'; }
+    else if(worst===1){ status.className='status hint';
+      status.textContent='FoM '+FoM.toFixed(1)+' ('+GRADE[gi]+'), all constraints out of the red but the binding one is amber — tighten it to trust the design.'; }
+    else { status.className='status ok';
+      status.textContent='FoM '+FoM.toFixed(1)+' ('+GRADE[gi]+'), every constraint green — a defensible endurance wing. '+(FoM<18?'Push AR up while Reynolds allows.':'Well done.'); }
+
+    paint(WS,AR);
+  }
+
+  function rebuild(){ renderField(); compute(); }
+
+  /* slider wiring: mass / CL / airfoil reshape the field; AR / W/S only move the dot */
+  mR.addEventListener('input', rebuild);
+  clR.addEventListener('input', rebuild);
+  sel.addEventListener('change', rebuild);
+  arR.addEventListener('input', compute);
+  wsR.addEventListener('input', compute);
+
+  /* drag the dot */
+  var dragging=false;
+  function eventToField(e){
+    var rect=canvas.getBoundingClientRect();
+    var px=(e.clientX-rect.left)*(canvas.width/rect.width);
+    var py=(e.clientY-rect.top)*(canvas.height/rect.height);
+    return {px:px, py:py};
+  }
+  function moveTo(e){
+    var p=eventToField(e);
+    arR.value=Math.round(arFromY(p.py));
+    wsR.value=Math.round(wsFromX(p.px));
+    compute();
+  }
+  canvas.addEventListener('pointerdown', function(e){
+    var p=eventToField(e);
+    if(p.px<padL-10||p.px>padL+fieldW+10||p.py<padT-10||p.py>padT+fieldH+10) return;
+    dragging=true; canvas.setPointerCapture(e.pointerId); moveTo(e); e.preventDefault();
+  });
+  canvas.addEventListener('pointermove', function(e){ if(dragging){ moveTo(e); e.preventDefault(); } });
+  canvas.addEventListener('pointerup',   function(){ dragging=false; });
+  canvas.addEventListener('pointercancel',function(){ dragging=false; });
+
+  function setAll(m,AR,WS,CL,foil){ mR.value=m; arR.value=AR; wsR.value=WS; clR.value=CL; sel.value=foil; rebuild(); }
+  document.getElementById('btnWorked').addEventListener('click', function(){ setAll(1.5,11,45,1.0,0); });
+  document.getElementById('btnReset').addEventListener('click',  function(){ setAll(1.6,9,55,0.95,0); });
+
+  rebuild();
+})();
+</script>
+</body>
+</html>
