@@ -3,143 +3,159 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Glossary — Wing & Airfoil Design</title>
-<link rel="stylesheet" href="../assets/lesson.css">
-<style>
-  .term { margin: 1.1rem 0; }
-  .term .name { font-weight: 600; color: var(--ink); }
-  .term .sym { color: var(--sky); font-style: italic; margin-left: 0.3rem; }
-  .term .def { margin: 0.15rem 0 0; }
-  .term .avoid { color: var(--muted); font-size: 0.88rem; font-style: italic; }
-  .grow { color: var(--muted); font-size: 0.86rem; }
-</style>
+<title>Glossary · Wing Design</title>
+<link rel="stylesheet" href="../assets/styles.css">
 </head>
 <body>
-  <div class="eyebrow">Reference · Living Document</div>
-  <h1>Glossary</h1>
-  <p class="subtitle">The canonical language for this workspace. Every lesson uses these terms.</p>
-  <p class="grow">Grows as you learn — terms are added once you can use them correctly. Last updated: Lesson 0003.</p>
 
-  <hr>
+<header class="topbar">
+  <div class="wrap-wide">
+    <a class="brand" href="../index.html"><span class="dot">✈</span> Wing Design</a>
+    <nav>
+      <a href="../index.html">Lessons</a>
+      <a href="glossary.html">Glossary</a>
+      <a href="https://github.com/chrisfraser/wing-design">GitHub</a>
+    </nav>
+  </div>
+</header>
 
-  <h2>Forces & Efficiency</h2>
+<main class="wrap">
+  <p class="kicker">Reference · Living document</p>
+  <h1 class="lesson-title">Glossary</h1>
+  <p class="lesson-sub">The canonical language for this course. Every lesson uses these terms; they're
+  added once you can use them correctly.</p>
+  <div class="lesson-meta"><span>Last updated: Lesson F3</span><span class="sep">•</span><span>Deep-linked from every lesson</span></div>
 
-  <div class="term">
-    <span class="name">Lift</span><span class="sym">L</span>
-    <p class="def">The aerodynamic force perpendicular to the oncoming airflow. It holds the aircraft up by deflecting air downward (Newton) — which is the same event as the low pressure on the upper surface (Bernoulli).</p>
-    <p class="avoid">Avoid: "suck", "the wing pushing up on air"</p>
+  <h2><span class="num">A</span>Forces &amp; Efficiency</h2>
+
+  <div class="glossary-term" id="lift">
+    <span class="gt-name">Lift</span><span class="gt-sym">L</span>
+    <p class="gt-def">The aerodynamic force perpendicular to the oncoming airflow. It holds the aircraft up by deflecting air downward (Newton) — the same event as the low pressure over the wing's upper surface (Bernoulli).</p>
+    <p class="gt-avoid">Avoid: “suck”, “the wing pushing up on air”.</p>
   </div>
 
-  <div class="term">
-    <span class="name">Drag</span><span class="sym">D</span>
-    <p class="def">The aerodynamic force parallel to the airflow, opposing motion. The engine must spend energy to overcome it; less drag for the same lift means longer flight.</p>
+  <div class="glossary-term" id="drag">
+    <span class="gt-name">Drag</span><span class="gt-sym">D</span>
+    <p class="gt-def">The aerodynamic force parallel to the airflow, opposing motion. The propulsion system spends energy to overcome it; less drag for the same lift means longer flight.</p>
   </div>
 
-  <div class="term">
-    <span class="name">Lift coefficient</span><span class="sym">C<span class="sub">L</span></span>
-    <p class="def">A dimensionless number capturing how much lift a wing makes for its size and speed, stripped of air density, area, and velocity. Rises with angle of attack until stall.</p>
-    <p class="avoid">Avoid: "lift number", "lift factor"</p>
+  <div class="glossary-term" id="lift-coefficient">
+    <span class="gt-name">Lift coefficient</span><span class="gt-sym">C<sub>L</sub></span>
+    <p class="gt-def">A dimensionless number capturing how much lift a wing makes for its size and speed, stripped of air density, area and velocity. Rises with angle of attack until stall.</p>
+    <p class="gt-avoid">Avoid: “lift number”, “lift factor”.</p>
   </div>
 
-  <div class="term">
-    <span class="name">Drag coefficient</span><span class="sym">C<span class="sub">D</span></span>
-    <p class="def">The dimensionless counterpart for drag. For a whole wing it splits into <em>parasitic</em> (friction + shape) and <em>induced</em> (the price of making lift) parts.</p>
+  <div class="glossary-term" id="drag-coefficient">
+    <span class="gt-name">Drag coefficient</span><span class="gt-sym">C<sub>D</sub></span>
+    <p class="gt-def">The dimensionless counterpart for drag. For a whole wing it splits into a <a href="#parasitic-drag">parasitic</a> (friction + pressure) part and an <a href="#induced-drag">induced</a> (price-of-lift) part.</p>
   </div>
 
-  <div class="term">
-    <span class="name">Lift-to-drag ratio</span><span class="sym">L/D = C<span class="sub">L</span>/C<span class="sub">D</span></span>
-    <p class="def">The master efficiency number: lift produced per unit of drag paid. Maximum L/D gives the flattest glide and the best <em>range</em>. A 1–2 m model wing peaks around L/D ≈ 10–20.</p>
-    <p class="avoid">Avoid: "glide number" (glide ratio is a <em>consequence</em> of L/D, not a synonym in design)</p>
+  <div class="glossary-term" id="lift-to-drag">
+    <span class="gt-name">Lift-to-drag ratio</span><span class="gt-sym">L/D = C<sub>L</sub>/C<sub>D</sub></span>
+    <p class="gt-def">The master efficiency number: lift produced per unit of drag paid. Maximum L/D gives the flattest glide and the best <em>range</em>. A 1–2 m model wing peaks around L/D ≈ 12–18.</p>
+    <p class="gt-avoid">Avoid: “glide number” — glide ratio is a consequence of L/D, not a design synonym.</p>
   </div>
 
-  <div class="term">
-    <span class="name">Angle of attack</span><span class="sym">α (alpha)</span>
-    <p class="def">The angle between the wing's chord line and the oncoming airflow. The pilot/autopilot's main lever on C<span class="sub">L</span>. Too high → stall.</p>
-    <p class="avoid">Avoid: "pitch angle" (pitch is relative to the ground, not the airflow)</p>
+  <div class="glossary-term" id="angle-of-attack">
+    <span class="gt-name">Angle of attack</span><span class="gt-sym">α (alpha)</span>
+    <p class="gt-def">The angle between the wing's chord line and the oncoming airflow — the pilot/autopilot's main lever on C<sub>L</sub>. Too high → <a href="#stall">stall</a>.</p>
+    <p class="gt-avoid">Avoid: “pitch angle” — pitch is relative to the ground, not the airflow.</p>
   </div>
 
-  <h2>Endurance (our north star)</h2>
+  <h2><span class="num">B</span>Endurance (the north star)</h2>
 
-  <div class="term">
-    <span class="name">Endurance</span>
-    <p class="def">Time aloft. For our battery-electric drone, maximised by minimising <em>power</em> required — distinct from range, which minimises drag-per-distance.</p>
+  <div class="glossary-term" id="endurance">
+    <span class="gt-name">Endurance</span>
+    <p class="gt-def">Time aloft. For a battery-electric drone, maximised by minimising <em>power</em> required — distinct from range, which minimises drag-per-distance.</p>
   </div>
 
-  <div class="term">
-    <span class="name">Endurance parameter</span><span class="sym">C<span class="sub">L</span><span class="sup">1.5</span>/C<span class="sub">D</span></span>
-    <p class="def">The quantity a propeller aircraft must <em>maximise</em> for longest flight time. Because it weights lift more heavily than L/D does, peak endurance happens <em>slower</em> and at a <em>higher</em> C<span class="sub">L</span> than peak L/D. The recurring target of this whole course.</p>
-    <p class="avoid">Avoid: confusing with L/D — they peak at different speeds.</p>
+  <div class="glossary-term" id="endurance-parameter">
+    <span class="gt-name">Endurance parameter</span><span class="gt-sym">C<sub>L</sub><sup>1.5</sup>/C<sub>D</sub></span>
+    <p class="gt-def">The quantity a propeller aircraft must <em>maximise</em> for longest flight time. Because it weights lift more heavily than L/D does, peak endurance happens <em>slower</em> and at a <em>higher</em> C<sub>L</sub> than peak L/D. The recurring target of this whole course.</p>
+    <p class="gt-avoid">Avoid: confusing with L/D — they peak at different speeds.</p>
   </div>
 
-  <h2>Making Lift</h2>
-
-  <div class="term">
-    <span class="name">Flow turning</span>
-    <p class="def">The correct account of lift: a wing deflects air downward, and the reaction pushes it up (Newton). The curved streamlines also imply lower pressure above (Bernoulli) — one event, two descriptions.</p>
-    <p class="avoid">Avoid: "equal transit time", "air catches up at the trailing edge" (a debunked myth)</p>
+  <div class="glossary-term" id="drag-polar">
+    <span class="gt-name">Drag polar</span>
+    <p class="gt-def">A plot of C<sub>L</sub> (vertical) against C<sub>D</sub> (horizontal) as angle of attack sweeps. The single most useful chart in wing design; every “best” operating point is a geometric construction on it. Modelled as C<sub>D</sub> = C<sub>D0</sub> + C<sub>L</sub>²/(π·AR·e).</p>
   </div>
 
-  <div class="term">
-    <span class="name">Lift curve</span>
-    <p class="def">The plot of C<span class="sub">L</span> versus angle of attack. Linear between the zero-lift angle and stall, with slope ≈ 0.11 per degree (≈ 2π per radian) for a thin airfoil.</p>
+  <h2><span class="num">C</span>Making Lift</h2>
+
+  <div class="glossary-term" id="flow-turning">
+    <span class="gt-name">Flow turning</span>
+    <p class="gt-def">The correct account of lift: a wing deflects air downward, and the reaction pushes it up (Newton). The curved streamlines also imply lower pressure above (Bernoulli) — one event, two descriptions.</p>
+    <p class="gt-avoid">Avoid: “equal transit time”, “air catches up at the trailing edge” — a debunked myth.</p>
   </div>
 
-  <div class="term">
-    <span class="name">Zero-lift angle</span><span class="sym">α<span class="sub">0</span></span>
-    <p class="def">The angle of attack at which a wing makes no lift. Negative for a cambered airfoil (ours ≈ −2°).</p>
+  <div class="glossary-term" id="lift-curve">
+    <span class="gt-name">Lift curve</span>
+    <p class="gt-def">The plot of C<sub>L</sub> versus angle of attack. Linear between the <a href="#zero-lift-angle">zero-lift angle</a> and <a href="#stall">stall</a>, with slope ≈ 0.11 per degree (≈ 2π per radian) for a thin airfoil.</p>
   </div>
 
-  <div class="term">
-    <span class="name">Stall</span>
-    <p class="def">The breakdown of lift when the angle of attack exceeds a critical value (≈ 12° for ours) and the boundary-layer flow separates. C<span class="sub">L</span> collapses and drag spikes. Sets the minimum flight speed.</p>
-    <p class="avoid">Avoid: "the engine stalling" (unrelated)</p>
+  <div class="glossary-term" id="zero-lift-angle">
+    <span class="gt-name">Zero-lift angle</span><span class="gt-sym">α<sub>0</sub></span>
+    <p class="gt-def">The angle of attack at which a wing makes no lift. Negative for a cambered airfoil (ours ≈ −2°).</p>
   </div>
 
-  <div class="term">
-    <span class="name">Camber</span>
-    <p class="def">The curvature of an airfoil's mean line. More camber shifts the whole lift curve up (more C<span class="sub">L</span> at a given angle) — useful for the high-lift, slow flight endurance wants.</p>
+  <div class="glossary-term" id="stall">
+    <span class="gt-name">Stall</span>
+    <p class="gt-def">The breakdown of lift when angle of attack exceeds a critical value (≈ 12° for ours) and the boundary-layer flow separates. C<sub>L</sub> collapses and drag spikes; sets the minimum flight speed.</p>
+    <p class="gt-avoid">Avoid: “the engine stalling” (unrelated).</p>
   </div>
 
-  <h2>Drag & Planform</h2>
-
-  <div class="term">
-    <span class="name">Drag polar</span>
-    <p class="def">A plot of C<span class="sub">L</span> (vertical) against C<span class="sub">D</span> (horizontal) as angle of attack sweeps. The single most useful chart in airfoil/wing design — every "best" operating point is a geometric construction on this curve. Modelled as C<span class="sub">D</span> = C<span class="sub">D0</span> + C<span class="sub">L</span>²/(π·AR·e).</p>
+  <div class="glossary-term" id="camber">
+    <span class="gt-name">Camber</span>
+    <p class="gt-def">The curvature of an airfoil's mean line. More camber shifts the whole <a href="#lift-curve">lift curve</a> up (more C<sub>L</sub> at a given angle) — useful for the high-lift, slow flight endurance wants.</p>
   </div>
 
-  <div class="term">
-    <span class="name">Parasitic drag</span><span class="sym">C<span class="sub">D0</span></span>
-    <p class="def">The lift-independent drag floor: skin friction plus pressure (wake) drag of the shape. Roughly constant in coefficient form at a given Reynolds number; dominates at low C<span class="sub">L</span> (fast flight).</p>
-    <p class="avoid">Avoid: "form drag" (that's only the pressure part)</p>
+  <h2><span class="num">D</span>Drag &amp; Planform</h2>
+
+  <div class="glossary-term" id="parasitic-drag">
+    <span class="gt-name">Parasitic drag</span><span class="gt-sym">C<sub>D0</sub></span>
+    <p class="gt-def">The lift-independent drag floor: skin friction plus pressure (wake) drag of the shape. Roughly constant in coefficient form at a given Reynolds number; dominates at low C<sub>L</sub> (fast flight).</p>
+    <p class="gt-avoid">Avoid: “form drag” — that's only the pressure part.</p>
   </div>
 
-  <div class="term">
-    <span class="name">Induced drag</span><span class="sym">C<span class="sub">Di</span></span>
-    <p class="def">The drag created specifically by making lift on a finite-span wing: C<span class="sub">Di</span> = C<span class="sub">L</span>²/(π·AR·e). Grows with the square of lift; dominates at high C<span class="sub">L</span> (slow flight) and is ~75% of total drag at the endurance point.</p>
-    <p class="avoid">Avoid: "drag due to lift" (correct but verbose), "vortex drag"</p>
+  <div class="glossary-term" id="induced-drag">
+    <span class="gt-name">Induced drag</span><span class="gt-sym">C<sub>Di</sub> = C<sub>L</sub>²/(π·AR·e)</span>
+    <p class="gt-def">The drag created specifically by making lift on a finite-span wing. Grows with the square of lift; dominates at high C<sub>L</sub> (slow flight) and is ~75% of total drag at the endurance point.</p>
+    <p class="gt-avoid">Avoid: “drag due to lift” (correct but verbose), “vortex drag”.</p>
   </div>
 
-  <div class="term">
-    <span class="name">Aspect ratio</span><span class="sym">AR = b²/S</span>
-    <p class="def">How long and slender a wing is — span (b) squared over area (S). Higher AR means lower induced drag, hence longer endurance. The master planform lever, traded against weight and Reynolds number.</p>
+  <div class="glossary-term" id="aspect-ratio">
+    <span class="gt-name">Aspect ratio</span><span class="gt-sym">AR = b²/S</span>
+    <p class="gt-def">How long and slender a wing is — span (b) squared over area (S). Higher AR means lower <a href="#induced-drag">induced drag</a>, hence longer endurance. The master planform lever, traded against weight and Reynolds number.</p>
   </div>
 
-  <div class="term">
-    <span class="name">Span efficiency</span><span class="sym">e</span>
-    <p class="def">How close a wing's lift distribution is to the ideal elliptical one (e = 1). Typically ≈ 0.85; appears in the denominator of induced drag.</p>
-    <p class="avoid">Avoid: "Oswald efficiency" (technically the whole-aircraft version)</p>
+  <div class="glossary-term" id="span-efficiency">
+    <span class="gt-name">Span efficiency</span><span class="gt-sym">e</span>
+    <p class="gt-def">How close a wing's lift distribution is to the ideal elliptical one (e = 1). Typically ≈ 0.85; appears in the denominator of induced drag.</p>
+    <p class="gt-avoid">Avoid: “Oswald efficiency” — technically the whole-aircraft version.</p>
   </div>
 
-  <div class="term">
-    <span class="name">Downwash / tip vortex</span>
-    <p class="def">Air leaking around the wingtips rolls into two trailing vortices, which drive a downward flow (downwash) over the wing. The downwash tilts the lift vector backward — that backward component <em>is</em> induced drag.</p>
+  <div class="glossary-term" id="downwash">
+    <span class="gt-name">Downwash / tip vortex</span>
+    <p class="gt-def">Air leaking around the wingtips rolls into two trailing vortices, which drive a downward flow (downwash) over the wing. The downwash tilts the lift vector backward — that backward component <em>is</em> <a href="#induced-drag">induced drag</a>.</p>
   </div>
 
-  <p class="grow" style="margin-top:2rem">Coming in later lessons: Reynolds number, laminar separation bubble, wing loading, chord, XFOIL, panel method.</p>
+  <p class="muted" style="font-family:var(--sans);font-size:.85rem;margin-top:2rem">Coming in later lessons:
+  Reynolds number, laminar separation bubble, wing loading, chord &amp; mean line, transition, XFOIL, panel method, VLM.</p>
 
-  <div class="lesson-nav">
-    <a href="../lessons/0001-lift-drag-and-the-endurance-number.html">← Lesson 0001</a>
-    <a href="../MISSION.md">Mission</a>
-  </div>
+  <nav class="lesson-nav">
+    <a href="../index.html">
+      <div class="dir">← Course home</div>
+      <div class="ttl">All lessons</div>
+    </a>
+    <a class="next" href="../lessons/0003-the-two-kinds-of-drag.html">
+      <div class="dir">Latest · F3</div>
+      <div class="ttl">The Two Kinds of Drag →</div>
+    </a>
+  </nav>
+
+  <p class="pagefoot">Glossary · Wing Design course ·
+  <a href="../index.html">all lessons</a> ·
+  <a href="https://github.com/chrisfraser/wing-design">source on GitHub</a></p>
+</main>
 </body>
 </html>

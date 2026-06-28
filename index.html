@@ -3,77 +3,139 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Wing &amp; Airfoil Design — A Course</title>
-<link rel="stylesheet" href="assets/lesson.css">
-<style>
-  .card { display:block; border:1px solid var(--rule); border-radius:6px; background:#fff;
-    padding:1rem 1.2rem; margin:0.8rem 0; text-decoration:none; color:var(--ink); transition:border-color .15s, box-shadow .15s; }
-  .card:hover { border-color:var(--accent); box-shadow:0 2px 10px rgba(0,0,0,0.05); }
-  .card .num { font-variant:small-caps; color:var(--accent); font-size:0.8rem; letter-spacing:0.06em; }
-  .card .t { font-size:1.1rem; font-weight:600; margin:0.15rem 0; }
-  .card .d { color:var(--muted); font-size:0.93rem; margin:0; }
-  .soon { opacity:0.55; }
-  .meta-links { display:flex; gap:1.2rem; flex-wrap:wrap; font-size:0.95rem; margin-top:0.6rem; }
-</style>
+<title>Wing Design · Design an optimal long-endurance wing</title>
+<meta name="description" content="An interactive, project-based course on wing and airfoil design for a long-endurance battery-electric drone — from first principles to XFOIL, XFLR5 and CFD.">
+<link rel="stylesheet" href="assets/styles.css">
 </head>
 <body>
-  <div class="eyebrow">A Self-Paced Course</div>
-  <h1>Wing &amp; Airfoil Design for Long-Endurance Flight</h1>
-  <p class="subtitle">Designing an optimal wing for a 1–2 m battery-electric drone — from first
-  principles to XFOIL, XFLR5, and CFD.</p>
 
-  <div class="mission">
-    <span class="label">The mission</span><br>
-    Understand — not just copy — how wings and airfoils work, then design a near-optimal wing for
-    maximum endurance and validate it with computer tools. The recurring north star:
-    maximise <strong>C<span class="sub">L</span><sup>1.5</sup>/C<span class="sub">D</span></strong>
-    in the low-Reynolds regime.
+<header class="topbar">
+  <div class="wrap-wide">
+    <a class="brand" href="index.html"><span class="dot">✈</span> Wing Design</a>
+    <nav>
+      <a href="#phase-1">Foundations</a>
+      <a href="#phase-2">Airfoils</a>
+      <a href="#phase-3">Tools</a>
+      <a href="reference/glossary.html">Glossary</a>
+      <a href="https://github.com/chrisfraser/wing-design">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap-wide">
+    <p class="kicker">A design-and-simulate course · long-endurance UAV</p>
+    <h1>Design the wing.<br>Stay up the longest.</h1>
+    <p>From how a wing really makes lift to a whole-aircraft simulation in XFLR5 — build the
+    understanding to design a near-optimal wing for a 1–2 m battery-electric drone, then validate it
+    with the same tools the professionals use. <strong>Every claim cited; every concept a toy you can
+    play with.</strong></p>
+  </div>
+</section>
+
+<main class="wrap-wide">
+
+  <div class="callout mission" style="margin-top:2rem">
+    <div class="callout-label">◎ The mission</div>
+    <p>Understand — not just copy — how wings and airfoils work, then design a near-optimal wing for
+    <strong>maximum endurance</strong> and validate it with computer tools. The recurring north star:
+    maximise <strong>C<sub>L</sub><sup>1.5</sup>/C<sub>D</sub></strong> in the low-Reynolds regime
+    (~150k–400k) our small wing lives in.
+    <a href="reference/glossary.html">Glossary</a> ·
+    <a href="https://github.com/chrisfraser/wing-design/blob/main/MISSION.md">Mission</a> ·
+    <a href="https://github.com/chrisfraser/wing-design/blob/main/RESOURCES.md">Resources</a></p>
   </div>
 
-  <div class="meta-links">
-    <a href="reference/glossary.html">📖 Glossary</a>
-    <a href="https://github.com/chrisfraser/wing-design">⌗ Source on GitHub</a>
+  <!-- ===================== PHASE 1 — FOUNDATIONS ===================== -->
+  <div class="phase" id="phase-1">
+    <div class="phase-head">
+      <span class="ph-n">Phase 1</span>
+      <h2>Foundations</h2>
+      <span class="ph-tag">the physics of efficient flight · no tools yet</span>
+    </div>
+    <p class="phase-intro">The conceptual spine: what “optimal” means, how lift and drag really work,
+    and the single lever that matters most for staying aloft.</p>
+    <ul class="lesson-list">
+      <a class="lesson-card" href="lessons/0001-lift-drag-and-the-endurance-number.html">
+        <span class="code">F1</span>
+        <span><span class="t">Lift, Drag &amp; the Number That Decides Endurance</span>
+        <span class="d">What “optimal” means. An interactive drag polar: find max L/D, then discover why endurance lives somewhere slower.</span></span>
+        <span class="status-pill ready">Ready</span>
+      </a>
+      <a class="lesson-card" href="lessons/0002-how-a-wing-really-makes-lift.html">
+        <span class="code">F2</span>
+        <span><span class="t">How a Wing Really Makes Lift</span>
+        <span class="d">Flow-turning, not the equal-transit myth — and the lift curve that turns a target C<sub>L</sub> into a real flying angle.</span></span>
+        <span class="status-pill ready">Ready</span>
+      </a>
+      <a class="lesson-card" href="lessons/0003-the-two-kinds-of-drag.html">
+        <span class="code">F3</span>
+        <span><span class="t">The Two Kinds of Drag</span>
+        <span class="d">Parasitic vs induced drag. Why ~75% of your endurance drag is induced — and why aspect ratio is the master lever.</span></span>
+        <span class="status-pill ready">Ready</span>
+      </a>
+    </ul>
   </div>
 
-  <h2>Lessons</h2>
-
-  <a class="card" href="lessons/0001-lift-drag-and-the-endurance-number.html">
-    <div class="num">Lesson 0001 · Foundations</div>
-    <div class="t">Lift, Drag &amp; the Number That Decides Endurance</div>
-    <p class="d">What “optimal” actually means. Interactive drag polar: find max L/D, then discover
-    why endurance lives somewhere slower.</p>
-  </a>
-
-  <a class="card" href="lessons/0002-how-a-wing-really-makes-lift.html">
-    <div class="num">Lesson 0002 · Foundations</div>
-    <div class="t">How a Wing Really Makes Lift</div>
-    <p class="d">The correct physics — flow turning, not the equal-transit myth — and the lift
-    curve that turns a target C<span class="sub">L</span> into a real flying angle.</p>
-  </a>
-
-  <a class="card" href="lessons/0003-the-two-kinds-of-drag.html">
-    <div class="num">Lesson 0003 · Foundations</div>
-    <div class="t">The Two Kinds of Drag</div>
-    <p class="d">Parasitic vs induced drag. Why ~75% of your endurance drag is induced — and why
-    aspect ratio is the master lever for staying aloft.</p>
-  </a>
-
-  <div class="card soon">
-    <div class="num">Lesson 0004 · Coming next</div>
-    <div class="t">Reynolds Number — Why Your Drone Is Different</div>
-    <p class="d">The low-Reynolds regime your 1–2 m wing lives in, laminar separation bubbles, and
-    why textbook airfoils misbehave here.</p>
+  <!-- ===================== PHASE 2 — AIRFOILS & THE LOW-RE REGIME ===================== -->
+  <div class="phase" id="phase-2">
+    <div class="phase-head">
+      <span class="ph-n">Phase 2</span>
+      <h2>Airfoils &amp; the Low-Reynolds Regime</h2>
+      <span class="ph-tag">why your small wing is a special case</span>
+    </div>
+    <p class="phase-intro">The defining feature of a 1–2 m drone: it flies at low Reynolds number, where
+    textbook airfoils misbehave. Learn to read airfoil data and pick a foil that thrives here.</p>
+    <ul class="lesson-list">
+      <li class="lesson-card todo"><span class="code">F4</span><span><span class="t">Reynolds Number — Why Your Drone Is Different</span><span class="d">The low-Re regime, laminar separation bubbles, and why a foil great at full scale can fail on your wing.</span></span><span class="status-pill soon">Proposed</span></li>
+      <li class="lesson-card todo"><span class="code">F5</span><span><span class="t">Anatomy of an Airfoil</span><span class="d">Camber, thickness, chord and the mean line — the shape vocabulary, and what each knob does to the polar.</span></span><span class="status-pill soon">Proposed</span></li>
+      <li class="lesson-card todo"><span class="code">F6</span><span><span class="t">Reading Real Airfoil Data</span><span class="d">UIUC &amp; airfoiltools: compare candidate low-Re foils on measured polars and pick a shortlist.</span></span><span class="status-pill soon">Proposed</span></li>
+    </ul>
   </div>
 
-  <h2>Reference</h2>
-  <a class="card" href="reference/glossary.html">
-    <div class="num">Living document</div>
-    <div class="t">Glossary</div>
-    <p class="d">The canonical vocabulary for the course. Grows as you learn.</p>
-  </a>
+  <!-- ===================== PHASE 3 — TOOLS ===================== -->
+  <div class="phase" id="phase-3">
+    <div class="phase-head">
+      <span class="ph-n">Phase 3</span>
+      <h2>Analysis Tools</h2>
+      <span class="ph-tag">XFOIL → XFLR5 · free software, your designs</span>
+    </div>
+    <p class="phase-intro">Put numbers on your choices. Run the standard low-Re airfoil tool, then take a
+    whole wing — your aspect-ratio and planform decisions — into a 3-D analysis.</p>
+    <ul class="lesson-list">
+      <li class="lesson-card todo"><span class="code">T1</span><span><span class="t">Hands-on XFOIL</span><span class="d">Install it, run a viscous polar on a real foil at your Reynolds number, and validate against UIUC data.</span></span><span class="status-pill soon">Proposed</span></li>
+      <li class="lesson-card todo"><span class="code">T2</span><span><span class="t">Planform &amp; Wing Loading</span><span class="d">Turn the aspect-ratio insight into a real chord, span, area and design speed for your weight.</span></span><span class="status-pill soon">Proposed</span></li>
+      <li class="lesson-card todo"><span class="code">T3</span><span><span class="t">Whole-Wing Analysis in XFLR5</span><span class="d">From 2-D airfoil to 3-D wing: lifting-line/VLM, span efficiency, and your wing's real C<sub>L</sub><sup>1.5</sup>/C<sub>D</sub>.</span></span><span class="status-pill soon">Proposed</span></li>
+    </ul>
+  </div>
 
-  <hr>
-  <p class="note">Built with the <code>/teach</code> workspace. Lessons, resources, and learning
-  records are version-controlled in this repository.</p>
+  <!-- ===================== PHASE 4 — DESIGN & CFD ===================== -->
+  <div class="phase" id="phase-4">
+    <div class="phase-head">
+      <span class="ph-n">Phase 4</span>
+      <h2>Design Synthesis &amp; CFD</h2>
+      <span class="ph-tag">the payoff · a justified wing, validated</span>
+    </div>
+    <p class="phase-intro">Combine everything into one wing design defended with numbers — then learn when
+    XFOIL/XFLR5 is enough and when to escalate to full CFD.</p>
+    <ul class="lesson-list">
+      <li class="lesson-card todo"><span class="code">D1</span><span><span class="t">Synthesize the Endurance Wing</span><span class="d">Airfoil + aspect ratio + planform + wing loading into one coherent design, judged on C<sub>L</sub><sup>1.5</sup>/C<sub>D</sub>.</span></span><span class="status-pill soon">Proposed</span></li>
+      <li class="lesson-card todo"><span class="code">D2</span><span><span class="t">When to Reach for CFD</span><span class="d">OpenFOAM/SU2 vs panel methods, the low-Re transition-modeling trap, and a sane validation workflow.</span></span><span class="status-pill soon">Proposed</span></li>
+    </ul>
+  </div>
+
+  <div class="callout note">
+    <div class="callout-label">⌁ How this works</div>
+    <p>I build the next lesson when you're ready for it, pitched to what you've just learned. <strong>Phase 1
+    (foundations) is done</strong>; the lessons marked <em>Proposed</em> are the roadmap ahead — tell me
+    which to build next, or to reorder them. Done with a lesson, or want to jump ahead? Say so in chat.</p>
+  </div>
+
+  <p class="pagefoot">
+    Wing Design — a personal course built with <a href="https://claude.com/claude-code">Claude Code</a> ·
+    <a href="https://github.com/chrisfraser/wing-design">github.com/chrisfraser/wing-design</a><br>
+    Mission: design a near-optimal wing for a long-endurance battery-electric drone — from first principles, validated with real tools.
+  </p>
+</main>
 </body>
 </html>

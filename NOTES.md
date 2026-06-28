@@ -25,6 +25,11 @@
 9. When/how to escalate to CFD (OpenFOAM/SU2) + low-Re transition caveat.
 
 ## Style decisions
-- Shared stylesheet: assets/lesson.css (Tufte-ish serif, sidenotes).
-- Quiz widget: assets/quiz.js — equal-length answers, instant feedback.
-- Keep CL^1.5/CD as a recurring "north star" callback across lessons.
+- **Design system adopted from the hydrophone course (2026-06-27).** User explicitly liked its look/feel.
+  - Shared `assets/styles.css` (sky/aero palette, same component classes as hydrophone) + `assets/widgets.js` (auto-wires `.quiz`).
+  - Old `assets/lesson.css` + `assets/quiz.js` retired/deleted once all lessons ported.
+  - `.nojekyll` added.
+- **Lesson template** (match every lesson): topbar · kicker/title/sub/meta · `.callout mission` · numbered `<h2><span class="num">` · `.formula` (dark) · interactive in a `.calc` with a **canvas on `var(--night)` dark bg** (grid `rgba(143,185,198,.1)`, curve `#4ea3da`, accent `#ffd479`, success `#3fbf63`) · 3 quizzes, each **4 equal-length options** with per-option `data-feedback` · `.recap` · `.sourcebox` · `.ask-teacher` · `.crosslinks` (glossary #anchors + builds on/toward) · cited `<h2 id="refs">` References · `.lesson-nav` · `.pagefoot`.
+- Glossary terms carry `id` anchors; lessons deep-link to them.
+- **Lesson code scheme**: Phase 1 Foundations = F1–F3 (done), Phase 2 Airfoils/Low-Re = F4–F6, Phase 3 Tools = T1–T3, Phase 4 Design/CFD = D1–D2. Numeric filenames keep incrementing (0004, 0005…).
+- Keep CL^1.5/CD as the recurring "north star" callback across lessons.

@@ -3,298 +3,379 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Lesson 3 — The Two Kinds of Drag</title>
-<link rel="stylesheet" href="../assets/lesson.css">
+<title>F3 · The Two Kinds of Drag</title>
+<link rel="stylesheet" href="../assets/styles.css">
+<script defer src="../assets/widgets.js"></script>
 <style>
-  .sim { border: 1px solid var(--rule); border-radius: 6px; background: #fff; padding: 1.1rem 1.2rem 1.4rem; margin: 1.6rem 0; }
-  .sim h3 { margin-top: 0.3rem; }
-  .sim-grid { display: flex; flex-wrap: wrap; gap: 0.6rem 1rem; align-items: flex-start; }
-  .sim-grid .col-a { flex: 2 1 280px; }
-  .sim-grid .col-b { flex: 1 1 170px; }
-  .sim-grid figure { margin: 0.3rem 0; }
-  .readouts { display: flex; flex-wrap: wrap; gap: 0.35rem 1.2rem; margin: 0.5rem 0 0.2rem; font-size: 0.92rem; }
-  .readouts b { color: var(--sky); font-variant-numeric: tabular-nums; }
-  .slider-row { display: flex; align-items: center; gap: 0.7rem; margin: 0.7rem 0 0.1rem; }
-  .slider-row input[type=range] { flex: 1; accent-color: var(--accent); }
-  .slider-row label { font-size: 0.88rem; color: var(--muted); white-space: nowrap; }
-  .slider-row .val { color: var(--sky); font-weight: 600; min-width: 3.2rem; text-align: right; }
-  .legend { display: flex; gap: 1.1rem; font-size: 0.85rem; margin: 0.2rem 0 0.4rem; color: var(--muted); }
-  .legend span::before { content: "■ "; }
-  .legend .par::before { color: #2c6e8e; }
-  .legend .ind::before { color: #b0472f; }
-  .status { min-height: 1.4rem; margin-top: 0.5rem; font-size: 0.94rem; font-weight: 600; }
-  .status.ok { color: var(--good); }
-  .status.hint { color: var(--muted); font-weight: 400; font-style: italic; }
-  .sim-btn { font: inherit; font-size: 0.84rem; padding: 0.38rem 0.7rem; border: 1px solid var(--rule);
-    background: var(--paper); border-radius: 3px; cursor: pointer; margin: 0.3rem 0.4rem 0.1rem 0; }
-  .sim-btn:hover { background: var(--accent-soft); }
+  /* Lesson-F3-specific: the drag-budget explorer */
+  canvas { width:100%; display:block; border-radius:8px; background:var(--night); }
+  .drag-readouts { display:grid; grid-template-columns:repeat(2,1fr); gap:.3rem 1.2rem; margin-top:.7rem; font-family:var(--mono); font-size:.95rem; color:#d8ecf5; }
+  .drag-readouts b { color:#ffd479; font-variant-numeric:tabular-nums; }
 </style>
 </head>
 <body>
-  <div class="eyebrow">Lesson 0003 · Foundations</div>
-  <h1>The Two Kinds of Drag</h1>
-  <p class="subtitle">Why three-quarters of your endurance drag comes from one source — and what to do about it.</p>
 
-  <div class="mission">
-    <span class="label">Why this, now</span><br>
-    In <a href="0001-lift-drag-and-the-endurance-number.html">Lesson 1</a> drag was a single curve. But
-    “reduce drag” is useless advice until you know <em>which</em> drag. Split it in two and a clear,
-    surprising design lever falls out — the one that matters most for staying aloft.
+<header class="topbar">
+  <div class="wrap-wide">
+    <a class="brand" href="../index.html"><span class="dot">✈</span> Wing Design</a>
+    <nav>
+      <a href="../index.html">Lessons</a>
+      <a href="../reference/glossary.html">Glossary</a>
+      <a href="https://github.com/chrisfraser/wing-design">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <p class="kicker">Phase 1 · Foundations · F3</p>
+  <h1 class="lesson-title">The Two Kinds of Drag</h1>
+  <p class="lesson-sub">Why three-quarters of your endurance drag comes from a single source —
+  and the one design lever that beats it.</p>
+  <div class="lesson-meta">
+    <span>⏱ ~12 minutes</span><span class="sep">•</span>
+    <span>🧮 Light math — one equation that matters</span><span class="sep">•</span>
+    <span class="tag sky">Builds on F1</span>
+  </div>
+
+  <div class="callout mission">
+    <div class="callout-label">◎ Why this lesson</div>
+    <p>In <a href="0001-lift-drag-and-the-endurance-number.html">F1</a>, drag was a single curve and
+    “reduce drag” was the whole story. But that advice is useless until you know <em>which</em> drag.
+    Split total drag into its two sources and a clear — and surprising — design lever falls out: the
+    single biggest move you can make for <a href="../reference/glossary.html#endurance-parameter">staying
+    aloft</a>. By the end of this lesson you'll know what it is and why it works.</p>
   </div>
 
   <p class="lead">Total drag on your wing is two different bills added together. One you pay just for
-  moving through air. The other you pay <em>specifically for making lift</em> — and on an endurance
-  wing, it's by far the larger of the two.</p>
+  moving a shape through air. The other you pay <em>specifically for making lift</em> — and on an
+  endurance wing, it is by far the larger of the two.</p>
 
-  <h2>Bill #1 — Parasitic drag</h2>
-  <p>The cost of pushing a shape through air, whether or not it's lifting. It's mostly
-  <strong>skin friction</strong> (air dragging along the wing's surface in the boundary layer) plus a
-  little <strong>pressure drag</strong> (the wake behind the shape). In coefficient form we call this
-  floor <strong>C<span class="sub">D0</span></strong>, and to a first approximation it doesn't change
-  with lift.<span class="note">It's not perfectly constant — a good airfoil has a low-drag “bucket”
-  over a range of angles, and profile drag creeps up near stall. That fine structure is set by the
-  airfoil and its Reynolds number — the next two lessons.</span></p>
+  <h2><span class="num">1</span>Bill #1 — parasitic drag</h2>
+  <p>The first bill is the cost of pushing a shape through air, whether or not it is lifting. It is mostly
+  <strong><a href="../reference/glossary.html#parasitic-drag">skin friction</a></strong> — air dragging
+  along the wing's surface inside the boundary layer — plus a little <strong>pressure drag</strong> from
+  the wake left behind the shape. In coefficient form we call this floor
+  <strong>C<sub>D0</sub></strong>, and to a first approximation it does not change with lift.<span class="cite"><a href="#r-anderson">3</a></span></p>
+  <p>It is not perfectly constant — a good airfoil has a low-drag “bucket” over a range of angles, and
+  profile drag creeps up near stall. But that fine structure is set by the airfoil and its
+  <em>Reynolds number</em>, which are the next two lessons. For now, treat parasitic drag as a flat
+  floor: <strong>C<sub>D0</sub> = 0.018</strong> for a representative low-Reynolds wing.</p>
 
-  <h2>Bill #2 — Induced drag</h2>
-  <p>This one is the price of lift itself, and it only exists because your wing has <em>ends</em>.
-  High pressure under the wing and low pressure over it means air leaks around the tips, rolling into
-  two <strong>trailing vortices</strong>. Those vortices push a downward flow (<em>downwash</em>) across
-  the whole wing, tilting the lift vector slightly backward. That backward tilt is a drag force you
-  created purely by lifting:</p>
+  <h2><span class="num">2</span>Bill #2 — induced drag</h2>
+  <p>The second bill is the price of lift itself, and it exists only because your wing has <em>ends</em>.
+  High pressure under the wing and low pressure over it means air leaks around the tips, rolling into two
+  trailing <strong><a href="../reference/glossary.html#induced-drag">vortices</a></strong>. Those
+  vortices wash a downward flow — <strong><a href="../reference/glossary.html#downwash">downwash</a></strong>
+  — across the whole wing, tilting the lift vector slightly backward. That backward tilt is a drag force
+  you created purely by lifting:<span class="cite"><a href="#r-nasa">1</a></span></p>
 
-  <div class="eq">
-    <span class="var">C<span class="sub">Di</span></span> =
-    <span class="var">C<span class="sub">L</span></span><span class="sup">2</span>
-    &frasl; (π · <span class="var">AR</span> · <span class="var">e</span>)
+  <div class="formula">
+<span class="var">C<sub>Di</sub></span> <span class="op">=</span> <span class="var">C<sub>L</sub></span>² <span class="op">/</span> ( π <span class="op">·</span> <span class="var">AR</span> <span class="op">·</span> <span class="var">e</span> )
+<small><b>AR</b> = aspect ratio — how long and slender the wing is (span²/area). <b>e</b> = span efficiency (≈ <b>0.85</b> for a typical wing; 1.0 is the ideal elliptical loading). Two facts hide in this little equation, and they govern your whole design: induced drag grows with lift <b>squared</b>, and it <b>shrinks as aspect ratio rises</b>.</small>
   </div>
 
-  <p class="note">AR = <em>aspect ratio</em> (how long and slender the wing is, span²/area). e = <em>span
-  efficiency</em> (≈0.85 for a typical wing; 1.0 is the ideal elliptical loading). Two facts hide in
-  this little equation, and they govern your whole design: induced drag grows with lift
-  <strong>squared</strong>, and it <strong>shrinks as aspect ratio rises</strong>.
-  <a href="https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/induced-drag-coefficient/">[NASA Glenn]</a></p>
+  <h2><span class="num">3</span>The reveal: add the bills</h2>
+  <p>Stack the two bills on top of each other and you recover the parabolic
+  <a href="../reference/glossary.html#drag-polar">drag polar</a> from F1 — now decoded into its two
+  ingredients:</p>
 
-  <div class="key">
-    <span class="label">The reveal</span>
-    <p style="margin:0.3rem 0 0">Add the bills: <strong>C<span class="sub">D</span> = C<span class="sub">D0</span> + C<span class="sub">L</span><span class="sup">2</span>/(π·AR·e)</strong> — that's the parabolic drag polar from Lesson 1, now decoded.
-    Parasitic drag rules at <em>low</em> lift (fast flight); induced drag rules at <em>high</em> lift (slow flight).
-    They're exactly equal at <strong>max&nbsp;L/D</strong>. And at your <strong>max-endurance</strong> point,
-    induced drag is <em>three times</em> the parasitic — so <strong>~75% of your endurance drag is induced</strong>.
-    Beat induced drag and you win endurance.</p>
+  <div class="formula">
+<span class="var">C<sub>D</sub></span> <span class="op">=</span> <span class="var">C<sub>D0</sub></span> <span class="op">+</span> <span class="var">C<sub>L</sub></span>² <span class="op">/</span> ( π <span class="op">·</span> <span class="var">AR</span> <span class="op">·</span> <span class="var">e</span> )
+<small>The flat parasitic floor plus the induced term that climbs with C<sub>L</sub><sup>2</sup>. Often written <b>C<sub>D</sub> = C<sub>D0</sub> + k·C<sub>L</sub>²</b>, with <b>k = 1/(π·e·AR)</b>.</small>
   </div>
 
-  <!-- ===================== INTERACTIVE ===================== -->
-  <div class="sim">
-    <h3>The drag budget</h3>
-    <p style="margin:0.2rem 0 0;font-size:0.93rem;color:var(--muted)">
-      Left: your Lesson-1 polar laid on its side, with drag split into its two sources as lift changes.
-      Right: the split at the lift you've selected. Set the lift to your endurance point, read the
-      induced fraction — then raise <em>aspect ratio</em> and watch the induced bill collapse without
-      touching the airfoil.</p>
+  <p>Parasitic drag rules at <em>low</em> lift (fast flight); induced drag rules at <em>high</em> lift
+  (slow flight). They are exactly equal at <strong>max&nbsp;L/D</strong>. And at your
+  <strong>max-endurance</strong> point — high lift, slow flight — induced drag is roughly <em>three
+  times</em> the parasitic.<span class="cite"><a href="#r-marchman">2</a></span></p>
 
-    <div class="slider-row">
-      <label>Lift coefficient&nbsp;C<span class="sub">L</span></label>
-      <input id="cl" type="range" min="0" max="1.4" step="0.02" value="0.40">
-      <span class="val" id="clVal">0.40</span>
-    </div>
-    <div class="slider-row">
-      <label>Aspect ratio&nbsp;AR</label>
-      <input id="ar" type="range" min="7" max="20" step="0.5" value="8">
-      <span class="val" id="arVal">8.0</span>
-    </div>
+  <div class="callout key">
+    <div class="callout-label">★ The reveal</div>
+    <p>At the endurance operating point (around <strong>C<sub>L</sub> = 1.10</strong>),
+    induced drag is about <strong>three times</strong> the parasitic drag — so roughly
+    <strong>75% of your endurance drag is induced</strong>. That single fact reframes the whole design
+    problem: beat induced drag and you win endurance. Everything below follows from it.</p>
+  </div>
 
-    <div class="legend"><span class="par">parasitic (C<sub>D0</sub>)</span><span class="ind">induced (C<sub>Di</sub>)</span></div>
+  <h2><span class="num">4</span>See it: the drag budget</h2>
+  <p>The chart below is your F1 polar, redrawn as a <strong>stacked budget</strong>: a flat parasitic
+  band along the bottom, with the induced area piled on top as lift rises. Set the lift to your endurance
+  point and read the induced share — then raise <em>aspect ratio</em> and watch the induced bill collapse
+  without touching the airfoil.</p>
 
-    <div class="sim-grid">
-      <div class="col-a">
-        <figure><svg id="budget" viewBox="0 0 320 240" role="img" aria-label="Drag versus lift, split into parasitic and induced"></svg>
-        <figcaption>Drag vs lift. The induced area swells with lift and with low aspect ratio.</figcaption></figure>
+  <div class="calc">
+    <div class="calc-title">🧮 Drag-budget explorer — split the bill, then beat it</div>
+    <p style="font-family:var(--sans);font-size:.86rem;color:var(--ink-soft);margin:-.3rem 0 .9rem">
+      Drag coefficient C<sub>D</sub> (up) versus lift coefficient C<sub>L</sub> (across). The
+      <span style="color:#4ea3da;font-weight:600">steel-blue</span> band is parasitic C<sub>D0</sub>;
+      the <span style="color:#e0843a;font-weight:600">warm</span> area stacked above is induced
+      C<sub>Di</sub>. The dashed <span style="color:#3fbf63;font-weight:600">green</span> line marks
+      your endurance lift; the <span style="color:#caa23a;font-weight:600">gold</span> marker is where
+      you're operating now.</p>
+    <div class="controls">
+      <div class="control">
+        <label>Lift coefficient C<sub>L</sub> <output id="clOut">0.40</output></label>
+        <input type="range" id="clRange" min="0" max="1.4" step="0.02" value="0.40">
       </div>
-      <div class="col-b">
-        <figure><svg id="bar" viewBox="0 0 180 240" role="img" aria-label="Drag split at the selected lift"></svg>
-        <figcaption>Your drag bill, here and now.</figcaption></figure>
+      <div class="control">
+        <label>Aspect ratio AR <output id="arOut">8.0</output></label>
+        <input type="range" id="arRange" min="7" max="20" step="0.5" value="8">
       </div>
     </div>
-
-    <div class="readouts">
-      <span>C<span class="sub">D</span> = <b id="cdVal">–</b></span>
-      <span>induced share = <b id="fracVal">–</b></span>
-      <span>L/D = <b id="ldVal">–</b></span>
-      <span>C<span class="sub">L</span><sup>1.5</sup>/C<span class="sub">D</span> = <b id="enVal">–</b></span>
+    <div class="readout">
+      <canvas id="dragCanvas" width="720" height="340" aria-label="Stacked drag budget: parasitic and induced drag versus lift coefficient"></canvas>
+      <div class="drag-readouts">
+        <span>C<sub>D</sub> total = <b id="cdVal">—</b></span>
+        <span>induced share = <b id="fracVal">—</b></span>
+        <span>L/D = <b id="ldVal">—</b></span>
+        <span>C<sub>L</sub><sup>1.5</sup>/C<sub>D</sub> = <b id="enVal">—</b></span>
+      </div>
     </div>
+    <div class="btn-row">
+      <button class="simbtn" id="goEnd">① Jump to endurance lift (C<sub>L</sub>=1.10)</button>
+      <button class="simbtn" id="goAR">② Raise AR to 16</button>
+      <button class="simbtn" id="reset">Reset</button>
+    </div>
+    <div class="status hint" id="status">Try step ① — set the lift to your endurance point…</div>
+  </div>
 
+  <h2><span class="num">5</span>The master lever for endurance</h2>
+  <p>Because endurance flight is induced-drag-dominated, the highest-leverage move you can make is the one
+  that attacks the induced term directly. Look at the equation: induced drag falls as
+  <strong><a href="../reference/glossary.html#aspect-ratio">aspect ratio</a></strong> rises. Raise AR and
+  three-quarters of your drag bill shrinks — without changing the airfoil at all.<span class="cite"><a href="#r-mit">4</a></span></p>
+
+  <div class="callout key">
+    <div class="callout-label">★ Your master lever</div>
+    <p>A <strong>long, slender, high-aspect-ratio wing</strong> is the single most effective endurance
+    design choice — which is exactly why sailplanes and long-endurance UAVs all look the way they do.
+    Raising AR from 8 to 16 cuts total endurance drag by nearly <strong>40%</strong> at the same lift.</p>
+  </div>
+
+  <div class="callout warning">
+    <div class="callout-label">⚠ But it isn't free</div>
+    <p>More span means more structural weight and bending loads to carry. And holding wing area fixed, a
+    higher aspect ratio means a <em>narrower chord</em> — which lowers the
+    <a href="../reference/glossary.html#span-efficiency">Reynolds number</a> the airfoil sees, and a low
+    Reynolds number can hurt the airfoil badly. Holding those trade-offs in tension is the real design
+    game — and <strong>Reynolds number is next</strong>.</p>
+  </div>
+
+  <h2><span class="num">6</span>Check yourself</h2>
+  <p>Answer from memory — that effort is what turns a fact you just read into one you'll keep.</p>
+
+  <div class="quiz"
+       data-explain-right="At the endurance point, induced drag is the lion's share."
+       data-explain-wrong="Re-read §3 — at max endurance, induced is ~3× parasitic.">
+    <div class="q-kicker">Question 1 of 3</div>
+    <div class="q-text">At the best-endurance operating point, most of the wing's drag is…</div>
+    <div class="q-options">
+      <button class="opt" data-correct data-feedback="Right. At max endurance, induced drag is about three times the parasitic — roughly 75% of the total. That's why endurance design is mostly a fight against induced drag.">induced drag from the act of making lift</button>
+      <button class="opt" data-feedback="Skin friction sets the parasitic floor, but at the slow, high-lift endurance point it's only about a quarter of the total — induced drag dominates.">parasitic drag from surface skin friction</button>
+      <button class="opt" data-feedback="Pressure (wake) drag is part of the parasitic floor, which is the smaller bill at the endurance point. Induced drag is the bigger share.">pressure drag from the wing's wake</button>
+      <button class="opt" data-feedback="Wave drag only appears near the speed of sound. A slow endurance drone never goes transonic, so this isn't a factor at all.">wave drag from compressible shock loss</button>
+    </div>
+    <div class="q-feedback"></div>
+  </div>
+
+  <div class="quiz"
+       data-explain-right="Induced drag = C_L²/(π·AR·e), so AR is the lever."
+       data-explain-wrong="Look again at what's in the denominator of the induced-drag term.">
+    <div class="q-kicker">Question 2 of 3</div>
+    <div class="q-text">The most effective way to cut induced drag for endurance is to…</div>
+    <div class="q-options">
+      <button class="opt" data-correct data-feedback="Yes. Induced drag = C_L²/(π·AR·e), so a higher aspect ratio — a longer, slenderer wing — directly lowers it. That's the master endurance lever.">raise the wing's aspect ratio (more span)</button>
+      <button class="opt" data-feedback="A thinner airfoil mainly affects parasitic drag (the floor), not the induced term. It leaves the dominant endurance bill almost untouched.">switch to a much thinner airfoil section</button>
+      <button class="opt" data-feedback="Flying faster lowers the C_L you need, but minimum-power endurance wants to fly slow at high C_L — the opposite direction. It doesn't attack the induced term.">fly at a notably faster cruise speed</button>
+      <button class="opt" data-feedback="More area lowers the C_L you fly at, but it doesn't change the induced-drag formula's leverage — and it adds parasitic drag. Aspect ratio is the real lever.">enlarge the wing's total surface area</button>
+    </div>
+    <div class="q-feedback"></div>
+  </div>
+
+  <div class="quiz"
+       data-explain-right="C_Di ∝ C_L² — it grows with the square of lift."
+       data-explain-wrong="The induced term carries C_L to a power — which one?">
+    <div class="q-kicker">Question 3 of 3</div>
+    <div class="q-text">As the lift coefficient increases, induced drag grows…</div>
+    <div class="q-options">
+      <button class="opt" data-correct data-feedback="Exactly. C_Di ∝ C_L². Doubling lift quadruples induced drag — which is precisely why flying slowly (high C_L) makes induced drag the dominant cost.">as the square of the lift coefficient</button>
+      <button class="opt" data-feedback="Linear would be far too gentle. The C_L² term means it climbs much faster — that steep growth is the whole reason induced drag takes over at high lift.">in linear step with the lift coefficient</button>
+      <button class="opt" data-feedback="It grows faster than linear, but not as a cube. The equation is C_L² over (π·AR·e) — a square, not a cube.">as the cube of the lift coefficient</button>
+      <button class="opt" data-feedback="It's the parasitic floor that stays nearly flat. Induced drag does the opposite — it climbs steeply, as C_L².">weakly, staying almost perfectly flat</button>
+    </div>
+    <div class="q-feedback"></div>
+  </div>
+
+  <div class="recap">
+    <h3>What you can now say</h3>
+    <ol>
+      <li>Total drag splits into two bills: <strong>parasitic</strong> (C<sub>D0</sub>, a lift-independent floor of skin friction + pressure drag) and <strong>induced</strong> (the price of making lift).</li>
+      <li>Induced drag is <strong>C<sub>Di</sub> = C<sub>L</sub>²/(π·AR·e)</strong> — it grows with lift <em>squared</em> and shrinks as aspect ratio rises.</li>
+      <li>The two add to the parabolic polar <strong>C<sub>D</sub> = C<sub>D0</sub> + C<sub>L</sub>²/(π·AR·e)</strong>: parasitic rules at low lift, induced at high lift, equal at max L/D.</li>
+      <li>At the endurance point, induced drag is ~3× parasitic — about <strong>75% of the total</strong> — so endurance is a fight against induced drag.</li>
+      <li><strong>Raising aspect ratio</strong> is the master lever, but it costs structural weight and lowers the airfoil's Reynolds number — the next lesson.</li>
+    </ol>
+  </div>
+
+  <div class="sourcebox">
+    <div class="icon">📖</div>
     <div>
-      <button id="goEnd" class="sim-btn">① Jump to endurance lift (C<span class="sub">L</span>=1.10)</button>
-      <button id="goAR" class="sim-btn">② Raise AR to 16</button>
-      <button id="reset" class="sim-btn">Reset</button>
+      <div class="label">Primary source · read this next</div>
+      <div class="title"><a href="https://pressbooks.lib.vt.edu/aerodynamics/" target="_blank" rel="noopener">Marchman — Aerodynamics &amp; Aircraft Performance (the drag and drag-polar chapters)</a></div>
+      <div class="desc">Free and rigorous. Read the drag breakdown and the parabolic-polar derivation, then pair it with the <a href="https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/induced-drag-coefficient/" target="_blank" rel="noopener">NASA Glenn induced-drag page</a> for the one equation that matters. ~15-minute read.</div>
     </div>
-    <div id="status" class="status hint">Try step ① — set the lift to your endurance point…</div>
   </div>
 
-  <div class="key">
-    <span class="label">Your master lever for endurance</span>
-    <p style="margin:0.3rem 0 0">Because endurance flight is induced-drag-dominated, the highest-leverage
-    move is a <strong>long, slender, high-aspect-ratio wing</strong> — that's why sailplanes and
-    long-endurance UAVs look the way they do. But it isn't free: more span means more structural weight
-    and bending, and a narrower chord means a <em>lower Reynolds number</em>, which can hurt the airfoil.
-    Holding those trade-offs in tension is the real design game — and Reynolds number is next.</p>
+  <div class="ask-teacher">
+    💬 <b>I'm your teacher — ask me anything.</b> Want to see <em>why</em> induced drag is exactly
+    C<sub>L</sub>²/(π·AR·e), or why induced ≈ 3× parasitic falls straight out of the endurance optimum?
+    Bring it to chat — I can derive either step by step. Confused beats stuck.
   </div>
 
-  <h2>Check yourself</h2>
-  <p>From memory.</p>
-
-  <div class="quiz" data-answer="0">
-    <p class="q">At the best-endurance operating point, most of the wing's drag is…</p>
-    <button data-i="0">induced drag from making lift</button>
-    <button data-i="1">parasitic drag from skin friction</button>
-    <button data-i="2">pressure drag from the wake</button>
-    <p class="explain">At max C<span class="sub">L</span><sup>1.5</sup>/C<span class="sub">D</span>, induced drag is three times the parasitic — about 75% of the total. That's why endurance design is mostly a fight against induced drag.</p>
+  <div class="crosslinks">
+    <b>Glossary:</b>
+    <a href="../reference/glossary.html#parasitic-drag">parasitic drag</a> ·
+    <a href="../reference/glossary.html#induced-drag">induced drag</a> ·
+    <a href="../reference/glossary.html#aspect-ratio">aspect ratio</a> ·
+    <a href="../reference/glossary.html#span-efficiency">span efficiency</a> ·
+    <a href="../reference/glossary.html#downwash">downwash</a> ·
+    <a href="../reference/glossary.html#drag-polar">drag polar</a>.
+    <b>Builds on →</b> <strong>F1</strong> (lift, drag &amp; the endurance number).
+    <b>Builds toward →</b> <strong>F4</strong> (Reynolds number — why your drone is different).
   </div>
 
-  <div class="quiz" data-answer="2">
-    <p class="q">The most effective way to cut induced drag for endurance is to…</p>
-    <button data-i="0">choose a much thinner airfoil</button>
-    <button data-i="1">fly at a notably faster speed</button>
-    <button data-i="2">raise the wing's aspect ratio</button>
-    <p class="explain">Induced drag = C<span class="sub">L</span>²/(π·AR·e), so a higher aspect ratio (longer, slenderer wing) directly lowers it. A thinner airfoil mainly affects parasitic drag; flying faster lowers the required C<span class="sub">L</span> but isn't what endurance wants.</p>
-  </div>
+  <h2 id="refs"><span class="num">§</span>References</h2>
+  <ol style="font-family:var(--sans);font-size:.84rem;color:var(--ink-soft);line-height:1.5">
+    <li id="r-nasa">NASA Glenn Research Center — <a href="https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/induced-drag-coefficient/" target="_blank" rel="noopener">Induced Drag Coefficient</a>. The clean statement of C<sub>Di</sub> = C<sub>L</sub>²/(π·AR·e) and the downwash mechanism. <b>Primary source.</b></li>
+    <li id="r-marchman">Marchman — <a href="https://pressbooks.lib.vt.edu/aerodynamics/" target="_blank" rel="noopener">Aerodynamics and Aircraft Performance</a> (Virginia Tech, open textbook). The drag breakdown and the parabolic drag polar. <b>Primary source.</b></li>
+    <li id="r-anderson">Anderson — <a href="https://www.mheducation.com/highered/product/fundamentals-aerodynamics-anderson.html" target="_blank" rel="noopener">Fundamentals of Aerodynamics</a>. Standard textbook for parasitic (profile) drag and the drag polar.</li>
+    <li id="r-mit">MIT 16.100 Aerodynamics — <a href="https://ocw.mit.edu/courses/16-100-aerodynamics-fall-2005/pages/lecture-notes/" target="_blank" rel="noopener">lecture notes</a> (MIT OpenCourseWare). Finite-wing theory: why aspect ratio is the lever on induced drag.</li>
+  </ol>
 
-  <div class="quiz" data-answer="1">
-    <p class="q">As the lift coefficient increases, induced drag grows…</p>
-    <button data-i="0">in a simple linear fashion</button>
-    <button data-i="1">as its square — growing fast</button>
-    <button data-i="2">weakly, staying nearly flat</button>
-    <p class="explain">C<span class="sub">Di</span> ∝ C<span class="sub">L</span>². Doubling lift quadruples induced drag — which is exactly why flying slowly (high C<span class="sub">L</span>) makes induced drag the dominant cost.</p>
-  </div>
+  <nav class="lesson-nav">
+    <a href="0002-how-a-wing-really-makes-lift.html">
+      <div class="dir">← Prev · F2</div>
+      <div class="ttl">How a Wing Really Makes Lift</div>
+    </a>
+    <a class="next" href="0004-reynolds-number.html">
+      <div class="dir">Next · F4</div>
+      <div class="ttl">Reynolds Number — Why Your Drone Is Different →</div>
+    </a>
+  </nav>
 
-  <div class="source">
-    <span class="label">Primary source for this lesson</span><br>
-    <a href="https://pressbooks.lib.vt.edu/aerodynamics/">Marchman, <em>Aerodynamics and Aircraft
-    Performance</em> — the chapters on drag and the drag polar.</a> Free and rigorous; read the drag
-    breakdown and the parabolic-polar derivation. Pair it with the
-    <a href="https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/induced-drag-coefficient/">NASA Glenn
-    induced-drag page</a> for the one equation that matters.
-  </div>
+  <p class="pagefoot">Lesson F3 of the Wing Design course ·
+  <a href="../index.html">all lessons</a> ·
+  <a href="https://github.com/chrisfraser/wing-design">source on GitHub</a></p>
+</main>
 
-  <div class="ask">
-    <span class="label">Your teacher is on call</span> — Want to see <em>why</em> induced drag is exactly
-    C<span class="sub">L</span>²/(π·AR·e), or why induced = 3× parasitic falls out of the endurance
-    optimum? Ask me — I can derive either step by step.
-  </div>
+<script>
+/* ============================ Drag-budget explorer ============================ */
+(function(){
+  // ---- Model (continuous with Lessons 1–2) ----
+  var CD0=0.018, e=0.85;
+  function kOf(ar){ return 1/(Math.PI*e*ar); }
+  var CL_END=1.10;      // endurance lift target carried from Lesson 1
+  var AR_BASE=8;        // baseline implied by Lesson 1's polar (k≈0.045)
 
-  <div class="lesson-nav">
-    <a href="0002-how-a-wing-really-makes-lift.html">← Lesson 2</a>
-    <a href="../reference/glossary.html">📖 Glossary</a>
-    <span>Next: Lesson 4 — Reynolds number, why your drone is different →</span>
-  </div>
+  var clRange=document.getElementById('clRange'), clOut=document.getElementById('clOut');
+  var arRange=document.getElementById('arRange'), arOut=document.getElementById('arOut');
+  var canvas=document.getElementById('dragCanvas'), ctx=canvas?canvas.getContext('2d'):null;
+  var status=document.getElementById('status');
+  var cdEl=document.getElementById('cdVal'), fracEl=document.getElementById('fracVal');
+  var ldEl=document.getElementById('ldVal'), enEl=document.getElementById('enVal');
+  if(!ctx) return;
 
-  <script src="../assets/quiz.js"></script>
-  <script>
-  (function () {
-    // ---- Model (continuous with Lessons 1–2) ----
-    var CD0 = 0.018, e = 0.85;
-    function kOf(ar){ return 1 / (Math.PI * e * ar); }
-    var CL_END = 1.10;                    // endurance lift target carried from Lesson 1
-    var AR_BASE = 8;                      // baseline implied by Lesson 1's polar (k≈0.045)
+  var W=canvas.width, H=canvas.height, padL=58, padR=18, padT=18, padB=40;
+  var xMax=1.4, yMax=0.13;                 // C_L across, C_D up
+  function xOf(cl){ return padL + (cl/xMax)*(W-padL-padR); }
+  function yOf(cd){ return (H-padB) - (cd/yMax)*(H-padT-padB); }
+  var task=0;
 
-    var NS='http://www.w3.org/2000/svg';
-    function el(t,a){ var x=document.createElementNS(NS,t); for(var k in a) x.setAttribute(k,a[k]); return x; }
-    var PAR_FILL='#cfe2ec', PAR_STROKE='#2c6e8e', IND_FILL='#f0d8cf', IND_STROKE='#b0472f';
-
-    // ===== Figure A: drag budget vs CL =====
-    var A=document.getElementById('budget');
-    var ml=46, mr=12, mt=14, mb=34, W=320, Hh=240;
-    var clMax=1.4, cdMax=0.13;
-    function ax(cl){ return ml + cl/clMax*(W-ml-mr); }
-    function ay(cd){ return (Hh-mb) - cd/cdMax*(Hh-mt-mb); }
-    // axes
-    A.appendChild(el('line',{x1:ml,y1:Hh-mb,x2:W-mr,y2:Hh-mb,stroke:'#444'}));
-    A.appendChild(el('line',{x1:ml,y1:Hh-mb,x2:ml,y2:mt,stroke:'#444'}));
-    for(var gxv=0.2; gxv<=clMax+1e-9; gxv+=0.2){ A.appendChild(el('line',{x1:ax(gxv),y1:Hh-mb,x2:ax(gxv),y2:mt,stroke:'#f0f0f0'}));
-      var tx=el('text',{x:ax(gxv),y:Hh-mb+13,'text-anchor':'middle','font-size':9,fill:'#999'}); tx.textContent=gxv.toFixed(1); A.appendChild(tx); }
-    for(var gyv=0.03; gyv<=cdMax+1e-9; gyv+=0.03){ A.appendChild(el('line',{x1:ml,y1:ay(gyv),x2:W-mr,y2:ay(gyv),stroke:'#f0f0f0'}));
-      var ty=el('text',{x:ml-5,y:ay(gyv)+3,'text-anchor':'end','font-size':9,fill:'#999'}); ty.textContent=gyv.toFixed(2); A.appendChild(ty); }
-    A.appendChild(Object.assign(el('text',{x:(ml+W-mr)/2,y:Hh-3,'text-anchor':'middle','font-size':10,fill:'#555'}),{textContent:'lift coefficient  C_L'}));
-    var yl=el('text',{x:11,y:(mt+Hh-mb)/2,'text-anchor':'middle','font-size':10,fill:'#555',transform:'rotate(-90 11 '+((mt+Hh-mb)/2)+')'}); yl.textContent='drag coefficient  C_D'; A.appendChild(yl);
-    // parasitic band (constant)
-    A.appendChild(el('rect',{x:ax(0),y:ay(CD0),width:ax(clMax)-ax(0),height:ay(0)-ay(CD0),fill:PAR_FILL,stroke:'none'}));
-    A.appendChild(el('line',{x1:ax(0),y1:ay(CD0),x2:ax(clMax),y2:ay(CD0),stroke:PAR_STROKE,'stroke-width':1.3}));
-    // induced area (rebuilt on update)
-    var indArea=el('path',{d:'',fill:IND_FILL,stroke:'none',opacity:0.9}); A.appendChild(indArea);
-    var totLine=el('path',{d:'',fill:'none',stroke:IND_STROKE,'stroke-width':2}); A.appendChild(totLine);
-    // endurance reference line
-    A.appendChild(el('line',{x1:ax(CL_END),y1:mt,x2:ax(CL_END),y2:Hh-mb,stroke:'#2e6e3f','stroke-width':1,'stroke-dasharray':'3 3'}));
-    A.appendChild(Object.assign(el('text',{x:ax(CL_END),y:mt+9,'text-anchor':'middle','font-size':8.5,fill:'#2e6e3f','font-weight':600}),{textContent:'endurance'}));
-    // current marker
-    var markLine=el('line',{x1:0,y1:0,x2:0,y2:0,stroke:'#333','stroke-width':1.1,'stroke-dasharray':'2 2'}); A.appendChild(markLine);
-    var markDot=el('circle',{r:4,fill:IND_STROKE}); A.appendChild(markDot);
-
-    // ===== Figure B: stacked bar at current CL =====
-    var B=document.getElementById('bar');
-    var bx=58, bw=58, bTop=24, bBot=210, bCdMax=0.13;
-    function by(cd){ return bBot - cd/bCdMax*(bBot-bTop); }
-    B.appendChild(el('line',{x1:bx-10,y1:bBot,x2:bx+bw+34,y2:bBot,stroke:'#444'}));
-    var parSeg=el('rect',{x:bx,width:bw,fill:PAR_FILL,stroke:PAR_STROKE,'stroke-width':1}); B.appendChild(parSeg);
-    var indSeg=el('rect',{x:bx,width:bw,fill:IND_FILL,stroke:IND_STROKE,'stroke-width':1}); B.appendChild(indSeg);
-    var parTxt=el('text',{x:bx+bw+5,'font-size':9.5,fill:PAR_STROKE,'font-weight':600}); B.appendChild(parTxt);
-    var indTxt=el('text',{x:bx+bw+5,'font-size':9.5,fill:IND_STROKE,'font-weight':600}); B.appendChild(indTxt);
-    var barTitle=el('text',{x:bx+bw/2,y:14,'text-anchor':'middle','font-size':9.5,fill:'#555'}); B.appendChild(barTitle);
-
-    // ===== interactivity =====
-    var sCl=document.getElementById('cl'), sAr=document.getElementById('ar'), status=document.getElementById('status');
-    var task=0;
-    function rebuildInduced(k){
-      var d='M'+ax(0)+','+ay(CD0)+' ';
-      for(var cl=0; cl<=clMax+1e-9; cl+=0.04){ d+='L'+ax(cl).toFixed(1)+','+ay(CD0+k*cl*cl).toFixed(1)+' '; }
-      d+='L'+ax(clMax)+','+ay(CD0)+' Z';
-      indArea.setAttribute('d',d);
-      var t='M'+ax(0)+','+ay(CD0)+' ';
-      for(var c2=0;c2<=clMax+1e-9;c2+=0.04){ t+='L'+ax(c2).toFixed(1)+','+ay(CD0+k*c2*c2).toFixed(1)+' '; }
-      totLine.setAttribute('d',t);
+  function draw(cl, ar){
+    var k=kOf(ar), cd=CD0+k*cl*cl;
+    ctx.clearRect(0,0,W,H); ctx.fillStyle='#0a1c30'; ctx.fillRect(0,0,W,H);
+    // grid — vertical (C_L)
+    ctx.font='11px Inter, system-ui'; ctx.textAlign='center';
+    for(var gx=0.2; gx<=xMax+1e-9; gx+=0.2){
+      ctx.strokeStyle='rgba(143,185,198,.12)'; ctx.beginPath(); ctx.moveTo(xOf(gx),padT); ctx.lineTo(xOf(gx),H-padB); ctx.stroke();
+      ctx.fillStyle='#5b7e93'; ctx.fillText(gx.toFixed(1), xOf(gx), H-padB+15);
     }
-    function update(){
-      var cl=parseFloat(sCl.value), ar=parseFloat(sAr.value), k=kOf(ar);
-      var cdi=k*cl*cl, cd=CD0+cdi, frac=cd>0?cdi/cd:0;
-      var ld=cd>0?cl/cd:0, en=cd>0?Math.pow(cl,1.5)/cd:0;
-      document.getElementById('clVal').textContent=cl.toFixed(2);
-      document.getElementById('arVal').textContent=ar.toFixed(1);
-      document.getElementById('cdVal').textContent=cd.toFixed(4);
-      document.getElementById('fracVal').textContent=(frac*100).toFixed(0)+'%';
-      document.getElementById('ldVal').textContent=ld.toFixed(1);
-      document.getElementById('enVal').textContent=en.toFixed(1);
-      rebuildInduced(k);
-      // marker
-      markLine.setAttribute('x1',ax(cl)); markLine.setAttribute('x2',ax(cl));
-      markLine.setAttribute('y1',ay(0)); markLine.setAttribute('y2',ay(cd));
-      markDot.setAttribute('cx',ax(cl)); markDot.setAttribute('cy',ay(cd));
-      // bar
-      parSeg.setAttribute('y',by(CD0)); parSeg.setAttribute('height',Math.max(0,bBot-by(CD0)));
-      indSeg.setAttribute('y',by(cd)); indSeg.setAttribute('height',Math.max(0,by(CD0)-by(cd)));
-      parTxt.setAttribute('y',(by(CD0)+bBot)/2); parTxt.textContent='para '+(100-frac*100).toFixed(0)+'%';
-      indTxt.setAttribute('y',(by(cd)+by(CD0))/2+3); indTxt.textContent='ind '+(frac*100).toFixed(0)+'%';
-      barTitle.textContent='C_D = '+cd.toFixed(3);
-      // feedback
-      var atEnd=Math.abs(cl-CL_END)<=0.04;
-      if(task===0){
-        if(atEnd){ task=1; status.className='status ok';
-          status.textContent='✓ At endurance lift, induced drag is '+(frac*100).toFixed(0)+'% of the total. Now try step ② — raise aspect ratio.'; }
-        else { status.className='status hint'; status.textContent='Step ①: drag lift up to the green endurance line (C_L = 1.10)…'; }
-      } else {
-        if(atEnd){
-          var baseCd=CD0+kOf(AR_BASE)*cl*cl, drop=(1-cd/baseCd)*100;
-          status.className='status ok';
-          status.textContent= ar>AR_BASE+0.4
-            ? '✓ AR '+ar.toFixed(0)+': total drag down '+drop.toFixed(0)+'% vs AR 8 — airfoil untouched. Span is the endurance lever.'
-            : 'Induced share '+(frac*100).toFixed(0)+'%. Raise AR and watch the red induced bill shrink…';
-        } else { status.className='status hint'; status.textContent='Move lift back to the endurance line to compare drag across aspect ratios…'; }
-      }
+    // grid — horizontal (C_D)
+    ctx.textAlign='right';
+    for(var gy=0.02; gy<=yMax+1e-9; gy+=0.02){
+      ctx.strokeStyle='rgba(143,185,198,.10)'; ctx.beginPath(); ctx.moveTo(padL,yOf(gy)); ctx.lineTo(W-padR,yOf(gy)); ctx.stroke();
+      ctx.fillStyle='#5b7e93'; ctx.fillText(gy.toFixed(2), padL-7, yOf(gy)+4);
     }
-    sCl.addEventListener('input',update); sAr.addEventListener('input',update);
-    document.getElementById('goEnd').addEventListener('click',function(){ sCl.value=CL_END; update(); });
-    document.getElementById('goAR').addEventListener('click',function(){ sAr.value=16; update(); });
-    document.getElementById('reset').addEventListener('click',function(){ sCl.value=0.40; sAr.value=AR_BASE; task=0; update(); });
-    update();
-  })();
-  </script>
+    // axis titles
+    ctx.fillStyle='#8fb9c6'; ctx.textAlign='center';
+    ctx.fillText('lift coefficient  C_L  →', (padL+W-padR)/2, H-4);
+    ctx.save(); ctx.translate(15,(padT+H-padB)/2); ctx.rotate(-Math.PI/2);
+    ctx.fillText('drag coefficient  C_D  →', 0, 0); ctx.restore();
+    // parasitic band (constant floor)
+    ctx.fillStyle='rgba(78,163,218,.35)';
+    ctx.fillRect(xOf(0), yOf(CD0), xOf(xMax)-xOf(0), yOf(0)-yOf(CD0));
+    // induced area (stacked above parasitic)
+    ctx.fillStyle='rgba(255,150,90,.40)'; ctx.beginPath();
+    ctx.moveTo(xOf(0), yOf(CD0));
+    for(var c=0;c<=xMax+1e-9;c+=0.02){ ctx.lineTo(xOf(c), yOf(CD0+k*c*c)); }
+    ctx.lineTo(xOf(xMax), yOf(CD0)); ctx.closePath(); ctx.fill();
+    // total-drag curve
+    ctx.strokeStyle='#ff965a'; ctx.lineWidth=2.4; ctx.beginPath(); var first=true;
+    for(var c2=0;c2<=xMax+1e-9;c2+=0.02){ var X=xOf(c2), Y=yOf(CD0+k*c2*c2); if(first){ctx.moveTo(X,Y);first=false;}else ctx.lineTo(X,Y); }
+    ctx.stroke();
+    // parasitic top line
+    ctx.strokeStyle='rgba(78,163,218,.9)'; ctx.lineWidth=1.4; ctx.beginPath();
+    ctx.moveTo(xOf(0),yOf(CD0)); ctx.lineTo(xOf(xMax),yOf(CD0)); ctx.stroke();
+    // area labels
+    ctx.textAlign='left'; ctx.font='bold 12px Inter, system-ui';
+    ctx.fillStyle='rgba(186,218,242,.95)'; ctx.fillText('parasitic  C_D0', xOf(0.04), yOf(CD0/2)+4);
+    ctx.fillStyle='rgba(255,191,143,.95)'; ctx.fillText('induced  C_Di', xOf(0.84), yOf(CD0+k*1.02*1.02));
+    // endurance reference line (dashed green)
+    ctx.strokeStyle='#3fbf63'; ctx.lineWidth=1.4; ctx.setLineDash([5,4]);
+    ctx.beginPath(); ctx.moveTo(xOf(CL_END),padT); ctx.lineTo(xOf(CL_END),H-padB); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle='#3fbf63'; ctx.font='bold 11px Inter, system-ui'; ctx.textAlign='center';
+    ctx.fillText('endurance  C_L = 1.10', xOf(CL_END), padT+11);
+    // current marker (gold)
+    ctx.strokeStyle='#ffd479'; ctx.lineWidth=1.4; ctx.setLineDash([3,3]);
+    ctx.beginPath(); ctx.moveTo(xOf(cl),yOf(0)); ctx.lineTo(xOf(cl),yOf(cd)); ctx.stroke(); ctx.setLineDash([]);
+    ctx.beginPath(); ctx.arc(xOf(cl),yOf(cd),6,0,Math.PI*2); ctx.fillStyle='#ffd479'; ctx.fill();
+    ctx.strokeStyle='#fff'; ctx.lineWidth=1.5; ctx.stroke();
+  }
+
+  function update(){
+    var cl=parseFloat(clRange.value), ar=parseFloat(arRange.value), k=kOf(ar);
+    var cdi=k*cl*cl, cd=CD0+cdi, frac=cd>0?cdi/cd:0;
+    var ld=cd>0?cl/cd:0, en=cd>0?Math.pow(cl,1.5)/cd:0;
+    clOut.textContent=cl.toFixed(2);
+    arOut.textContent=ar.toFixed(1);
+    cdEl.textContent=cd.toFixed(4);
+    fracEl.textContent=(frac*100).toFixed(0)+'%';
+    ldEl.textContent=ld.toFixed(1);
+    enEl.textContent=en.toFixed(1);
+    draw(cl,ar);
+    var atEnd=Math.abs(cl-CL_END)<=0.04;
+    if(task===0){
+      if(atEnd){ task=1; status.className='status ok';
+        status.textContent='✓ At endurance lift, induced drag is '+(frac*100).toFixed(0)+'% of the total. Now try step ② — raise aspect ratio.'; }
+      else { status.className='status hint'; status.textContent='Step ①: drag lift up to the green endurance line (C_L = 1.10)…'; }
+    } else {
+      if(atEnd){
+        var baseCd=CD0+kOf(AR_BASE)*cl*cl, drop=(1-cd/baseCd)*100;
+        status.className='status ok';
+        status.textContent= ar>AR_BASE+0.4
+          ? '✓ AR '+ar.toFixed(0)+': total drag down '+drop.toFixed(0)+'% vs AR 8 — airfoil untouched. Span is the endurance lever.'
+          : 'Induced share '+(frac*100).toFixed(0)+'%. Raise AR and watch the induced bill shrink…';
+      } else { status.className='status hint'; status.textContent='Move lift back to the endurance line to compare drag across aspect ratios…'; }
+    }
+  }
+
+  clRange.addEventListener('input',update);
+  arRange.addEventListener('input',update);
+  document.getElementById('goEnd').addEventListener('click',function(){ clRange.value=CL_END; update(); });
+  document.getElementById('goAR').addEventListener('click',function(){ arRange.value=16; update(); });
+  document.getElementById('reset').addEventListener('click',function(){ clRange.value=0.40; arRange.value=AR_BASE; task=0; update(); });
+  update();
+})();
+</script>
 </body>
 </html>

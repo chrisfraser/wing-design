@@ -3,290 +3,459 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Lesson 2 — How a Wing Really Makes Lift</title>
-<link rel="stylesheet" href="../assets/lesson.css">
+<title>F2 · How a Wing Really Makes Lift</title>
+<link rel="stylesheet" href="../assets/styles.css">
+<script defer src="../assets/widgets.js"></script>
 <style>
-  .sim { border: 1px solid var(--rule); border-radius: 6px; background: #fff; padding: 1.1rem 1.2rem 1.4rem; margin: 1.6rem 0; }
-  .sim h3 { margin-top: 0.3rem; }
-  .sim-grid { display: flex; flex-wrap: wrap; gap: 0.6rem 1rem; align-items: flex-start; }
-  .sim-grid figure { flex: 1 1 230px; margin: 0.4rem 0; }
-  .readouts { display: flex; flex-wrap: wrap; gap: 0.5rem 1.4rem; margin: 0.5rem 0 0.2rem; font-size: 0.95rem; }
-  .readouts b { color: var(--sky); font-variant-numeric: tabular-nums; }
-  .slider-row { display: flex; align-items: center; gap: 0.8rem; margin: 0.9rem 0 0.2rem; }
-  .slider-row input[type=range] { flex: 1; accent-color: var(--accent); }
-  .slider-row label { font-size: 0.9rem; color: var(--muted); white-space: nowrap; }
-  .status { min-height: 1.4rem; margin-top: 0.5rem; font-size: 0.95rem; font-weight: 600; }
-  .status.ok { color: var(--good); }
-  .status.warn { color: var(--bad); }
-  .status.hint { color: var(--muted); font-weight: 400; font-style: italic; }
-  .myth { display: flex; gap: 0.8rem; margin: 1.1rem 0; }
-  .myth > div { flex: 1; border: 1px solid var(--rule); border-radius: 5px; padding: 0.7rem 0.9rem; font-size: 0.93rem; }
-  .myth .x { border-top: 3px solid var(--bad); }
-  .myth .ok { border-top: 3px solid var(--good); }
-  .myth .tag { font-variant: small-caps; letter-spacing: 0.04em; font-size: 0.8rem; }
-  .myth .x .tag { color: var(--bad); }
-  .myth .ok .tag { color: var(--good); }
-  .sim-btn { font: inherit; font-size: 0.86rem; padding: 0.4rem 0.7rem; border: 1px solid var(--rule);
-    background: var(--paper); border-radius: 3px; cursor: pointer; margin: 0.2rem 0.4rem 0.2rem 0; }
-  .sim-btn:hover { background: var(--accent-soft); }
-  .sim-btn.active { border-color: var(--accent); color: var(--accent); font-weight: 600; }
-  @media (max-width: 540px) { .myth { flex-direction: column; } }
+  /* Lesson-F2-specific: the lift-curve / flow-turning explorer */
+  canvas { width:100%; display:block; border-radius:8px; background:var(--night); }
+  .lift-readouts { display:grid; grid-template-columns:repeat(2,1fr); gap:.3rem 1.2rem; margin-top:.7rem; font-family:var(--mono); font-size:.95rem; color:#d8ecf5; }
+  .lift-readouts b { color:#ffd479; font-variant-numeric:tabular-nums; }
 </style>
 </head>
 <body>
-  <div class="eyebrow">Lesson 0002 · Foundations</div>
-  <h1>How a Wing Really Makes Lift</h1>
-  <p class="subtitle">Where your lift coefficient actually comes from — and the myth to unlearn first.</p>
 
-  <div class="mission">
-    <span class="label">Why this, now</span><br>
-    In <a href="0001-lift-drag-and-the-endurance-number.html">Lesson 1</a> you picked target lift
-    coefficients (C<span class="sub">L</span> ≈ 0.63 for best range, ≈ 1.10 for best endurance).
-    But you can't dial in C<span class="sub">L</span> directly — you set <em>angle of attack</em>, and
-    the wing converts it to lift. This lesson shows the conversion, so a design C<span class="sub">L</span>
-    becomes a real flying angle.
+<header class="topbar">
+  <div class="wrap-wide">
+    <a class="brand" href="../index.html"><span class="dot">✈</span> Wing Design</a>
+    <nav>
+      <a href="../index.html">Lessons</a>
+      <a href="../reference/glossary.html">Glossary</a>
+      <a href="https://github.com/chrisfraser/wing-design">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <p class="kicker">Phase 1 · Foundations · F2</p>
+  <h1 class="lesson-title">How a Wing Really Makes Lift</h1>
+  <p class="lesson-sub">Where your lift coefficient actually comes from — and the myth you have to
+  unlearn before any of it makes sense.</p>
+  <div class="lesson-meta">
+    <span>⏱ ~10 minutes</span><span class="sep">•</span>
+    <span>🔭 One idea, one model</span><span class="sep">•</span>
+    <span class="tag build">Builds on F1</span>
   </div>
 
-  <h2>The myth, retired</h2>
-  <p>The most common explanation of lift is wrong, and believing it will mislead your design intuition.</p>
-
-  <div class="myth">
-    <div class="x">
-      <div class="tag">✗ Equal-transit-time</div>
-      “Air over the top has farther to go, so it speeds up to meet the air below at the trailing edge,
-      and faster air means lower pressure.” The premise is simply false — the parcels
-      <em>never</em> meet, and the top flow moves much faster than this story predicts.
-    </div>
-    <div class="ok">
-      <div class="tag">✓ Flow turning</div>
-      The wing <strong>deflects air downward</strong>. By Newton's third law, pushing air down pushes
-      the wing up. The curved streamlines require a pressure drop above the wing — so Newton and
-      Bernoulli describe the <em>same</em> event, not rival theories.
-    </div>
+  <div class="callout mission">
+    <div class="callout-label">◎ Why this lesson</div>
+    <p>In <a href="0001-lift-drag-and-the-endurance-number.html">F1</a> you picked target lift
+    coefficients — <strong>C<sub>L</sub> ≈ 0.63</strong> for best range, <strong>≈ 1.10</strong> for best
+    endurance. But you can't dial a C<sub>L</sub> in directly: you set an
+    <a href="../reference/glossary.html#angle-of-attack">angle of attack</a>, and the wing converts that
+    angle into lift. This lesson hands you the conversion, so a design C<sub>L</sub> becomes a real flying
+    angle — and clears away the wrong mental model that would have sabotaged every later choice.</p>
   </div>
-  <p class="note">This isn't pedantry. The flow-turning view tells you the things that matter for
-  endurance: lift depends on how much air you turn and how hard, which is why
-  <em>angle of attack</em>, <em>camber</em>, and <em>speed</em> are your levers —
-  not some geometric path-length trick. <a href="https://www3.eng.cam.ac.uk/outreach/Project-resources/Senior-glider/howwingswork.pdf">Babinsky (Cambridge) shows this with real smoke streamlines.</a></p>
 
-  <h2>The lift curve: angle in, C<span class="sub">L</span> out</h2>
-  <p>Within normal flying, lift rises almost perfectly <em>linearly</em> with angle of attack. Three
-  numbers define the whole curve:</p>
+  <p class="lead">Almost everyone is taught that a wing makes lift because the top is longer than the
+  bottom. That story is not a simplification — it is simply false, and it points your design intuition
+  in exactly the wrong direction. Let's retire it, then build the right model in its place.</p>
+
+  <h2><span class="num">1</span>The myth, retired</h2>
+  <p>The popular explanation is the <strong>equal-transit-time</strong> story, and it fails on its own
+  terms.<span class="cite"><a href="#r-arxiv">3</a></span></p>
+
+  <div class="callout warning">
+    <div class="callout-label">✗ The equal-transit-time myth</div>
+    <p>“Air over the curved top has farther to travel, so it speeds up to <em>meet</em> the air below at
+    the trailing edge; faster air means lower pressure, and that suction lifts the wing.” Every link in
+    that chain breaks: the two air parcels <strong>never</strong> meet again, and the flow over the top
+    actually moves <em>much</em> faster than any “catch-up” would require. A flat plate and a symmetric
+    wing both make lift with no extra path length at all.</p>
+  </div>
+
+  <p>Here is what actually happens. The wing <strong>turns the oncoming air downward</strong>. By
+  Newton's third law, pushing a stream of air down means the air pushes the wing
+  up.<span class="cite"><a href="#r-nasa">2</a></span> Turning the flow also means curving the
+  streamlines, and curved streamlines require a pressure drop above the wing — so
+  <strong>Newton and Bernoulli are describing the same single event</strong>, not two rival theories. You
+  can count the force two ways (momentum thrown down, or pressure integrated around the surface) and you
+  get the same lift.</p>
+
+  <p>This isn't pedantry. The <a href="../reference/glossary.html#flow-turning">flow-turning</a> view tells
+  you the things that matter for endurance: lift depends on <em>how much air you turn and how hard</em>,
+  which is exactly why <a href="../reference/glossary.html#angle-of-attack">angle of attack</a>,
+  <a href="../reference/glossary.html#camber">camber</a>, and speed are your levers — not some geometric
+  path-length trick. Babinsky's smoke-tunnel photographs show the turning directly, streamline by
+  streamline.<span class="cite"><a href="#r-babinsky">1</a></span></p>
+
+  <h2><span class="num">2</span>The lift curve: α in, C<sub>L</sub> out</h2>
+  <p>Within the normal flying range, lift rises almost perfectly <em>linearly</em> with angle of attack.
+  Three numbers define the whole <a href="../reference/glossary.html#lift-curve">lift curve</a>:</p>
   <ul>
-    <li><strong>Zero-lift angle</strong> (α<span class="sub">0</span>): a cambered airfoil makes lift
-    even at a slightly negative angle. Ours: about −2°.</li>
-    <li><strong>Lift-curve slope</strong>: roughly +0.11 in C<span class="sub">L</span> per degree for a
-    thin airfoil — close to the theoretical 2π per radian.<span class="note">2π per radian ≈ 0.110 per
-    degree. Finite wings are a bit shallower; we'll fix that in the aspect-ratio lesson.</span></li>
-    <li><strong>Stall</strong>: past a critical angle the flow separates, lift collapses, drag spikes.
-    This caps how slow you can fly — and your endurance point sits closer to it than your range point.</li>
+    <li><strong><a href="../reference/glossary.html#zero-lift-angle">Zero-lift angle</a></strong>
+    (α<sub>0</sub>): a cambered airfoil makes lift even at a slightly negative angle. Ours sits at about
+    <strong>−2°</strong>.</li>
+    <li><strong>Lift-curve slope</strong>: roughly <strong>+0.11 in C<sub>L</sub> per degree</strong> for a
+    thin airfoil — almost exactly the theoretical 2π per radian.<span class="cite"><a href="#r-anderson">4</a></span>
+    (2π per radian ≈ 0.110 per degree. Finite wings are a touch shallower; we fix that in the aspect-ratio
+    lesson.)</li>
+    <li><strong><a href="../reference/glossary.html#stall">Stall</a></strong>: past a critical angle the
+    flow separates from the top surface, lift collapses, and drag spikes. This caps how slow you can fly —
+    and, as you'll see, your endurance point lives uncomfortably close to it.</li>
   </ul>
 
-  <!-- ===================== INTERACTIVE ===================== -->
-  <div class="sim">
-    <h3>Tilt the wing, read the lift</h3>
-    <p style="margin:0.2rem 0 0;font-size:0.94rem;color:var(--muted)">
-      Left: the airfoil meeting the airflow — the arrow is the lift it makes, and the lower streamline
-      shows the air being turned <em>down</em>. Right: the same wing's lift curve, with your two design
-      targets from Lesson 1 marked. Find the angle for each.</p>
+  <p>Put together, those three numbers are one tidy line you can carry through the whole course:</p>
 
-    <div class="slider-row">
-      <label>Angle of attack α</label>
-      <input id="alpha" type="range" min="-4" max="16" step="0.25" value="0">
-      <label><span id="alphaVal">0.0</span>°</label>
+  <div class="formula">
+<span class="var">C<sub>L</sub></span> <span class="op">=</span> 0.11 <span class="op">·</span> ( <span class="var">α</span> <span class="op">+</span> 2 )
+<small>Slope <b>0.11 per degree</b> (≈ 2π per radian); zero-lift angle <b>α₀ = −2°</b>. Linear up to <b>stall at α = 12°</b>, where the flow separates and C<sub>L</sub> drops away. Invert it and a target lift coefficient becomes a flying angle: <b>α = C<sub>L</sub>/0.11 − 2</b>.</small>
+  </div>
+
+  <h2><span class="num">3</span>See it: tilt the wing, read the lift</h2>
+  <p>Drag the angle of attack and watch the wing turn the air and grow its lift, while the operating
+  point slides up the lift curve. Then hit each goal button to find the angle behind your two F1 targets.</p>
+
+  <div class="calc">
+    <div class="calc-title">🧮 Flow-turning &amp; lift-curve explorer — turn a target C<sub>L</sub> into an angle</div>
+    <p style="font-family:var(--sans);font-size:.86rem;color:var(--ink-soft);margin:-.3rem 0 .9rem">
+      <strong>Left:</strong> the wing meets the airflow — the gold arrow is the lift it makes, and the blue
+      streamline is the air being turned <em>down</em>. <strong>Right:</strong> the same wing's lift curve,
+      with your two design targets from F1 marked as rings and a dashed line at the 12° stall. Drag α to
+      land the live dot on each ring.</p>
+    <div class="controls">
+      <div class="control">
+        <label>Angle of attack α <output id="aOut">2.0°</output></label>
+        <input type="range" id="aRange" min="-4" max="16" step="0.25" value="2">
+      </div>
     </div>
-
-    <div class="readouts">
-      <span>C<span class="sub">L</span> = <b id="clVal">–</b></span>
-      <span>flow state: <b id="stateVal">attached</b></span>
+    <div class="readout">
+      <canvas id="liftCanvas" width="720" height="340" aria-label="Left: an airfoil tilting and turning the airflow downward with a lift vector. Right: the lift coefficient versus angle-of-attack curve with target rings and the stall break."></canvas>
+      <div class="lift-readouts">
+        <span>C<sub>L</sub> = <b id="clVal">—</b></span>
+        <span>flow state: <b id="stateVal">attached</b></span>
+      </div>
     </div>
-
-    <div class="sim-grid">
-      <figure>
-        <svg id="foil" viewBox="0 0 300 240" role="img" aria-label="Airfoil meeting the airflow"></svg>
-        <figcaption>Airflow → ; wing turns it down; lift ↑ grows with α.</figcaption>
-      </figure>
-      <figure>
-        <svg id="curve" viewBox="0 0 300 240" role="img" aria-label="Lift curve C_L versus alpha"></svg>
-        <figcaption>The lift curve. Linear, then stall.</figcaption>
-      </figure>
+    <div class="btn-row">
+      <button class="simbtn active" id="goRange">🎯 Best-range angle (C<sub>L</sub>≈0.63)</button>
+      <button class="simbtn" id="goEnd">🎯 Best-endurance angle (C<sub>L</sub>≈1.10)</button>
     </div>
+    <div class="status hint" id="status">Drag α to hit the active target lift coefficient…</div>
+  </div>
 
+  <h2><span class="num">4</span>The stall-margin payoff</h2>
+  <p>Switch the explorer between the two goals and watch where they land. Best range needs only
+  C<sub>L</sub> ≈ 0.63, which the curve delivers at a gentle <strong>α ≈ 3.7°</strong>. Best endurance
+  needs C<sub>L</sub> ≈ 1.10, which demands <strong>α ≈ 8°</strong> — and the stall is at just 12°.</p>
+
+  <div class="callout key">
+    <div class="callout-label">★ The payoff</div>
+    <p>Your endurance setting flies with only about <strong>4° of stall margin</strong>, while your range
+    setting keeps a comfortable cushion. That thin margin is precisely why an endurance design cares so
+    much about a <em>gentle</em>, forgiving stall and a clean low-Reynolds airfoil — push α a little too
+    far and the lift you were living on simply vanishes. That requirement drives the next several lessons.</p>
+  </div>
+
+  <h2><span class="num">5</span>Check yourself</h2>
+  <p>Answer from memory — that effort is what turns a fact you just read into one you'll keep.</p>
+
+  <div class="quiz"
+       data-explain-right="Lift is the reaction to turning air downward — Newton and Bernoulli describe the same event."
+       data-explain-wrong="Re-read §1 — the catch-up / path-length story is the equal-transit-time myth.">
+    <div class="q-kicker">Question 1 of 3</div>
+    <div class="q-text">In correct physics, a wing produces lift mainly because it…</div>
+    <div class="q-options">
+      <button class="opt" data-correct data-feedback="Yes. The wing turns air down, and by Newton's third law the air pushes the wing up; the curved flow also lowers the pressure on top. One event, two descriptions.">deflects the passing airflow downward</button>
+      <button class="opt" data-feedback="That's the catch-up (equal-transit-time) myth. The parcels never meet again, and the upper flow moves far faster than that story claims.">makes the upper air race to catch up</button>
+      <button class="opt" data-feedback="Splitting the flow does happen, but on its own it makes no lift at all — the lift comes from turning the air downward.">splits the oncoming airflow into two</button>
+      <button class="opt" data-feedback="Path length is the heart of the myth. A flat plate makes lift with no extra path over the top — what counts is how much air is turned.">forces top air over a longer path</button>
+    </div>
+    <div class="q-feedback"></div>
+  </div>
+
+  <div class="quiz"
+       data-explain-right="C_L is linear in α between zero-lift and stall."
+       data-explain-wrong="See §2 — the lift curve is a straight line of slope ≈ 0.11 per degree until stall.">
+    <div class="q-kicker">Question 2 of 3</div>
+    <div class="q-text">Between the zero-lift angle and stall, C<sub>L</sub> changes with angle of attack…</div>
+    <div class="q-options">
+      <button class="opt" data-correct data-feedback="Correct. C_L climbs about +0.11 per degree — a straight line — from the −2° zero-lift angle up to stall near 12°.">linearly, at a steady fixed slope</button>
+      <button class="opt" data-feedback="Drag grows roughly as lift squared, but C_L itself rises linearly with α right up until the flow separates.">sharply, by an inverse-square law</button>
+      <button class="opt" data-feedback="It's the reverse: C_L rises steadily, then collapses at stall — there is no late leap near the top.">weakly, then leaps near the top</button>
+      <button class="opt" data-feedback="Far from random — the lift curve is one of the most reliably straight lines in low-speed aerodynamics.">randomly, with no clear trend</button>
+    </div>
+    <div class="q-feedback"></div>
+  </div>
+
+  <div class="quiz"
+       data-explain-right="Endurance flies higher-α and closer to stall than range."
+       data-explain-wrong="Look again at §4 — endurance (α ≈ 8°) sits much closer to the 12° stall than range (α ≈ 3.7°).">
+    <div class="q-kicker">Question 3 of 3</div>
+    <div class="q-text">Compared with the best-range point, the best-endurance point sits at an angle that is…</div>
+    <div class="q-options">
+      <button class="opt" data-correct data-feedback="Right. Endurance needs C_L ≈ 1.10, so α ≈ 8° — only ~4° under the 12° stall. Range (C_L ≈ 0.63) sits at α ≈ 3.7°, with far more cushion.">higher, with much less stall margin</button>
+      <button class="opt" data-feedback="Endurance flies at a HIGHER angle, not lower — it needs more lift coefficient, which pushes it toward stall.">lower, with much more stall margin</button>
+      <button class="opt" data-feedback="They are different points: range near α ≈ 3.7°, endurance near α ≈ 8°, with very different margins to stall.">equal, with exactly the same margin</button>
+      <button class="opt" data-feedback="Higher angle is right, but a higher α leaves LESS room before the 12° stall, not more.">higher, with much more stall margin</button>
+    </div>
+    <div class="q-feedback"></div>
+  </div>
+
+  <div class="recap">
+    <h3>What you can now say</h3>
+    <ol>
+      <li>The <strong>equal-transit-time</strong> story is a myth; a wing makes lift by <strong>turning air downward</strong> (Newton), which is the same event as the pressure drop on top (Bernoulli).</li>
+      <li>The lift curve is linear: <strong>C<sub>L</sub> = 0.11·(α + 2)</strong> — slope ≈ 0.11 per degree (≈ 2π per radian), zero-lift at α<sub>0</sub> = −2°.</li>
+      <li>Past the <strong>stall</strong> angle (≈ 12°) the flow separates and lift collapses, capping how slow you can fly.</li>
+      <li>Inverting the curve turns a target into an angle: range C<sub>L</sub> ≈ 0.63 → <strong>α ≈ 3.7°</strong>; endurance C<sub>L</sub> ≈ 1.10 → <strong>α ≈ 8°</strong>.</li>
+      <li>The endurance point sits only ~4° below stall — a thin margin that makes a gentle stall and a clean low-Re airfoil matter.</li>
+    </ol>
+  </div>
+
+  <div class="sourcebox">
+    <div class="icon">📖</div>
     <div>
-      <button id="goRange" class="sim-btn active">🎯 Best-range angle (C<span class="sub">L</span>≈0.63)</button>
-      <button id="goEnd" class="sim-btn">🎯 Best-endurance angle (C<span class="sub">L</span>≈1.10)</button>
+      <div class="label">Primary source · read this next</div>
+      <div class="title"><a href="https://www3.eng.cam.ac.uk/outreach/Project-resources/Senior-glider/howwingswork.pdf" target="_blank" rel="noopener">Babinsky — “How do wings work?” (University of Cambridge, <em>Physics Education</em> 2003)</a></div>
+      <div class="desc">Five pages, real smoke-tunnel photographs, and the cleanest correct account of lift you'll find. It dismantles the equal-transit-time myth and shows the flow turning streamline by streamline. Read it once and the myth never comes back.</div>
     </div>
-    <div id="status" class="status hint">Drag α to hit the target lift coefficient…</div>
   </div>
 
-  <div class="key">
-    <span class="label">The payoff</span>
-    <p style="margin:0.3rem 0 0">Best range lives near <strong>α ≈ 3.7°</strong>; best endurance near
-    <strong>α ≈ 8°</strong> — only a few degrees below the stall around 12°. That thin margin is why
-    endurance designs care so much about a <em>gentle</em> stall and a clean low-Reynolds airfoil —
-    the subject of the next lessons.</p>
+  <div class="ask-teacher">
+    💬 <b>I'm your teacher — ask me anything.</b> Want the Newton/Bernoulli equivalence derived properly,
+    or curious why the lift-curve slope is 2π per radian? Bring it to chat. Confused beats stuck.
   </div>
 
-  <h2>Check yourself</h2>
-  <p>From memory — the effort is the point.</p>
-
-  <div class="quiz" data-answer="2">
-    <p class="q">In correct physics, a wing generates lift primarily because it…</p>
-    <button data-i="0">makes top air rush to catch up</button>
-    <button data-i="1">splits oncoming air cleanly in two</button>
-    <button data-i="2">turns the passing airflow downward</button>
-    <p class="explain">Lift is reaction to deflecting air downward (Newton); the curved flow also means lower pressure on top (Bernoulli). Same event, two descriptions. The “catch-up” story is the equal-transit-time myth.</p>
+  <div class="crosslinks">
+    <b>Glossary:</b>
+    <a href="../reference/glossary.html#flow-turning">flow turning</a> ·
+    <a href="../reference/glossary.html#lift-curve">lift curve</a> ·
+    <a href="../reference/glossary.html#zero-lift-angle">zero-lift angle</a> ·
+    <a href="../reference/glossary.html#stall">stall</a> ·
+    <a href="../reference/glossary.html#camber">camber</a> ·
+    <a href="../reference/glossary.html#angle-of-attack">angle of attack</a>.
+    <b>Builds on →</b> <strong>F1</strong> (the endurance number) · <b>Builds toward →</b> <strong>F3</strong> (the two kinds of drag).
   </div>
 
-  <div class="quiz" data-answer="0">
-    <p class="q">Between zero-lift angle and stall, the lift coefficient varies with angle of attack…</p>
-    <button data-i="0">linearly, by a steady slope</button>
-    <button data-i="1">sharply, by a square law</button>
-    <button data-i="2">weakly, then jumps near top</button>
-    <p class="explain">C<span class="sub">L</span> rises almost perfectly linearly with α (about +0.11 per degree) until the flow separates at stall, where it collapses.</p>
-  </div>
+  <h2 id="refs"><span class="num">§</span>References</h2>
+  <ol style="font-family:var(--sans);font-size:.84rem;color:var(--ink-soft);line-height:1.5">
+    <li id="r-babinsky">Babinsky — <a href="https://www3.eng.cam.ac.uk/outreach/Project-resources/Senior-glider/howwingswork.pdf" target="_blank" rel="noopener">How do wings work?</a> (University of Cambridge, <em>Physics Education</em> 38, 2003). Smoke-tunnel photographs of streamlines being turned; the cleanest correct account of lift. <b>Primary source.</b></li>
+    <li id="r-nasa">NASA Glenn Research Center — <a href="https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/bernoulli-and-newton/" target="_blank" rel="noopener">Bernoulli and Newton</a>. Why the two views describe one event, and which popular “theories” of lift are wrong.</li>
+    <li id="r-arxiv">Roura — <a href="https://arxiv.org/abs/2110.00690" target="_blank" rel="noopener">On the equal-transit-time fallacy</a> (arXiv, 2021). A careful account of why the equal-transit / longer-path explanation is incorrect.</li>
+    <li id="r-anderson">Anderson — <a href="https://www.mheducation.com/highered/product/fundamentals-aerodynamics-anderson.html" target="_blank" rel="noopener">Fundamentals of Aerodynamics</a>. Standard reference for the lift curve, the 2π-per-radian thin-airfoil slope, and stall.</li>
+  </ol>
 
-  <div class="quiz" data-answer="1">
-    <p class="q">Versus the best-range point, the best-endurance point flies at an angle that is…</p>
-    <button data-i="0">lower, with much more margin</button>
-    <button data-i="1">higher, with much less margin</button>
-    <button data-i="2">equal, with the same margin</button>
-    <p class="explain">Endurance needs a higher C<span class="sub">L</span> (~1.10), so a higher α (~8°) — much closer to the stall angle (~12°). Less stall margin is the price of minimum-power flight.</p>
-  </div>
+  <nav class="lesson-nav">
+    <a href="0001-lift-drag-and-the-endurance-number.html">
+      <div class="dir">← Prev · F1</div>
+      <div class="ttl">Lift, Drag &amp; the Endurance Number</div>
+    </a>
+    <a class="next" href="0003-the-two-kinds-of-drag.html">
+      <div class="dir">Next · F3</div>
+      <div class="ttl">The Two Kinds of Drag →</div>
+    </a>
+  </nav>
 
-  <div class="source">
-    <span class="label">Primary source for this lesson</span><br>
-    <a href="https://www3.eng.cam.ac.uk/outreach/Project-resources/Senior-glider/howwingswork.pdf">Babinsky,
-    “How do wings work?” (University of Cambridge, <em>Physics Education</em> 2003).</a>
-    Five pages, real smoke-tunnel photos, and the cleanest correct account of lift you'll find.
-    Read it once; it dissolves the myth permanently.
-  </div>
+  <p class="pagefoot">Lesson F2 of the Wing Design course ·
+  <a href="../index.html">all lessons</a> ·
+  <a href="https://github.com/chrisfraser/wing-design">source on GitHub</a></p>
+</main>
 
-  <div class="ask">
-    <span class="label">Your teacher is on call</span> — Want the Newton/Bernoulli equivalence shown
-    properly, or curious why the slope is 2π per radian? Ask me between lessons.
-  </div>
+<script>
+/* ===================== Flow-turning & lift-curve explorer ===================== */
+(function(){
+  /* ---- Lift model (continuous with F1): CL = 0.11*(alpha + 2) pre-stall ---- */
+  var slope=0.11, a0=-2, aStall=12, clDrop=0.6;
+  function CL(a){
+    if(a<=aStall) return slope*(a-a0);
+    var peak=slope*(aStall-a0);              // 1.54 at the stall break
+    return Math.max(0.4, peak - clDrop*(a-aStall));
+  }
+  var clRange=0.63, clEnd=1.10;
+  var aRangeTgt=clRange/slope+a0;            // ~3.73
+  var aEndTgt  =clEnd/slope+a0;              // ~8.0
 
-  <div class="lesson-nav">
-    <a href="0001-lift-drag-and-the-endurance-number.html">← Lesson 1</a>
-    <a href="../reference/glossary.html">📖 Glossary</a>
-    <span>Next: Lesson 3 — The two kinds of drag →</span>
-  </div>
+  var slider=document.getElementById('aRange'), aOut=document.getElementById('aOut');
+  var canvas=document.getElementById('liftCanvas'), ctx=canvas?canvas.getContext('2d'):null;
+  var status=document.getElementById('status');
+  var clVal=document.getElementById('clVal'), stateVal=document.getElementById('stateVal');
+  var bR=document.getElementById('goRange'), bE=document.getElementById('goEnd');
+  if(!ctx) return;
 
-  <script src="../assets/quiz.js"></script>
-  <script>
-  (function () {
-    // ---- Shared lift model (continuous with Lesson 1): CL = 0.11*(alpha+2) pre-stall ----
-    var slope = 0.11, a0 = -2, aStall = 12, clMaxDrop = 0.6;
-    function CL(a) {
-      if (a <= aStall) return slope * (a - a0);
-      // post-stall: gentle drop
-      var peak = slope * (aStall - a0);
-      return Math.max(0.4, peak - clMaxDrop * (a - aStall));
-    }
-    var aRange = 0.63 / slope + a0;   // ~3.73
-    var aEnd   = 1.10 / slope + a0;   // ~8.0
+  var W=canvas.width, H=canvas.height, goal='range';
 
-    var NS = 'http://www.w3.org/2000/svg';
-    function el(t, a) { var e = document.createElementNS(NS, t); for (var k in a) e.setAttribute(k, a[k]); return e; }
+  /* ---- Right panel (lift curve) geometry ---- */
+  var xL=410, xR=W-16, yT=24, yB=H-36;
+  var axMin=-4, axMax=16, clMin=0, clMax=1.8;
+  function gx(a){ return xL + (a-axMin)/(axMax-axMin)*(xR-xL); }
+  function gy(cl){ return yB - (cl-clMin)/(clMax-clMin)*(yB-yT); }
 
-    // ---------- Airfoil panel ----------
-    var foil = document.getElementById('foil');
-    function defArrow(svg, id, color) {
-      var defs = el('defs', {});
-      var m = el('marker', {id:id, markerWidth:8, markerHeight:8, refX:6, refY:3, orient:'auto'});
-      m.appendChild(el('path', {d:'M0,0 L6,3 L0,6 Z', fill:color}));
-      defs.appendChild(m); svg.appendChild(defs);
-    }
-    defArrow(foil, 'flow', '#1c4f6b');
-    defArrow(foil, 'liftarr', '#7a1705');
-    // incoming flow lines (left -> right)
-    for (var y = 40; y <= 200; y += 40) {
-      foil.appendChild(el('line', {x1:6, y1:y, x2:70, y2:y, stroke:'#9fb8c6', 'stroke-width':1.4, 'marker-end':'url(#flow)'}));
-    }
-    var cx = 150, cy = 120, chord = 110;
-    var foilGroup = el('g', {});
-    // simple cambered airfoil shape (path), drawn around origin, rotated by -alpha
-    var shape = el('path', {
-      d: 'M -55,0 C -40,-13 -10,-17 20,-12 C 40,-9 52,-4 55,0 C 40,5 0,7 -30,5 C -45,4 -52,2 -55,0 Z',
-      fill:'#2b2b2b', stroke:'#000', 'stroke-width':1
-    });
-    foilGroup.appendChild(shape);
+  function arrowHead(x,y,ang,color){
+    var hl=7;
+    ctx.fillStyle=color; ctx.beginPath();
+    ctx.moveTo(x,y);
+    ctx.lineTo(x-hl*Math.cos(ang-0.42), y-hl*Math.sin(ang-0.42));
+    ctx.lineTo(x-hl*Math.cos(ang+0.42), y-hl*Math.sin(ang+0.42));
+    ctx.closePath(); ctx.fill();
+  }
+  function arrow(x1,y1,x2,y2,color,wdt){
+    ctx.strokeStyle=color; ctx.lineWidth=wdt;
+    ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+    arrowHead(x2,y2,Math.atan2(y2-y1,x2-x1),color);
+  }
+
+  /* ---- LEFT panel: airfoil turning the flow ---- */
+  function drawAirfoil(a, cl, stalled){
+    var cx=152, cy=176;
+    // panel label
+    ctx.fillStyle='#8fb9c6'; ctx.textAlign='left'; ctx.font='bold 11px Inter, system-ui';
+    ctx.fillText('FLOW TURNING', 16, 28);
+    ctx.font='11px Inter, system-ui';
+    ctx.fillStyle='#5b7e93'; ctx.fillText('airflow →', 14, 54);
+
+    // incoming straight flow arrows (stop short of the wing)
+    var ys=[78,122,176,230];
+    for(var i=0;i<ys.length;i++){ arrow(14, ys[i], 86, ys[i], '#5b7e93', 1.4); }
+
+    // airfoil body, rotated by -alpha (leading edge up for positive alpha)
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(-a*Math.PI/180);
     // chord line
-    foilGroup.appendChild(el('line', {x1:-55, y1:0, x2:55, y2:0, stroke:'#bbb', 'stroke-width':0.8, 'stroke-dasharray':'3 2'}));
-    foil.appendChild(foilGroup);
-    // lift vector (from wing center, upward), and downwash streamline
-    var lift = el('line', {x1:cx, y1:cy, x2:cx, y2:cy-30, stroke:'#7a1705', 'stroke-width':3, 'marker-end':'url(#liftarr)'});
-    foil.appendChild(lift);
-    var downwash = el('path', {d:'', fill:'none', stroke:'#1c4f6b', 'stroke-width':1.6, 'marker-end':'url(#flow)'});
-    foil.appendChild(downwash);
-    var liftLbl = el('text', {x:cx+8, y:cy-26, 'font-size':11, fill:'#7a1705', 'font-weight':600}); liftLbl.textContent='lift'; foil.appendChild(liftLbl);
+    ctx.strokeStyle='rgba(143,185,198,.45)'; ctx.lineWidth=1; ctx.setLineDash([4,3]);
+    ctx.beginPath(); ctx.moveTo(-55,0); ctx.lineTo(55,0); ctx.stroke(); ctx.setLineDash([]);
+    // cambered section
+    ctx.beginPath();
+    ctx.moveTo(-55,0);
+    ctx.bezierCurveTo(-40,-13,-10,-17,20,-12);
+    ctx.bezierCurveTo(40,-9,52,-4,55,0);
+    ctx.bezierCurveTo(40,5,0,7,-30,5);
+    ctx.bezierCurveTo(-45,4,-52,2,-55,0);
+    ctx.closePath();
+    ctx.fillStyle = stalled ? '#8aa0ac' : '#dbe8f0';
+    ctx.fill();
+    ctx.strokeStyle='#9fb8c6'; ctx.lineWidth=1; ctx.stroke();
+    ctx.restore();
 
-    // ---------- Lift curve panel ----------
-    var cv = document.getElementById('curve');
-    var ml=42, mr=14, mt=14, mb=34, W=300, Hc=240;
-    var axMin=-4, axMax=16, clMin=0, clMax=1.8;
-    function gx(a){ return ml + (a-axMin)/(axMax-axMin)*(W-ml-mr); }
-    function gy(cl){ return (Hc-mb) - (cl-clMin)/(clMax-clMin)*(Hc-mt-mb); }
-    cv.appendChild(el('line', {x1:ml, y1:Hc-mb, x2:W-mr, y2:Hc-mb, stroke:'#444'}));
-    cv.appendChild(el('line', {x1:ml, y1:Hc-mb, x2:ml, y2:mt, stroke:'#444'}));
-    for (var ax=-4; ax<=16; ax+=4){ cv.appendChild(el('line',{x1:gx(ax),y1:Hc-mb,x2:gx(ax),y2:mt,stroke:'#eee'}));
-      var tx=el('text',{x:gx(ax),y:Hc-mb+14,'text-anchor':'middle','font-size':9,fill:'#888'}); tx.textContent=ax+'°'; cv.appendChild(tx); }
-    for (var ay=0.3; ay<=1.8; ay+=0.3){ cv.appendChild(el('line',{x1:ml,y1:gy(ay),x2:W-mr,y2:gy(ay),stroke:'#eee'}));
-      var ty=el('text',{x:ml-6,y:gy(ay)+3,'text-anchor':'end','font-size':9,fill:'#888'}); ty.textContent=ay.toFixed(1); cv.appendChild(ty); }
-    cv.appendChild(Object.assign(el('text',{x:(ml+W-mr)/2,y:Hc-4,'text-anchor':'middle','font-size':10,fill:'#555'}),{textContent:'angle of attack α'}));
-    var yl=el('text',{x:12,y:(mt+Hc-mb)/2,'text-anchor':'middle','font-size':10,fill:'#555',transform:'rotate(-90 12 '+((mt+Hc-mb)/2)+')'}); yl.textContent='C_L'; cv.appendChild(yl);
-    // curve path
-    var d=''; for (var a=axMin; a<=axMax+1e-9; a+=0.25){ d += (d===''?'M':'L') + gx(a).toFixed(1)+','+gy(CL(a)).toFixed(1)+' '; }
-    cv.appendChild(el('path',{d:d, fill:'none', stroke:'#1c4f6b','stroke-width':2.2}));
-    // stall marker
-    cv.appendChild(el('line',{x1:gx(aStall),y1:gy(CL(aStall)),x2:gx(aStall),y2:Hc-mb,stroke:'#9a2b1e','stroke-width':1,'stroke-dasharray':'3 3'}));
-    var stxt=el('text',{x:gx(aStall),y:gy(CL(aStall))-6,'text-anchor':'middle','font-size':9,fill:'#9a2b1e','font-weight':600}); stxt.textContent='stall'; cv.appendChild(stxt);
-    // target ghost markers
-    function ghost(cl,color,label){ var g=el('g',{}); var a=cl/slope+a0;
-      g.appendChild(el('line',{x1:gx(a),y1:gy(cl),x2:gx(a),y2:Hc-mb,stroke:color,'stroke-width':1,'stroke-dasharray':'2 2',opacity:0.5}));
-      g.appendChild(el('circle',{cx:gx(a),cy:gy(cl),r:4,fill:'none',stroke:color,'stroke-width':1.6}));
-      cv.appendChild(g); }
-    ghost(0.63,'#7a1705'); ghost(1.10,'#2e6e3f');
-    var pt=el('circle',{cx:gx(0),cy:gy(CL(0)),r:5,fill:'#7a1705'}); cv.appendChild(pt);
-
-    // ---------- interactivity ----------
-    var slider=document.getElementById('alpha'), status=document.getElementById('status');
-    var bR=document.getElementById('goRange'), bE=document.getElementById('goEnd');
-    var goal='range';
-    function update(){
-      var a=parseFloat(slider.value), cl=CL(a), stalled=a>aStall;
-      document.getElementById('alphaVal').textContent=a.toFixed(1);
-      document.getElementById('clVal').textContent=cl.toFixed(3);
-      var st=document.getElementById('stateVal'); st.textContent= stalled?'STALLED':'attached';
-      st.style.color = stalled ? '#9a2b1e' : '#2e6e3f';
-      // rotate airfoil by -alpha (nose up = leading edge up)
-      foilGroup.setAttribute('transform','translate('+cx+','+cy+') rotate('+(-a)+')');
-      // lift vector length scales with CL
-      var len = 14 + cl*46;
-      lift.setAttribute('y2', cy-len); liftLbl.setAttribute('y', cy-len-4);
-      lift.setAttribute('opacity', stalled?0.35:1);
-      // downwash: stronger deflection at higher cl; from trailing edge area
-      var defl = cl*26;
-      downwash.setAttribute('d','M 70,'+(cy+ (a>0? -2:2))+' Q '+(cx)+','+cy+' '+(W-8)+','+(cy+defl));
-      downwash.setAttribute('opacity', stalled?0.3:1);
-      // curve point
-      pt.setAttribute('cx',gx(a)); pt.setAttribute('cy',gy(cl));
-      pt.setAttribute('fill', goal==='range'?'#7a1705':'#2e6e3f');
-      // feedback
-      var target = goal==='range'?aRange:aEnd, tcl=goal==='range'?0.63:1.10, near=Math.abs(a-target)<=0.35;
-      if (stalled){ status.className='status warn'; status.textContent='⚠ Stalled — flow separated, lift gone. Back off α below 12°.'; return; }
-      if (near){ status.className='status ok';
-        status.textContent='✓ C_L ≈ '+tcl.toFixed(2)+' at α ≈ '+a.toFixed(1)+'°. That angle IS your '+(goal==='range'?'best-range':'best-endurance')+' setting.'; }
-      else { status.className='status hint';
-        status.textContent = (cl<tcl?'Need more lift — raise α toward the marked target…':'Too much lift — lower α toward the target…'); }
+    // downwash streamline: the turned flow leaving toward the right and down
+    var defl = stalled ? 5 : cl*30;
+    ctx.globalAlpha = stalled ? 0.32 : 0.95;
+    ctx.strokeStyle='#4ea3da'; ctx.lineWidth=1.9;
+    ctx.beginPath();
+    ctx.moveTo(90, cy-2);
+    ctx.quadraticCurveTo(cx+18, cy+1, 312, cy+defl);
+    ctx.stroke();
+    var endAng=Math.atan2((cy+defl)-(cy+1), 312-(cx+18));
+    arrowHead(312, cy+defl, endAng, '#4ea3da');
+    ctx.globalAlpha=1;
+    if(!stalled){
+      ctx.fillStyle='#4ea3da'; ctx.textAlign='right'; ctx.font='11px Inter, system-ui';
+      ctx.fillText('downwash', 310, cy+defl+18);
     }
-    function setGoal(g){ goal=g; bR.classList.toggle('active',g==='range'); bE.classList.toggle('active',g==='end'); update(); }
-    slider.addEventListener('input',update);
-    bR.addEventListener('click',function(){setGoal('range');});
-    bE.addEventListener('click',function(){setGoal('end');});
-    update();
-  })();
-  </script>
+
+    // lift vector (perpendicular to freestream = straight up), grows with CL
+    var len = 16 + Math.max(cl,0)*48;
+    var lx=cx, ly0=cy-8, ly1=cy-8-len;
+    ctx.globalAlpha = stalled ? 0.4 : 1;
+    arrow(lx, ly0, lx, ly1, '#ffd479', 3);
+    ctx.fillStyle='#ffd479'; ctx.textAlign='left'; ctx.font='bold 11px Inter, system-ui';
+    ctx.fillText('lift', lx+8, ly1+10);
+    ctx.font='11px Inter, system-ui';
+    ctx.globalAlpha=1;
+  }
+
+  /* ---- RIGHT panel: lift curve ---- */
+  function ghost(cl, color){
+    var X=gx(cl/slope+a0), Y=gy(cl);
+    ctx.globalAlpha=.5; ctx.strokeStyle=color; ctx.lineWidth=1; ctx.setLineDash([2,3]);
+    ctx.beginPath(); ctx.moveTo(X,Y); ctx.lineTo(X,yB); ctx.stroke();
+    ctx.setLineDash([]); ctx.globalAlpha=1;
+    ctx.beginPath(); ctx.arc(X,Y,5,0,Math.PI*2); ctx.strokeStyle=color; ctx.lineWidth=1.8; ctx.stroke();
+  }
+  function drawCurve(a, cl, stalled){
+    ctx.font='11px Inter, system-ui';
+    // x grid + ticks
+    ctx.textAlign='center';
+    for(var ax=axMin; ax<=axMax+1e-9; ax+=4){
+      ctx.strokeStyle='rgba(143,185,198,.12)';
+      ctx.beginPath(); ctx.moveTo(gx(ax),yT); ctx.lineTo(gx(ax),yB); ctx.stroke();
+      ctx.fillStyle='#5b7e93'; ctx.fillText(ax+'°', gx(ax), yB+15);
+    }
+    // y grid + ticks
+    ctx.textAlign='right';
+    for(var ay=0.3; ay<=clMax+1e-9; ay+=0.3){
+      ctx.strokeStyle='rgba(143,185,198,.10)';
+      ctx.beginPath(); ctx.moveTo(gx(axMin),gy(ay)); ctx.lineTo(gx(axMax),gy(ay)); ctx.stroke();
+      ctx.fillStyle='#5b7e93'; ctx.fillText(ay.toFixed(1), gx(axMin)-7, gy(ay)+4);
+    }
+    // axis titles
+    ctx.fillStyle='#8fb9c6'; ctx.textAlign='center';
+    ctx.fillText('angle of attack  α  →', (gx(axMin)+gx(axMax))/2, H-4);
+    ctx.save(); ctx.translate(gx(axMin)-34, (yT+yB)/2); ctx.rotate(-Math.PI/2);
+    ctx.fillText('lift coefficient  C_L  →', 0, 0); ctx.restore();
+    // panel label
+    ctx.textAlign='left'; ctx.font='bold 11px Inter, system-ui';
+    ctx.fillText('LIFT CURVE', gx(axMin), yT-8);
+    ctx.font='11px Inter, system-ui';
+
+    // lift-curve line
+    ctx.strokeStyle='#4ea3da'; ctx.lineWidth=2.6; ctx.beginPath(); var first=true;
+    for(var aa=axMin; aa<=axMax+1e-9; aa+=0.25){
+      var X=gx(aa), Y=gy(CL(aa));
+      if(first){ ctx.moveTo(X,Y); first=false; } else ctx.lineTo(X,Y);
+    }
+    ctx.stroke();
+
+    // stall break marker
+    ctx.strokeStyle='rgba(193,73,43,.75)'; ctx.lineWidth=1; ctx.setLineDash([4,3]);
+    ctx.beginPath(); ctx.moveTo(gx(aStall),gy(CL(aStall))); ctx.lineTo(gx(aStall),yB); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle='#e0775f'; ctx.textAlign='center'; ctx.font='bold 11px Inter, system-ui';
+    ctx.fillText('stall', gx(aStall), gy(CL(aStall))-8);
+    ctx.font='11px Inter, system-ui';
+
+    // target ghost rings (range = gold, endurance = green)
+    ghost(clRange, '#ffd479');
+    ghost(clEnd,   '#3fbf63');
+
+    // live operating point
+    var px=gx(a), py=gy(cl);
+    ctx.beginPath(); ctx.arc(px,py,6,0,Math.PI*2);
+    ctx.fillStyle = stalled ? '#c1492b' : (goal==='range'?'#ffd479':'#3fbf63');
+    ctx.fill(); ctx.strokeStyle='#fff'; ctx.lineWidth=1.5; ctx.stroke();
+  }
+
+  function draw(a, cl, stalled){
+    ctx.clearRect(0,0,W,H);
+    ctx.fillStyle='#0a1c30'; ctx.fillRect(0,0,W,H);
+    // faint divider between the two panels
+    ctx.strokeStyle='rgba(143,185,198,.08)'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(360,18); ctx.lineTo(360,H-18); ctx.stroke();
+    drawAirfoil(a, cl, stalled);
+    drawCurve(a, cl, stalled);
+  }
+
+  function update(){
+    var a=parseFloat(slider.value), cl=CL(a), stalled=a>aStall;
+    aOut.textContent=a.toFixed(1)+'°';
+    clVal.textContent=cl.toFixed(3);
+    stateVal.textContent= stalled ? 'STALLED' : 'attached';
+    stateVal.style.color = stalled ? '#ff8c6b' : '#5fcf86';
+    draw(a, cl, stalled);
+
+    var target = goal==='range'?aRangeTgt:aEndTgt, tcl=goal==='range'?clRange:clEnd;
+    var near=Math.abs(a-target)<=0.35;
+    if(stalled){
+      status.className='status warn';
+      status.textContent='⚠ STALL — past 12° the flow separates and the lift you were living on collapses. Ease α back below 12°.';
+      return;
+    }
+    if(near){
+      status.className='status ok';
+      status.textContent='✓ C_L ≈ '+tcl.toFixed(2)+' at α ≈ '+a.toFixed(1)+'° — that angle IS your '+(goal==='range'?'best-range':'best-endurance')+' setting.';
+    } else {
+      status.className='status hint';
+      status.textContent = cl<tcl ? 'Need more lift — nudge α up toward the marked ring…'
+                                  : 'Too much lift — ease α down toward the marked ring…';
+    }
+  }
+  function setGoal(g){ goal=g; bR.classList.toggle('active',g==='range'); bE.classList.toggle('active',g==='end'); update(); }
+
+  slider.addEventListener('input',update);
+  bR.addEventListener('click',function(){ setGoal('range'); });
+  bE.addEventListener('click',function(){ setGoal('end'); });
+  update();
+})();
+</script>
 </body>
 </html>
