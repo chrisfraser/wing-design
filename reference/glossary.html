@@ -18,7 +18,7 @@
   <div class="eyebrow">Reference · Living Document</div>
   <h1>Glossary</h1>
   <p class="subtitle">The canonical language for this workspace. Every lesson uses these terms.</p>
-  <p class="grow">Grows as you learn — terms are added once you can use them correctly. Last updated: Lesson 0001.</p>
+  <p class="grow">Grows as you learn — terms are added once you can use them correctly. Last updated: Lesson 0003.</p>
 
   <hr>
 
@@ -100,12 +100,42 @@
     <p class="def">The curvature of an airfoil's mean line. More camber shifts the whole lift curve up (more C<span class="sub">L</span> at a given angle) — useful for the high-lift, slow flight endurance wants.</p>
   </div>
 
+  <h2>Drag & Planform</h2>
+
   <div class="term">
     <span class="name">Drag polar</span>
-    <p class="def">A plot of C<span class="sub">L</span> (vertical) against C<span class="sub">D</span> (horizontal) as angle of attack sweeps. The single most useful chart in airfoil/wing design — every "best" operating point is a geometric construction on this curve.</p>
+    <p class="def">A plot of C<span class="sub">L</span> (vertical) against C<span class="sub">D</span> (horizontal) as angle of attack sweeps. The single most useful chart in airfoil/wing design — every "best" operating point is a geometric construction on this curve. Modelled as C<span class="sub">D</span> = C<span class="sub">D0</span> + C<span class="sub">L</span>²/(π·AR·e).</p>
   </div>
 
-  <p class="grow" style="margin-top:2rem">Coming in later lessons: Reynolds number, laminar separation bubble, aspect ratio, induced drag, wing loading, camber, chord, span efficiency, XFOIL, panel method.</p>
+  <div class="term">
+    <span class="name">Parasitic drag</span><span class="sym">C<span class="sub">D0</span></span>
+    <p class="def">The lift-independent drag floor: skin friction plus pressure (wake) drag of the shape. Roughly constant in coefficient form at a given Reynolds number; dominates at low C<span class="sub">L</span> (fast flight).</p>
+    <p class="avoid">Avoid: "form drag" (that's only the pressure part)</p>
+  </div>
+
+  <div class="term">
+    <span class="name">Induced drag</span><span class="sym">C<span class="sub">Di</span></span>
+    <p class="def">The drag created specifically by making lift on a finite-span wing: C<span class="sub">Di</span> = C<span class="sub">L</span>²/(π·AR·e). Grows with the square of lift; dominates at high C<span class="sub">L</span> (slow flight) and is ~75% of total drag at the endurance point.</p>
+    <p class="avoid">Avoid: "drag due to lift" (correct but verbose), "vortex drag"</p>
+  </div>
+
+  <div class="term">
+    <span class="name">Aspect ratio</span><span class="sym">AR = b²/S</span>
+    <p class="def">How long and slender a wing is — span (b) squared over area (S). Higher AR means lower induced drag, hence longer endurance. The master planform lever, traded against weight and Reynolds number.</p>
+  </div>
+
+  <div class="term">
+    <span class="name">Span efficiency</span><span class="sym">e</span>
+    <p class="def">How close a wing's lift distribution is to the ideal elliptical one (e = 1). Typically ≈ 0.85; appears in the denominator of induced drag.</p>
+    <p class="avoid">Avoid: "Oswald efficiency" (technically the whole-aircraft version)</p>
+  </div>
+
+  <div class="term">
+    <span class="name">Downwash / tip vortex</span>
+    <p class="def">Air leaking around the wingtips rolls into two trailing vortices, which drive a downward flow (downwash) over the wing. The downwash tilts the lift vector backward — that backward component <em>is</em> induced drag.</p>
+  </div>
+
+  <p class="grow" style="margin-top:2rem">Coming in later lessons: Reynolds number, laminar separation bubble, wing loading, chord, XFOIL, panel method.</p>
 
   <div class="lesson-nav">
     <a href="../lessons/0001-lift-drag-and-the-endurance-number.html">← Lesson 0001</a>

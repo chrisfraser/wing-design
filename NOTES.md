@@ -14,15 +14,15 @@
 
 ## Teaching plan (rough arc — revise freely)
 1. ✅ Lift, drag, L/D — what "optimal" means. (lesson 0001)
-2. How lift is really generated + lift coefficient & angle of attack (debunk myths).
-3. Drag breakdown: parasitic + induced; reading the drag polar.
-4. The endurance twist: CL^1.5/CD vs CL/CD; pick the design CL.
-5. Reynolds number & the low-Re regime — why our drone is special (laminar separation bubbles).
-6. Airfoil selection + databases (UIUC, airfoiltools).
-7. Hands-on XFOIL: run a polar on a real foil.
-8. Aspect ratio, induced drag, wing loading → planform.
-9. Hands-on XFLR5: whole-wing analysis.
-10. When/how to escalate to CFD (OpenFOAM/SU2) + low-Re transition caveat.
+2. ✅ How lift is really generated + lift curve (debunk myths). (lesson 0002)
+3. ✅ Drag breakdown: parasitic + induced; AR as the endurance lever. (lesson 0003)
+   — NB: this absorbed the old item-4 (endurance twist, done in L1) and pulled aspect ratio forward.
+4. ◀ NEXT — Reynolds number & the low-Re regime: why our drone is special (laminar separation bubbles).
+5. Airfoil selection + databases (UIUC, airfoiltools) — reading real low-Re polars.
+6. Hands-on XFOIL: run a polar on a real foil; validate against UIUC data.
+7. Planform & wing loading: turn the AR insight into a real chord/span/area, pick design CL & speed.
+8. Hands-on XFLR5: whole-wing analysis of our candidate.
+9. When/how to escalate to CFD (OpenFOAM/SU2) + low-Re transition caveat.
 
 ## Style decisions
 - Shared stylesheet: assets/lesson.css (Tufte-ish serif, sidenotes).
