@@ -24,6 +24,12 @@
 8. Hands-on XFLR5: whole-wing analysis of our candidate.
 9. When/how to escalate to CFD (OpenFOAM/SU2) + low-Re transition caveat.
 
+### Phase 5 — Structures & the Build (added 2026-06-27; mission expanded, see LR-0005)
+- B1 The Wing as a Beam — spar & loads (M_root=nWb/3π; A=M/(σh); high-AR/thin-foil structural cost).
+- B2 Materials & Construction — specific stiffness, foam-core vs built-up vs moulded, weight→endurance.
+- B3 Build the Wing — hot-wire/spar/vacuum-bag/balance steps + tools checklist (uses .checklist-widget).
+- Codes: Phase 5 = B1–B3, files 0012–0014. Course now F1→B3 = 14 lessons.
+
 ## Style decisions
 - **Design system adopted from the hydrophone course (2026-06-27).** User explicitly liked its look/feel.
   - Shared `assets/styles.css` (sky/aero palette, same component classes as hydrophone) + `assets/widgets.js` (auto-wires `.quiz`).

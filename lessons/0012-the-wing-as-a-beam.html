@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>B1 · The Wing as a Beam: Spars &amp; Loads</title>
+<link rel="stylesheet" href="../assets/styles.css">
+<script defer src="../assets/widgets.js"></script>
+<style>
+  /* Lesson-B1-specific: the spar load explorer — planform + bending-moment canvas, readouts, chip */
+  canvas { width:100%; display:block; border-radius:8px; background:var(--night); }
+  .spar-readouts { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:.5rem 1.2rem; margin-top:.8rem; font-family:var(--mono); font-size:.92rem; color:#d8ecf5; }
+  .spar-readouts span { display:flex; flex-direction:column; }
+  .spar-readouts .lbl { color:#8fb9c6; font-size:.74rem; letter-spacing:.02em; }
+  .spar-readouts b { color:#ffd479; font-variant-numeric:tabular-nums; font-size:1.12rem; }
+  .spar-readouts .u { color:#8fb9c6; font-size:.78rem; font-weight:400; }
+  .chips { display:flex; flex-wrap:wrap; gap:.5rem; margin-top:.95rem; align-items:center; }
+  .chip { font-family:var(--sans); font-size:.74rem; font-weight:700; padding:.22rem .62rem; border-radius:999px; border:1px solid; letter-spacing:.01em; }
+  .chip.ok   { background:rgba(63,125,78,.13);  color:#2e6b3d; border-color:#bcd9c2; }
+  .chip.warn { background:rgba(192,133,46,.15); color:#8a6420; border-color:#e6cfa0; }
+  .chip.bad  { background:rgba(193,73,43,.12);  color:#a83a22; border-color:#e6bfb4; }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap-wide">
+    <a class="brand" href="../index.html"><span class="dot">✈</span> Wing Design</a>
+    <nav>
+      <a href="../index.html">Lessons</a>
+      <a href="../reference/glossary.html">Glossary</a>
+      <a href="https://github.com/chrisfraser/wing-design">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <p class="kicker">Phase 5 · Structures &amp; the Build · B1</p>
+  <h1 class="lesson-title">The Wing as a Beam: Spars &amp; Loads</h1>
+  <p class="lesson-sub">Every choice the aerodynamics arc made — long span, thin section — sends a bill to
+  the structure. This lesson reads that bill and sizes the spar that pays it.</p>
+  <div class="lesson-meta">
+    <span>⏱ ~14 minutes</span><span class="sep">•</span>
+    <span>🧮 First-order structures math</span><span class="sep">•</span>
+    <span class="tag build">Builds on D1 · F3</span>
+  </div>
+
+  <div class="callout mission">
+    <div class="callout-label">◎ Why this lesson</div>
+    <p>The aero arc kept pushing the same way. <a href="0003-the-two-kinds-of-drag.html">F3</a> wanted
+    <strong>high <a href="../reference/glossary.html#aspect-ratio">aspect ratio</a></strong> to cut induced
+    drag; <a href="0004-reynolds-number.html">F4</a> and the low-Reynolds airfoils wanted <strong>thin
+    sections</strong>; the <a href="0010-synthesize-the-endurance-wing.html">D1 capstone</a> landed on a long,
+    slender, thin-foiled endurance wing. Aerodynamically: ideal. Structurally: those are the two worst things
+    you can ask of a beam. A longer span multiplies the bending load, and a thinner section gives you less
+    depth to resist it. This lesson turns that tension into numbers — and hands you the equation that sizes the
+    <a href="../reference/glossary.html#spar">spar</a> so the wing you designed can actually survive a pull-up.</p>
+  </div>
+
+  <p class="lead">A wing is not just an aerofoil — it is a <strong>cantilever beam</strong>, built into the
+  fuselage at one end and carrying the whole aircraft's weight along its length. When lift exceeds weight in a
+  turn or a gust, that beam tries to fold upward at the root. Everything in wing structure is about stopping
+  it.</p>
+
+  <h2><span class="num">1</span>A wing is a cantilever beam</h2>
+  <p>Picture the wing held only at the root, with lift spread along the span pushing it up. That is the
+  textbook definition of a <strong><a href="../reference/glossary.html#cantilever">cantilever</a></strong>: a
+  beam supported at one end only. The lift outboard of any point has to be carried <em>across</em> that point
+  and back to the root — so the further inboard you look, the more lift is stacked outboard of you trying to
+  bend the wing. Bending is therefore <strong>greatest at the root</strong> and falls to zero at the tip,
+  where there is nothing outboard left to lift.<span class="cite"><a href="#r-aero">1</a></span></p>
+
+  <p>The thing that measures "how hard the beam is being bent" at a station is the
+  <strong><a href="../reference/glossary.html#bending-moment">bending moment</a></strong> M — force times the
+  distance it acts through. The root carries the maximum, so the root is where a wing breaks. Size the spar for
+  the root and the rest of the span is along for the ride.</p>
+
+  <h2><span class="num">2</span>The root bending moment</h2>
+  <p>In steady level flight lift equals weight, W&nbsp;=&nbsp;m·g. But wings are not sized for steady flight —
+  they are sized for the worst pull-up or gust, captured by the <strong><a href="../reference/glossary.html#load-factor">load
+  factor</a></strong> n (the "g's" the airframe pulls). Total lift in an n-g manoeuvre is n·W. For a clean
+  <em>elliptical</em> lift distribution, each half-wing's load acts at its centroid, 4L/(3π) out from the root
+  (L&nbsp;=&nbsp;half-span). Multiply load by lever arm and the root bending moment falls out:</p>
+
+  <div class="formula">
+<span class="var">M<sub>root</sub></span> <span class="op">=</span> <span class="var">n</span> <span class="op">·</span> <span class="var">W</span> <span class="op">·</span> <span class="var">b</span> <span class="op">/</span> (3π)   <span class="op">≈</span>   0.106 <span class="op">·</span> <span class="var">n</span> <span class="op">·</span> <span class="var">W</span> <span class="op">·</span> <span class="var">b</span>        <span class="var">W</span> <span class="op">=</span> <span class="var">m</span> <span class="op">·</span> <span class="var">g</span>
+<small>b = full span (m), n = load factor, W = weight (N). The whole point: M<sub>root</sub> ∝ <b>n·W·b</b> — bending climbs in direct proportion to span. A <b>uniform</b> lift load would give n·W·b/8 = 0.125·n·W·b; an elliptical load packs more lift inboard, so its root moment is a touch lower at 0.106·n·W·b.</small>
+  </div>
+
+  <div class="callout note">
+    <div class="callout-label">⚖ How big is n? Where the load factor comes from</div>
+    <p>You do not invent the load factor — the certification rules set it. The FAA's <a href="https://www.risingup.com/fars/info/part23-337-FAR.shtml" target="_blank" rel="noopener">14&nbsp;CFR&nbsp;23.337</a>
+    gives <em>limit</em> manoeuvring load factors of <strong>3.8&nbsp;g (Normal)</strong>,
+    <strong>4.4&nbsp;g (Utility)</strong> and <strong>6.0&nbsp;g (Acrobatic)</strong>, each multiplied by a
+    <strong>1.5 safety factor</strong> to get the <em>ultimate</em> load the structure must not break under.
+    Model sailplanes and endurance UAVs are commonly built to about <strong>5&nbsp;g</strong>. Our explorer
+    defaults to <strong>n&nbsp;=&nbsp;4</strong> — a sane design pull-up for a gentle endurance
+    machine.<span class="cite"><a href="#r-far">3</a></span></p>
+  </div>
+
+  <h2><span class="num">3</span>How a spar carries it: caps in a couple</h2>
+  <p>A <a href="../reference/glossary.html#spar">spar</a> resists bending the way a steel I-beam does: with
+  material pushed as far from the neutral axis as possible. The two
+  <strong><a href="../reference/glossary.html#spar-cap">spar caps</a></strong> — top and bottom flanges — do
+  almost all the work, carrying the bending as a pure axial <strong>couple</strong>: the
+  <strong>top cap in compression, the bottom cap in tension</strong>. The
+  <a href="../reference/glossary.html#shear-web">shear web</a> and skin between them carry shear and torsion
+  (we only mention those here). What sets the leverage of that couple is the <strong>spar height</strong> h —
+  how far apart the caps sit — and that is fixed by how thick the aerofoil is:</p>
+
+  <div class="formula">
+<span class="var">h</span> <span class="op">≈</span> 0.8 <span class="op">·</span> (<span class="var">t/c</span>) <span class="op">·</span> <span class="var">c<sub>root</sub></span>      <span class="var">σ</span> <span class="op">=</span> <span class="var">M<sub>root</sub></span> <span class="op">/</span> (<span class="var">A</span> <span class="op">·</span> <span class="var">h</span>)      <span class="op">⇒</span>      <span class="var">A</span> <span class="op">=</span> <span class="var">M<sub>root</sub></span> <span class="op">/</span> (<span class="var">σ<sub>allow</sub></span> <span class="op">·</span> <span class="var">h</span>)
+<small>t/c = airfoil thickness ratio, c<sub>root</sub> = root chord. The beam relation σ = M·c/I, idealising the spar as two caps of area A separated by h (so I ≈ A·h²/2 and c = h/2), collapses to σ = M/(A·h).<span class="cite"><a href="#r-megson">2</a></span> Rearranged, the <b>required area of each cap</b> is A = M<sub>root</sub>/(σ<sub>allow</sub>·h). Smaller h (a thinner section) ⇒ bigger A. That is the structural cost of a thin airfoil, written as an equation.</small>
+  </div>
+
+  <p>Read the last equation slowly, because it contains the whole lesson. Cap area A goes <em>up</em> when the
+  moment M<sub>root</sub> goes up (longer span, more g, more weight) and <em>up again</em> when the height h
+  goes down (a thinner section). The two things the aerodynamics begged for — more span and a thinner foil —
+  both push cap area, and therefore spar weight, the wrong way.</p>
+
+  <p>Numbers make it concrete. Take a 2&nbsp;kg wing of 2&nbsp;m span pulling n&nbsp;=&nbsp;4&nbsp;g, on a 10%
+  section with a 0.18&nbsp;m root chord:</p>
+
+  <div class="formula">
+<span class="var">W</span> <span class="op">=</span> m·g <span class="op">=</span> 2 × 9.81 <span class="op">=</span> 19.6 N
+<span class="var">M<sub>root</sub></span> <span class="op">=</span> n·W·b/(3π) <span class="op">=</span> 4 × 19.6 × 2 / (3π) <span class="op">=</span> <b style="color:#ffd479">16.6 N·m</b>
+<span class="var">h</span> <span class="op">=</span> 0.8 × 0.10 × 0.18 <span class="op">=</span> 0.0144 m <span class="op">=</span> 14.4 mm
+<span class="var">A</span> <span class="op">=</span> M<sub>root</sub>/(σ·h):    carbon → <b style="color:#3fbf63">2.3 mm²</b>    ·    balsa → <b style="color:#e0843a">64 mm²</b>    (per cap)
+<small>Same moment, same height — only the material changed. Balsa's working stress is ~28× lower than carbon's, so each balsa cap needs ~28× the area to hold the same load. This is why the spar material choice (next lesson, B2) is so consequential.</small>
+  </div>
+
+  <h2><span class="num">4</span>Spar load explorer</h2>
+  <p>Now drive it yourself. Set the span, mass, load factor, section thickness and root chord, pick a spar
+  material, and watch the root bending moment and the cap area it demands. The dark figure shows the half-wing
+  with its elliptical lift load, and below it the <strong>bending-moment distribution M(y)</strong> building
+  smoothly from zero at the tip to its maximum at the root — the value you are sizing for.</p>
+
+  <div class="calc">
+    <div class="calc-title">🧮 Spar load explorer — size the cap, watch the bill</div>
+    <p style="font-family:var(--sans);font-size:.86rem;color:var(--ink-soft);margin:-.3rem 0 .9rem">
+      Drag any slider. The gold curve is the bending moment from <strong>tip&nbsp;(M&nbsp;=&nbsp;0)</strong> to
+      <strong>root&nbsp;(M<sub>root</sub>)</strong>; its peak is what the spar must hold. Stretch the
+      <em>span</em> or raise the <em>g's</em> and the whole curve swells. Thin the section (lower
+      <em>t/c</em>) and the moment is unchanged — but the spar height h shrinks, so the required cap area
+      balloons. Try <strong>balsa on a thin section</strong> and watch the caps grow larger than the aerofoil
+      itself.</p>
+    <div class="controls">
+      <div class="control">
+        <label>Span b <output id="bOut">2.40 m</output></label>
+        <input type="range" id="bRange" min="0.8" max="3.0" step="0.05" value="2.4">
+      </div>
+      <div class="control">
+        <label>All-up mass m <output id="mOut">2.0 kg</output></label>
+        <input type="range" id="mRange" min="0.5" max="4" step="0.1" value="2.0">
+      </div>
+      <div class="control">
+        <label>Load factor n <output id="nOut">4.0 g</output></label>
+        <input type="range" id="nRange" min="1" max="6" step="0.5" value="4">
+      </div>
+      <div class="control">
+        <label>Thickness ratio t/c <output id="tcOut">10%</output></label>
+        <input type="range" id="tcRange" min="8" max="18" step="0.5" value="10">
+      </div>
+      <div class="control">
+        <label>Root chord c<sub>root</sub> <output id="crOut">0.18 m</output></label>
+        <input type="range" id="crRange" min="0.10" max="0.35" step="0.01" value="0.18">
+      </div>
+      <div class="control">
+        <label for="matSel">Spar cap material (working stress σ<sub>allow</sub> / density ρ)</label>
+        <select id="matSel">
+          <option value="0">Carbon UD — σ 500 MPa · ρ 1500 · E 138 GPa</option>
+          <option value="1">Spruce — σ 55 MPa · ρ 425 · E 11 GPa</option>
+          <option value="2">Balsa — σ 18 MPa · ρ 150 · E 9 GPa</option>
+        </select>
+      </div>
+    </div>
+    <div class="readout">
+      <canvas id="sparCanvas" width="760" height="400" aria-label="A half-wing shown as a cantilever beam with an elliptical lift load, taller near the root. Below it, the bending-moment distribution rises smoothly from zero at the tip to its maximum at the root, where M_root is marked."></canvas>
+      <div class="spar-readouts">
+        <span><span class="lbl">root moment M<sub>root</sub></span><b id="moMroot">—</b><span class="u">N·m</span></span>
+        <span><span class="lbl">spar height h</span><b id="moH">—</b><span class="u">mm</span></span>
+        <span><span class="lbl">cap area A (each)</span><b id="moA">—</b><span class="u">mm²</span></span>
+        <span><span class="lbl">cap 10 mm wide ×</span><b id="moCap">—</b><span class="u">mm thick</span></span>
+        <span><span class="lbl">spar mass</span><b id="moMass">—</b><span class="u">g · first-order</span></span>
+        <span><span class="lbl">spar share of AUW</span><b id="moPct">—</b><span class="u">%</span></span>
+      </div>
+      <div class="chips">
+        <span class="chip" id="chPct">spar mass</span>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="simbtn" id="btnThin">🪶 Thin balsa section — watch it break</button>
+      <button class="simbtn" id="btnReset">↺ Reset</button>
+    </div>
+    <div class="status hint" id="status">Drag a slider to size the spar…</div>
+  </div>
+
+  <p style="font-family:var(--sans);font-size:.82rem;color:var(--ink-faint);margin-top:.6rem">
+    The spar mass is a <strong>first-order, bending-only</strong> estimate (two caps tapering to the tips).
+    Real spars add a shear web, root joiners and a buckling margin, and run heavier — treat this as the
+    irreducible floor, not the finished weight.</p>
+
+  <h2><span class="num">5</span>The structural bill for the aerodynamics</h2>
+  <p>Put the two effects side by side. Stretching the span from 2&nbsp;m to 3&nbsp;m raises M<sub>root</sub> by
+  50% — and because the spar mass scales with that moment <em>and</em> the longer length it runs over, the cap
+  weight climbs faster still. Independently, thinning the foil from 12% to 9% shrinks the spar height h by a
+  quarter, and cap area A = M/(σ·h) grows by a third for the very same load. Neither knob touches the
+  aerodynamics in this lesson, yet both were turned hard by the aero arc.</p>
+
+  <div class="callout key">
+    <div class="callout-label">★ The structural price of a good wing</div>
+    <p>Because <strong>M<sub>root</sub> ∝ n·W·b</strong>, <em>doubling the span doubles the root bending</em> —
+    high aspect ratio buys aerodynamic efficiency on the structure's credit card. And because <strong>A =
+    M<sub>root</sub>/(σ·h)</strong> with <strong>h ∝ (t/c)·c<sub>root</sub></strong>, a <em>thinner</em>
+    low-Reynolds section gives the caps less height to work with, so they must get heavier to hold the same
+    moment. The long, slender, thin-foiled wing that <a href="0003-the-two-kinds-of-drag.html">F3</a>,
+    <a href="0004-reynolds-number.html">F4</a> and <a href="0010-synthesize-the-endurance-wing.html">D1</a>
+    converged on is exactly the wing that is hardest to build light. The spar is where that bill comes
+    due — and choosing the right material to pay it (carbon over balsa) is the subject of
+    <a href="0013-materials-and-construction.html">B2</a>.</p>
+  </div>
+
+  <h2><span class="num">6</span>Check yourself</h2>
+  <p>Answer from memory — that effort is what turns a fact you just read into one you'll keep.</p>
+
+  <div class="quiz"
+       data-explain-right="M_root ∝ n·W·b, so more span means more root bending and a heavier spar."
+       data-explain-wrong="Re-read §2 — root bending scales directly with span.">
+    <div class="q-kicker">Question 1 of 3</div>
+    <div class="q-text">Two wings carry the same weight at the same load factor, but wing B has twice the span
+    of wing A. Wing B's root bending moment is roughly…</div>
+    <div class="q-options">
+      <button class="opt" data-correct data-feedback="Right. M_root = n·W·b/(3π) is linear in span, so doubling b doubles the root bending moment — and the spar to resist it gets heavier. That is the structural tax on high aspect ratio.">about twice as large — bending scales directly with span</button>
+      <button class="opt" data-feedback="Span enters M_root linearly, not as a square. Doubling span doubles the moment (×2), it does not quadruple it.">about four times as large — it scales with span squared</button>
+      <button class="opt" data-feedback="Span is right there in M_root = n·W·b/(3π). A longer span absolutely raises the root bending moment — it does not leave it unchanged.">about the same — weight and load factor are unchanged</button>
+      <button class="opt" data-feedback="More span means more bending, not less. The lift acts on a longer lever arm to the root, so the moment grows.">about half as large — a longer span spreads the load out</button>
+    </div>
+    <div class="q-feedback"></div>
+  </div>
+
+  <div class="quiz"
+       data-explain-right="The caps form a couple: top in compression, bottom in tension; the web carries shear."
+       data-explain-wrong="Look again at §3 — the caps carry bending as an axial couple.">
+    <div class="q-kicker">Question 2 of 3</div>
+    <div class="q-text">In a spar built up from two caps and a web, the bending moment is mainly carried by…</div>
+    <div class="q-options">
+      <button class="opt" data-correct data-feedback="Exactly. The caps form the couple that resists bending — the top cap is squeezed (compression), the bottom is stretched (tension). The shear web between them handles shear and torsion, not bending.">the caps — top in compression, bottom in tension</button>
+      <button class="opt" data-feedback="The shear web does carry shear and torsion, but the bending couple lives in the caps. With no caps, a bare web is a poor bending member.">the shear web, with the caps just holding it in place</button>
+      <button class="opt" data-feedback="The covering film or skin contributes to torsion and a little bending, but the dedicated bending members are the spar caps — that is their whole job.">the covering skin wrapped around the whole section</button>
+      <button class="opt" data-feedback="Bending is resisted by an axial couple in the caps, not by shear. The web is what carries the shear load; the caps carry the bending.">all three equally, since bending is really a shear load</button>
+    </div>
+    <div class="q-feedback"></div>
+  </div>
+
+  <div class="quiz"
+       data-explain-right="Thinner section ⇒ smaller spar height h ⇒ more cap area for the same moment."
+       data-explain-wrong="See §3 — A = M/(σ·h), and h shrinks with a thinner foil.">
+    <div class="q-kicker">Question 3 of 3</div>
+    <div class="q-text">You swap to a thinner low-Reynolds airfoil but keep the span, weight and load factor the
+    same. To hold the same root moment, the spar caps must become…</div>
+    <div class="q-options">
+      <button class="opt" data-correct data-feedback="Yes. A thinner section gives a smaller spar height h, and since A = M_root/(σ·h), less height forces more cap area — a heavier spar. The thin airfoil that helped the aerodynamics costs you structural weight.">larger in area, and so heavier — less height h means more area</button>
+      <button class="opt" data-feedback="It is the opposite. A thinner foil shrinks h, and A = M/(σ·h) means smaller h needs MORE area, not less. The caps get heavier.">smaller in area, and so lighter — thin wings save spar weight</button>
+      <button class="opt" data-feedback="The moment is unchanged, but the spar height h is not — it shrank with the thinner section, so the required cap area changes. The caps must grow.">unchanged — the moment is the same, so the caps are too</button>
+      <button class="opt" data-feedback="A higher working stress would help, but the material is fixed here. With σ and the moment unchanged and h reduced, the only lever left is more cap area.">unchanged in size but made of a higher-stress material</button>
+    </div>
+    <div class="q-feedback"></div>
+  </div>
+
+  <div class="recap">
+    <h3>What you can now say</h3>
+    <ol>
+      <li>A wing is a <strong>cantilever beam</strong> built in at the root, so its <strong>bending moment is maximum at the root</strong> and zero at the tip.</li>
+      <li>The root bending moment is <strong>M<sub>root</sub> = n·W·b/(3π) ≈ 0.106·n·W·b</strong> for an elliptical load — it scales directly with load factor, weight and span.</li>
+      <li>The <strong>spar caps</strong> carry bending as a couple (top compression, bottom tension); the web and skin carry shear and torsion.</li>
+      <li>Each cap needs area <strong>A = M<sub>root</sub>/(σ<sub>allow</sub>·h)</strong>, with spar height <strong>h ≈ 0.8·(t/c)·c<sub>root</sub></strong> — a thinner section means smaller h and so more cap area.</li>
+      <li>High aspect ratio (longer b) and thin low-Re sections (smaller h) <strong>both drive spar weight up</strong> — the structural bill for the aerodynamic choices of F3, F4 and D1.</li>
+    </ol>
+  </div>
+
+  <div class="sourcebox">
+    <div class="icon">📖</div>
+    <div>
+      <div class="label">Primary source · read this next</div>
+      <div class="title"><a href="https://aerotoolbox.com/wing-structure/" target="_blank" rel="noopener">AeroToolbox — “Wing Structure”</a> &amp; <a href="https://aerotoolbox.com/wing-structural-design/" target="_blank" rel="noopener">“Wing Structural Design”</a></div>
+      <div class="desc">The clearest free walk-through of the wing-as-a-beam idea: spar caps as a bending couple, shear web for shear, and how the root carries the maximum load. Read it with the explorer open and reproduce a cap area by hand. ~20-minute read.</div>
+    </div>
+  </div>
+
+  <div class="ask-teacher">
+    💬 <b>I'm your teacher — ask me anything.</b> Want the σ = M·c/I beam relation derived down to A = M/(A·h)
+    for the two-cap idealisation, or curious why an elliptical load gives a lower root moment than a uniform
+    one? Want to plug your own D1 wing into the explorer and see what spar it demands? Bring it to chat.
+    Confused beats stuck.
+  </div>
+
+  <div class="crosslinks">
+    <b>Glossary:</b>
+    <a href="../reference/glossary.html#cantilever">cantilever</a> ·
+    <a href="../reference/glossary.html#bending-moment">bending moment</a> ·
+    <a href="../reference/glossary.html#spar">spar</a> ·
+    <a href="../reference/glossary.html#spar-cap">spar cap</a> ·
+    <a href="../reference/glossary.html#shear-web">shear web</a> ·
+    <a href="../reference/glossary.html#load-factor">load factor</a> ·
+    <a href="../reference/glossary.html#aspect-ratio">aspect ratio</a>.
+    <b>Builds on →</b> <strong>D1</strong> (the endurance wing) &amp; <strong>F3</strong> (aspect ratio) ·
+    <b>Builds toward →</b> <strong>B2</strong> (materials &amp; construction).
+  </div>
+
+  <h2 id="refs"><span class="num">§</span>References</h2>
+  <ol style="font-family:var(--sans);font-size:.84rem;color:var(--ink-soft);line-height:1.5">
+    <li id="r-aero">AeroToolbox — <a href="https://aerotoolbox.com/wing-structure/" target="_blank" rel="noopener">Wing Structure</a> &amp; <a href="https://aerotoolbox.com/wing-structural-design/" target="_blank" rel="noopener">Wing Structural Design</a>. The cantilever-beam model of a wing, spar caps as a bending couple, and root-driven sizing. <b>Primary source.</b></li>
+    <li id="r-megson">Megson — <a href="https://shop.elsevier.com/books/aircraft-structures-for-engineering-students/megson/978-0-08-048831-8" target="_blank" rel="noopener">Aircraft Structures for Engineering Students</a> (Elsevier). The beam bending relation σ = M·c/I and the idealisation of a spar as concentrated cap areas (booms).</li>
+    <li id="r-far">FAA — <a href="https://www.risingup.com/fars/info/part23-337-FAR.shtml" target="_blank" rel="noopener">14&nbsp;CFR&nbsp;23.337, Limit manoeuvring load factors</a>. Normal 3.8&nbsp;g, Utility 4.4&nbsp;g, Acrobatic 6.0&nbsp;g; ×1.5 safety factor to ultimate load.</li>
+    <li id="r-cst">CST — <a href="https://www.cstsales.com/tutorials/buildcarbfiberspar.pdf" target="_blank" rel="noopener">Building a Carbon-Fibre Spar (PDF)</a>. Practical model-scale carbon cap construction; why working stresses sit far below raw UD strength (~1720 MPa) for buckling and safety margin.</li>
+  </ol>
+
+  <nav class="lesson-nav">
+    <a href="0011-when-to-reach-for-cfd.html">
+      <div class="dir">← Prev · D2</div>
+      <div class="ttl">When to Reach for CFD</div>
+    </a>
+    <a class="next" href="0013-materials-and-construction.html">
+      <div class="dir">Next · B2</div>
+      <div class="ttl">Materials &amp; Construction →</div>
+    </a>
+  </nav>
+
+  <p class="pagefoot">Lesson B1 of the Wing Design course · the structural bill for the aerodynamics ·
+  <a href="../index.html">all lessons</a> ·
+  <a href="https://github.com/chrisfraser/wing-design">source on GitHub</a></p>
+</main>
+
+<script>
+/* ============================ Spar load explorer ============================ */
+(function(){
+  var G=9.81;
+  var MATS=[
+    {name:'carbon', sig:500e6, rho:1500},
+    {name:'spruce', sig:55e6,  rho:425 },
+    {name:'balsa',  sig:18e6,  rho:150 }
+  ];
+  var MREF=75;   /* N·m — full-height moment bar reference (near slider max) */
+
+  /* ---- precompute the normalised elliptical bending-moment shape (root→tip) */
+  var N=160, du=1/N, w=[], V=[], Mm=[], shape=[];
+  for(var i=0;i<=N;i++){ var u=i*du; w[i]=Math.sqrt(Math.max(0,1-u*u)); }
+  V[N]=0; for(i=N-1;i>=0;i--){ V[i]=V[i+1]+0.5*(w[i]+w[i+1])*du; }
+  Mm[N]=0; for(i=N-1;i>=0;i--){ Mm[i]=Mm[i+1]+0.5*(V[i]+V[i+1])*du; }
+  var norm=Mm[0]||1; for(i=0;i<=N;i++){ shape[i]=Mm[i]/norm; }   /* 1 at root(i=0), 0 at tip */
+
+  var bR=document.getElementById('bRange'),  bO=document.getElementById('bOut');
+  var mR=document.getElementById('mRange'),  mO=document.getElementById('mOut');
+  var nR=document.getElementById('nRange'),  nO=document.getElementById('nOut');
+  var tcR=document.getElementById('tcRange'),tcO=document.getElementById('tcOut');
+  var crR=document.getElementById('crRange'),crO=document.getElementById('crOut');
+  var sel=document.getElementById('matSel');
+
+  var moMroot=document.getElementById('moMroot'), moH=document.getElementById('moH');
+  var moA=document.getElementById('moA'), moCap=document.getElementById('moCap');
+  var moMass=document.getElementById('moMass'), moPct=document.getElementById('moPct');
+  var chPct=document.getElementById('chPct'), status=document.getElementById('status');
+
+  var canvas=document.getElementById('sparCanvas'), ctx=canvas?canvas.getContext('2d'):null;
+  if(!ctx) return;
+  var W=canvas.width, H=canvas.height;
+  var padL=50, padR=24, xRoot=padL, xTip=W-padR, spanW=xTip-xRoot;
+  var arrowBase=106, arrowMax=44;              /* lift load arrows */
+  var planCy=140, planMaxC=46;                 /* planform band */
+  var mBase=376, mTopMax=190, mH=mBase-mTopMax; /* moment band */
+
+  function arrow(x,y0,y1,col){
+    ctx.strokeStyle=col; ctx.fillStyle=col; ctx.lineWidth=1.6;
+    ctx.beginPath(); ctx.moveTo(x,y0); ctx.lineTo(x,y1); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x,y1); ctx.lineTo(x-3.2,y1+5); ctx.lineTo(x+3.2,y1+5); ctx.closePath(); ctx.fill();
+  }
+
+  function draw(Mroot){
+    ctx.clearRect(0,0,W,H); ctx.fillStyle='#0a1c30'; ctx.fillRect(0,0,W,H);
+
+    /* title */
+    ctx.textAlign='left'; ctx.fillStyle='#cfe4ee'; ctx.font='bold 12px Inter, system-ui';
+    ctx.fillText('WING AS A CANTILEVER BEAM · elliptical lift load → bending moment', padL, 22);
+    ctx.fillStyle='#8fb9c6'; ctx.font='10px Inter, system-ui';
+    ctx.fillText('lift load (elliptical)', padL, 44);
+
+    /* root wall (built-in end) */
+    ctx.strokeStyle='rgba(143,185,198,.55)'; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(xRoot, arrowBase-arrowMax-6); ctx.lineTo(xRoot, mBase+6); ctx.stroke();
+    ctx.strokeStyle='rgba(143,185,198,.30)'; ctx.lineWidth=1;
+    for(var hy=arrowBase-arrowMax-2; hy<mBase+6; hy+=8){
+      ctx.beginPath(); ctx.moveTo(xRoot-12, hy+6); ctx.lineTo(xRoot, hy); ctx.stroke();
+    }
+
+    /* lift load arrows (elliptical, taller inboard) */
+    var nA=14;
+    for(var k=0;k<=nA;k++){
+      var u=k/nA, x=xRoot+u*spanW, len=Math.sqrt(Math.max(0,1-u*u))*arrowMax;
+      if(len>1.5) arrow(x, arrowBase, arrowBase-len, '#4ea3da');
+    }
+    /* load envelope */
+    ctx.strokeStyle='rgba(78,163,218,.5)'; ctx.lineWidth=1.2; ctx.beginPath();
+    for(k=0;k<=60;k++){ var uu=k/60, xx=xRoot+uu*spanW, yy=arrowBase-Math.sqrt(Math.max(0,1-uu*uu))*arrowMax;
+      if(k===0)ctx.moveTo(xx,yy); else ctx.lineTo(xx,yy); }
+    ctx.stroke();
+
+    /* planform (tapered half-wing, top view) */
+    ctx.beginPath();
+    for(k=0;k<=40;k++){ u=k/40; var c=planMaxC*(1-0.5*u), x2=xRoot+u*spanW; if(k===0)ctx.moveTo(x2,planCy-c/2); else ctx.lineTo(x2,planCy-c/2); }
+    for(k=40;k>=0;k--){ u=k/40; c=planMaxC*(1-0.5*u); x2=xRoot+u*spanW; ctx.lineTo(x2,planCy+c/2); }
+    ctx.closePath();
+    ctx.fillStyle='rgba(143,185,198,.14)'; ctx.fill();
+    ctx.strokeStyle='#8fb9c6'; ctx.lineWidth=1.3; ctx.stroke();
+
+    /* root / tip labels */
+    ctx.fillStyle='#8fb9c6'; ctx.font='10px Inter, system-ui';
+    ctx.textAlign='left';  ctx.fillText('root', xRoot+3, planCy+planMaxC/2+15);
+    ctx.textAlign='right'; ctx.fillText('tip',  xTip,  planCy+planMaxC*0.25+15);
+
+    /* moment baseline */
+    ctx.strokeStyle='rgba(143,185,198,.45)'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(xRoot,mBase); ctx.lineTo(xTip,mBase); ctx.stroke();
+    ctx.textAlign='right'; ctx.fillStyle='#8fb9c6'; ctx.fillText('0', xTip, mBase+13);
+
+    /* moment curve, filled */
+    var frac=Math.max(0.06, Math.min(1, Mroot/MREF));
+    ctx.beginPath(); ctx.moveTo(xRoot, mBase);
+    for(i=0;i<=N;i++){ var x3=xRoot+(i/N)*spanW, y3=mBase - shape[i]*frac*mH; ctx.lineTo(x3,y3); }
+    ctx.lineTo(xTip, mBase); ctx.closePath();
+    ctx.fillStyle='rgba(255,212,121,.16)'; ctx.fill();
+    ctx.strokeStyle='#ffd479'; ctx.lineWidth=2.2; ctx.beginPath();
+    for(i=0;i<=N;i++){ x3=xRoot+(i/N)*spanW; y3=mBase - shape[i]*frac*mH; if(i===0)ctx.moveTo(x3,y3); else ctx.lineTo(x3,y3); }
+    ctx.stroke();
+
+    /* M_root marker */
+    var yr=mBase - frac*mH;
+    ctx.beginPath(); ctx.arc(xRoot, yr, 4.5, 0, Math.PI*2); ctx.fillStyle='#ffd479'; ctx.fill();
+    ctx.strokeStyle='#fff'; ctx.lineWidth=1.3; ctx.stroke();
+    ctx.fillStyle='#ffd479'; ctx.font='bold 12px Inter, system-ui'; ctx.textAlign='left';
+    ctx.fillText('M_root = '+Mroot.toFixed(1)+' N·m', xRoot+8, yr+ (yr<mTopMax+20?18:-7));
+    ctx.fillStyle='#8fb9c6'; ctx.font='10px Inter, system-ui';
+    ctx.fillText('bending moment  M(y)  — maximum at the root', xRoot+8, mBase-6);
+  }
+
+  function setChip(state,text){ chPct.className='chip '+(state===0?'ok':state===1?'warn':'bad'); chPct.textContent=text; }
+
+  function update(){
+    var b=parseFloat(bR.value), m=parseFloat(mR.value), n=parseFloat(nR.value);
+    var tc=parseFloat(tcR.value), cr=parseFloat(crR.value), mat=MATS[+sel.value];
+
+    bO.textContent=b.toFixed(2)+' m';
+    mO.textContent=m.toFixed(1)+' kg';
+    nO.textContent=n.toFixed(1)+' g';
+    tcO.textContent=tc.toFixed(tc%1?1:0)+'%';
+    crO.textContent=cr.toFixed(2)+' m';
+
+    var Wt=m*G;
+    var Mroot=n*Wt*b/(3*Math.PI);                 /* N·m */
+    var h=0.8*(tc/100)*cr;                          /* m   */
+    var A=Mroot/(mat.sig*h);                        /* m²  each cap */
+    var A_mm2=A*1e6;
+    var capT=A_mm2/10;                              /* mm thick at 10 mm wide */
+    var mass=2*mat.rho*A*b*0.6;                     /* kg, first-order */
+    var pct=mass/m*100;
+    var sectDepth=tc/100*cr*1000;                   /* mm, full section thickness */
+
+    moMroot.textContent=Mroot.toFixed(1);
+    moH.textContent=(h*1000).toFixed(1);
+    moA.textContent=A_mm2.toFixed(A_mm2<10?2:A_mm2<100?1:0);
+    moCap.textContent=capT.toFixed(capT<1?2:1);
+    moMass.textContent=(mass*1000).toFixed(mass*1000<100?1:0);
+    moPct.textContent=pct.toFixed(1);
+
+    /* chip on spar mass fraction of AUW */
+    var pState = pct<8?0 : pct<=15?1 : 2;
+    setChip(pState, 'spar ≈ '+pct.toFixed(1)+'% of AUW · '+(pState===0?'light':pState===1?'getting heavy':'too heavy'));
+
+    /* feasibility: do two caps fit inside the section depth? */
+    var infeasible = (2*capT > sectDepth);
+
+    var head = b.toFixed(1)+' m span at '+m.toFixed(1)+' kg, n='+n.toFixed(1)+' → M_root '+Mroot.toFixed(1)+' N·m. ';
+    var matName = mat.name.charAt(0).toUpperCase()+mat.name.slice(1);
+    if(infeasible){
+      status.className='status warn';
+      status.textContent=head+matName+' needs '+A_mm2.toFixed(0)+' mm² caps — '+capT.toFixed(1)+
+        ' mm thick, but the section is only '+sectDepth.toFixed(1)+' mm deep. The caps will not fit: thicken the airfoil, shorten the span, or switch to carbon.';
+    } else if(pState===2){
+      status.className='status warn';
+      status.textContent=head+matName+' spar is '+pct.toFixed(1)+'% of AUW — too heavy. Switch to carbon, accept a thicker section, or trim span / load factor.';
+    } else if(pState===1){
+      status.className='status hint';
+      status.textContent=head+matName+' spar is '+pct.toFixed(1)+'% of AUW — getting heavy. A thicker section or carbon caps would lighten it.';
+    } else {
+      status.className='status ok';
+      status.textContent=head+matName+' caps: '+A_mm2.toFixed(A_mm2<10?2:1)+' mm² each, spar ≈ '+pct.toFixed(1)+'% of AUW — comfortable.';
+    }
+
+    draw(Mroot);
+  }
+
+  [bR,mR,nR,tcR,crR].forEach(function(el){ el.addEventListener('input', update); });
+  sel.addEventListener('change', update);
+
+  function setAll(b,m,n,tc,cr,mat){ bR.value=b; mR.value=m; nR.value=n; tcR.value=tc; crR.value=cr; sel.value=mat; update(); }
+  document.getElementById('btnThin').addEventListener('click', function(){ setAll(2.4,2.0,4,8,0.12,2); });
+  document.getElementById('btnReset').addEventListener('click', function(){ setAll(2.4,2.0,4,10,0.18,0); });
+
+  update();
+})();
+</script>
+</body>
+</html>

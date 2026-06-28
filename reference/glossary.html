@@ -274,6 +274,73 @@
     <p class="gt-def">The grid of cells a <a href="#cfd">CFD</a> solver computes on. Results must be shown <em>mesh-independent</em> (unchanged as the mesh is refined) before they're trusted.</p>
   </div>
 
+  <h2><span class="num">I</span>Structures &amp; Build</h2>
+
+  <div class="glossary-term" id="cantilever">
+    <span class="gt-name">Cantilever</span>
+    <p class="gt-def">A beam supported at one end only. A wing is a cantilever built in at the root, so its <a href="#bending-moment">bending moment</a> is largest there.</p>
+  </div>
+
+  <div class="glossary-term" id="bending-moment">
+    <span class="gt-name">Bending moment</span><span class="gt-sym">M</span>
+    <p class="gt-def">The internal “bending effort” in the wing from lift acting along the span. Peaks at the root and scales as roughly load × span (M<sub>root</sub> ≈ n·W·b/3π for elliptical lift) — which is why high <a href="#aspect-ratio">aspect ratio</a> costs structural weight.</p>
+  </div>
+
+  <div class="glossary-term" id="load-factor">
+    <span class="gt-name">Load factor</span><span class="gt-sym">n</span>
+    <p class="gt-def">The ratio of lift to weight — the “g” the wing pulls. Spars are sized to a design load factor (n ≈ 3–4 for gentle craft) with a safety margin on top.</p>
+  </div>
+
+  <div class="glossary-term" id="spar">
+    <span class="gt-name">Spar</span>
+    <p class="gt-def">The main spanwise structural member that carries the wing's <a href="#bending-moment">bending</a>. Usually built from <a href="#spar-cap">caps</a> top and bottom joined by a shear web.</p>
+  </div>
+
+  <div class="glossary-term" id="spar-cap">
+    <span class="gt-name">Spar cap (flange)</span>
+    <p class="gt-def">The upper and lower booms of the <a href="#spar">spar</a> that take the bending load — top in compression, bottom in tension. Required area ≈ M<sub>root</sub>/(σ·h), so taller sections (bigger h) need less cap.</p>
+  </div>
+
+  <div class="glossary-term" id="shear-web">
+    <span class="gt-name">Shear web</span>
+    <p class="gt-def">The vertical part of the <a href="#spar">spar</a> (and the wing skin) that carries shear and twisting loads, holding the two <a href="#spar-cap">caps</a> apart so they can work as a beam.</p>
+  </div>
+
+  <div class="glossary-term" id="foam-core">
+    <span class="gt-name">Foam-core construction</span>
+    <p class="gt-def">A wing built around a hot-wire-cut EPS/XPS foam core, skinned with fibreglass or carbon and epoxy. Tough and quick; the skin doubles as the <a href="#wing-skin">working surface</a>.</p>
+  </div>
+
+  <div class="glossary-term" id="built-up">
+    <span class="gt-name">Built-up construction</span>
+    <p class="gt-def">A traditional wing of balsa <em>ribs</em> on a <a href="#spar">spar</a> with leading/trailing edges, covered in heat-shrink film. Very light but more fragile and fiddly than <a href="#foam-core">foam core</a>.</p>
+  </div>
+
+  <div class="glossary-term" id="composite">
+    <span class="gt-name">Composite</span>
+    <p class="gt-def">A material combining fibres (carbon, glass) in a resin matrix — high <a href="#specific-stiffness">specific stiffness/strength</a>. The basis of foam-core skins, moulded wings and most spar caps.</p>
+  </div>
+
+  <div class="glossary-term" id="wing-skin">
+    <span class="gt-name">Wing skin</span>
+    <p class="gt-def">The outer surface of the wing. Beyond shaping the airfoil it carries shear and torsion — a stressed skin lets the structure be lighter.</p>
+  </div>
+
+  <div class="glossary-term" id="specific-stiffness">
+    <span class="gt-name">Specific stiffness / strength</span><span class="gt-sym">E/ρ, σ/ρ</span>
+    <p class="gt-def">Stiffness or strength per unit weight. The figure of merit for structural materials — why carbon fibre and spruce, not steel or aluminium, make the lightest <a href="#spar-cap">spar caps</a>.</p>
+  </div>
+
+  <div class="glossary-term" id="dihedral">
+    <span class="gt-name">Dihedral</span>
+    <p class="gt-def">The upward V-angle of the wings from root to tip. Adds roll stability; also sets the join geometry when mating two wing halves.</p>
+  </div>
+
+  <div class="glossary-term" id="center-of-gravity">
+    <span class="gt-name">Center of gravity</span><span class="gt-sym">CG</span>
+    <p class="gt-def">The balance point of the finished aircraft. It must sit in the right place (typically ~25–33% of chord) for stable flight — checked and adjusted by ballast or component placement at build time.</p>
+  </div>
+
   <nav class="lesson-nav">
     <a href="../index.html">
       <div class="dir">← Course home</div>

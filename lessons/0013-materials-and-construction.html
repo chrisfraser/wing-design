@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>B2 · Materials &amp; Construction: the Weight Budget</title>
+<link rel="stylesheet" href="../assets/styles.css">
+<script defer src="../assets/widgets.js"></script>
+<style>
+  /* Lesson-B2-specific: the weight-budget canvas + readout grid + loading chips */
+  canvas { width:100%; display:block; border-radius:8px; background:var(--night); }
+  .budget-readouts { display:grid; grid-template-columns:repeat(2,1fr); gap:.4rem 1.4rem; margin-top:.8rem; font-family:var(--mono); font-size:.95rem; color:#d8ecf5; }
+  .budget-readouts b { color:#ffd479; font-variant-numeric:tabular-nums; }
+  .budget-readouts .u { color:#8fb9c6; font-size:.82rem; }
+  .chips { display:flex; flex-wrap:wrap; gap:.5rem; margin-top:1rem; }
+  .chip { font-family:var(--sans); font-size:.74rem; font-weight:700; padding:.22rem .62rem; border-radius:999px; border:1px solid; letter-spacing:.01em; }
+  .chip.ok   { background:rgba(63,125,78,.13);  color:#2e6b3d; border-color:#bcd9c2; } /* --kelp  */
+  .chip.warn { background:rgba(192,133,46,.15); color:#8a6420; border-color:#e6cfa0; } /* --warm  */
+  .chip.bad  { background:rgba(193,73,43,.12);  color:#a83a22; border-color:#e6bfb4; } /* --coral */
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap-wide">
+    <a class="brand" href="../index.html"><span class="dot">✈</span> Wing Design</a>
+    <nav>
+      <a href="../index.html">Lessons</a>
+      <a href="../reference/glossary.html">Glossary</a>
+      <a href="https://github.com/chrisfraser/wing-design">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <p class="kicker">Phase 5 · Structures &amp; the Build · B2</p>
+  <h1 class="lesson-title">Materials &amp; Construction: the Weight Budget</h1>
+  <p class="lesson-sub">B1 sized the spar that keeps the wing from folding. Now we have to build the
+  whole thing — and every gram we add is paid back, with interest, in lost endurance.</p>
+  <div class="lesson-meta">
+    <span>⏱ ~13 minutes</span><span class="sep">•</span>
+    <span>🧮 Light arithmetic — a weight budget</span><span class="sep">•</span>
+    <span class="tag build">Builds on B1 · The Wing as a Beam</span>
+  </div>
+
+  <div class="callout mission">
+    <div class="callout-label">◎ Why this lesson</div>
+    <p>Back in <a href="0008-planform-and-wing-loading.html">T2</a> we proved that a low
+    <a href="../reference/glossary.html#wing-loading">wing loading</a> is what lets an endurance drone fly
+    slow and sip power. But wing loading is just <em>weight ÷ area</em> — so the build itself sets it. Pick a
+    heavy construction method, or drown the wing in epoxy, and you raise the loading and shorten the flight,
+    no matter how clean the airfoil. This lesson gives you a <strong>weight budget</strong>: a way to choose a
+    construction method, predict what the wing will weigh, and check the loading <em>before</em> you cut foam.
+    It turns <a href="0012-the-wing-as-a-beam.html">B1</a>'s spar into a finished, flyable wing.</p>
+  </div>
+
+  <p class="lead">There is no such thing as a free gram. Lift it, carry it, and your battery pays for it the
+  whole flight. So the structural question is never just “will it hold?” — it's “will it hold while weighing
+  almost nothing?” That single constraint decides which materials and which build you should reach for.</p>
+
+  <h2><span class="num">1</span>The number that picks a material: stiffness <em>per gram</em></h2>
+  <p>Ask which material is stiffest and the answer is steel or aluminium. Ask which is stiffest
+  <strong>per kilogram</strong> and the ranking flips entirely. What a flying structure cares about is
+  <strong><a href="../reference/glossary.html#specific-stiffness">specific stiffness</a></strong> (E/ρ) and
+  <strong>specific strength</strong> (σ/ρ) — the modulus and the working stress divided by density. A spar
+  cap can always be made stiffer by adding material; the only thing it can't escape is the weight that comes
+  with it.<span class="cite"><a href="#r-ashby">2</a></span></p>
+
+  <table>
+    <caption>Per kilogram, carbon is in a class of its own — and wood quietly matches aluminium. Representative
+    values; real laminates vary with fibre fraction, grain and resin content.</caption>
+    <thead>
+      <tr>
+        <th>Material</th>
+        <th class="num">density (kg/m³)</th>
+        <th class="num">E (GPa)</th>
+        <th class="num">E/ρ (MJ/kg)</th>
+        <th class="num">σ/ρ (kN·m/kg)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>UD carbon</td><td class="num">1500</td><td class="num">138</td><td class="num">92</td><td class="num">1150</td></tr>
+      <tr><td>E-glass laminate</td><td class="num">~1900</td><td class="num">~40</td><td class="num">~31</td><td class="num">~600</td></tr>
+      <tr><td>Spruce</td><td class="num">425</td><td class="num">11</td><td class="num">26</td><td class="num">165</td></tr>
+      <tr><td>Balsa</td><td class="num">150</td><td class="num">9</td><td class="num">27</td><td class="num">100</td></tr>
+      <tr><td>Aluminium 6061</td><td class="num">2700</td><td class="num">69</td><td class="num">26</td><td class="num">102</td></tr>
+    </tbody>
+  </table>
+
+  <p>Read the E/ρ column. Aluminium, spruce and balsa are all clustered near <strong>26 MJ/kg</strong> — for a
+  given stiffness, a wooden spar weighs about the same as an aluminium one. Carbon sits at <strong>92</strong>,
+  roughly <strong>3.5×</strong> the specific stiffness of any of them, and its specific strength leaves metal
+  and wood far behind.<span class="cite"><a href="#r-spar">5</a></span> That is the whole logic of a modern
+  model wing: <strong>concentrate carbon where the bending lives</strong> — the spar caps, the high-stress
+  region B1 identified — and use cheap, ultralight balsa or foam everywhere the loads are low, the cores and
+  the ribs that only have to hold the airfoil shape.</p>
+
+  <h2><span class="num">2</span>Three honest ways to build a wing</h2>
+  <p>Those materials get assembled in one of three classic ways. Each has a characteristic
+  <strong>structural areal density</strong> — grams of wing structure per square decimetre of area — and each
+  buys its lightness or toughness at a different price. The figures below are <strong>representative (REP)</strong>;
+  your fibre, foam and especially your resin discipline move them up or down.<span class="cite"><a href="#r-cst">3</a></span></p>
+
+  <table>
+    <caption>Representative (REP) structural areal densities and the trade each method makes for an
+    endurance wing.</caption>
+    <thead>
+      <tr>
+        <th>Method</th>
+        <th class="num">Rep. areal density</th>
+        <th>Strengths</th>
+        <th>Watch-outs for endurance</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a href="../reference/glossary.html#foam-core">Hot-wire foam core</a> + glass/carbon
+        <a href="../reference/glossary.html#wing-skin">skin</a></td>
+        <td class="num">≈ 11 g/dm²</td>
+        <td>Accurate, stiff airfoil straight off the templates; tough and ding-resistant.</td>
+        <td>Resin discipline is everything — excess epoxy is pure dead weight.</td>
+      </tr>
+      <tr>
+        <td><a href="../reference/glossary.html#built-up">Built-up balsa ribs</a> + heat-shrink film</td>
+        <td class="num">≈ 6 g/dm²</td>
+        <td>The lightest open framework; cheap, and easy to repair after a hard landing.</td>
+        <td>Film sags and can flutter; weak in torsion as aspect ratio climbs.</td>
+      </tr>
+      <tr>
+        <td><a href="../reference/glossary.html#composite">Moulded composite</a> (carbon/glass over foam)</td>
+        <td class="num">≈ 9 g/dm²</td>
+        <td>Best airfoil accuracy and torsional stiffness for thin, high-AR wings; durable.</td>
+        <td>Needs tooling (moulds); hard to repair in the field.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>Notice the moulded wing can come out <em>lighter</em> than the foam-core one (≈ 9 vs ≈ 11 g/dm²): light
+  spread-tow skins put fibre exactly where it's needed and nowhere else, which is precisely what a thin,
+  high-aspect-ratio endurance wing wants. The built-up frame is lighter still, but its film skin and weaker
+  torsion box make it the gamble at high AR. There is no universal winner — only the lightest method
+  <em>you can build well</em>.</p>
+
+  <h2><span class="num">3</span>How light is light enough?</h2>
+  <p>To know whether your number is good, you need targets. Below are finished wing loadings for efficient
+  soaring craft, from the RC-Soar performance analysis.<span class="cite"><a href="#r-rcsoar">1</a></span>
+  They are the same quantity T2 introduced, just written the way modellers prefer
+  (<strong>1&nbsp;g/dm² = 0.981&nbsp;N/m²</strong>, so the two columns are nearly identical).</p>
+
+  <table>
+    <caption>Reference wing loadings for efficient craft. Lighter loading → slower flight → less induced power
+    → longer time aloft — the through-line from T2.</caption>
+    <thead>
+      <tr><th>Craft</th><th class="num">Wing loading (g/dm²)</th><th class="num">(N/m²)</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Light electric F5J / RES</td><td class="num">~12–18</td><td class="num">~12–18</td></tr>
+      <tr><td>Floater</td><td class="num">21</td><td class="num">21</td></tr>
+      <tr><td>Thermal soarer</td><td class="num">30</td><td class="num">30</td></tr>
+      <tr><td>Speed / slope</td><td class="num">49</td><td class="num">48</td></tr>
+    </tbody>
+  </table>
+
+  <p>For our mission the pull is firmly toward the <em>light</em> end — the F5J / floater band. A lighter wing
+  flies slower, and slower flight is exactly the minimum-power, maximum-<a href="../reference/glossary.html#endurance-parameter">C<sub>L</sub><sup>1.5</sup>/C<sub>D</sub></a>
+  condition the whole course steers by. Construction isn't a footnote to the aerodynamics; it <em>is</em> the
+  aerodynamics, expressed in grams.</p>
+
+  <h2><span class="num">4</span>The weight budget</h2>
+  <p>Put it together and you get a budget you can compute before touching a tool. The construction method fixes
+  the areal density; multiply by area for the wing's structural mass; add the payload it has to carry; divide
+  by area for the loading:</p>
+
+  <div class="formula">
+<span class="var">m<sub>wing</sub></span> <span class="op">=</span> areal&nbsp;density <span class="op">·</span> <span class="var">S</span>     <span class="var">AUW</span> <span class="op">=</span> <span class="var">m<sub>wing</sub></span> <span class="op">+</span> <span class="var">m<sub>payload</sub></span>     <span class="var">W/S</span> <span class="op">=</span> <span class="var">AUW</span> <span class="op">/</span> <span class="var">S</span>
+<small>Areal density in g/dm² (set by the construction method), wing area <b>S</b> in dm². Every gram of structure adds straight onto all-up weight <b>AUW</b> and pushes the <b>wing loading W/S</b> up — which forces a faster flight speed and a bigger power bill. <b>1 g/dm² = 0.981 N/m²</b>.</small>
+  </div>
+
+  <div class="calc">
+    <div class="calc-title">🧮 Wing weight &amp; loading estimator</div>
+    <p style="font-family:var(--sans);font-size:.86rem;color:var(--ink-soft);margin:-.3rem 0 .9rem">
+      Choose a construction method (it sets the representative areal density), then dial in your wing area and
+      the mass of everything it must carry — battery, motor, electronics, fuselage. The bar shows the
+      <strong>weight budget</strong> (structure vs payload), and the gauge places your
+      <a href="../reference/glossary.html#wing-loading">wing loading</a> against the efficient-endurance band.</p>
+    <div class="controls">
+      <div class="control">
+        <label>Construction method</label>
+        <select id="methodSel">
+          <option value="foam">Hot-wire foam core + glass/carbon skin — REP 11 g/dm²</option>
+          <option value="builtup">Built-up balsa ribs + film — REP 6 g/dm²</option>
+          <option value="moulded">Moulded composite (carbon/glass over foam) — REP 9 g/dm²</option>
+        </select>
+      </div>
+      <div class="control">
+        <label>Wing area S <output id="sOut">30 dm²</output></label>
+        <input type="range" id="sRange" min="10" max="80" step="1" value="30">
+      </div>
+      <div class="control">
+        <label>Payload + systems mass <output id="pOut">800 g</output></label>
+        <input type="range" id="pRange" min="200" max="2000" step="10" value="800">
+      </div>
+    </div>
+    <div class="readout">
+      <canvas id="budgetCanvas" width="720" height="300" aria-label="A stacked mass-budget bar showing wing structure versus payload, above a colour-banded wing-loading gauge with a marker at the current loading."></canvas>
+      <div class="budget-readouts">
+        <span>areal density <b id="arealVal">—</b> <span class="u">g/dm² (REP)</span></span>
+        <span>wing area S <b id="sVal">—</b> <span class="u">dm²</span></span>
+        <span>wing structure <b id="wingVal">—</b> <span class="u">g</span></span>
+        <span>payload + systems <b id="payVal">—</b> <span class="u">g</span></span>
+        <span>all-up weight AUW <b id="auwVal">—</b> <span class="u">g</span></span>
+        <span>wing loading <b id="wlgVal">—</b> <span class="u">g/dm²</span> · <b id="wlnVal">—</b> <span class="u">N/m²</span></span>
+      </div>
+      <div class="chips">
+        <span class="chip" id="bandChip">loading band</span>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="simbtn" id="presetFloat">🪶 Light F5J floater</button>
+      <button class="simbtn active" id="presetTherm">🌡 Thermal cruiser</button>
+      <button class="simbtn" id="presetSpeed">⚡ Compact speed wing</button>
+    </div>
+    <div class="status hint" id="status">Pick a method and slide — watch the wing eat into the weight budget.</div>
+  </div>
+
+  <h2><span class="num">5</span>Check yourself</h2>
+  <p>Answer from memory — that small effort is what turns a fact you just read into one you'll keep.</p>
+
+  <div class="quiz"
+       data-explain-right="Structures are chosen by stiffness and strength per unit weight."
+       data-explain-wrong="Re-read §1 — raw stiffness isn't the point; stiffness per gram is.">
+    <div class="q-kicker">Question 1 of 3</div>
+    <div class="q-text">Carbon and even spruce beat steel and aluminium for spar caps mainly because…</div>
+    <div class="q-options">
+      <button class="opt" data-correct data-feedback="Exactly. Specific stiffness (E/ρ) and specific strength (σ/ρ) are what a flying structure optimises. Metals can match the stiffness, but only by being heavier — and a wing pays for every gram.">they win on specific stiffness and strength — stiffness and strength <em>per unit weight</em></button>
+      <button class="opt" data-feedback="Steel and aluminium actually have higher raw modulus than wood. The catch is they're far denser, so per gram they're no stiffer — and that's the metric that matters.">they have a higher raw Young's modulus than any metal</button>
+      <button class="opt" data-feedback="Cost helps in practice but isn't the structural reason. The selection is driven by E/ρ and σ/ρ — performance per gram, not per dollar.">they are always the cheapest materials available</button>
+      <button class="opt" data-feedback="Corrosion is a maintenance issue, not why they're chosen for caps. The deciding numbers are specific stiffness and specific strength.">they cannot corrode the way aluminium can</button>
+    </div>
+    <div class="q-feedback"></div>
+  </div>
+
+  <div class="quiz"
+       data-explain-right="Lighter wing → lower loading → slower flight → less power → longer endurance."
+       data-explain-wrong="Look again at §3 and the T2 through-line.">
+    <div class="q-kicker">Question 2 of 3</div>
+    <div class="q-text">Shaving 100 g off the structure helps endurance because a lighter wing…</div>
+    <div class="q-options">
+      <button class="opt" data-correct data-feedback="Right — and this is the T2 chain. Lower wing loading means a slower flight speed, slower flight means less power required, and less power means more time aloft on the same battery.">lowers the wing loading, so it flies slower and needs less power to stay up</button>
+      <button class="opt" data-feedback="Backwards. Lighter means a LOWER wing loading and a SLOWER flight, which is what cuts the power bill. Faster flight would burn more, not less.">raises the wing loading, letting it fly faster on the same power</button>
+      <button class="opt" data-feedback="A lighter wing doesn't change the airfoil's coefficients at all — geometry sets those. The win is operating at a slower, lower-power point on the same polar.">improves the airfoil's lift and drag coefficients directly</button>
+      <button class="opt" data-feedback="The propeller is unchanged. Endurance improves because lower loading lets the wing fly slower and require less power — an aerodynamic effect, not a propulsion one.">makes the propeller more efficient at every speed</button>
+    </div>
+    <div class="q-feedback"></div>
+  </div>
+
+  <div class="quiz"
+       data-explain-right="Built-up is lightest but fragile; foam-core toughest; moulded most accurate."
+       data-explain-wrong="Re-read the methods table in §2.">
+    <div class="q-kicker">Question 3 of 3</div>
+    <div class="q-text">You want the lightest possible wing and can accept some fragility. Which method, and what's the catch?</div>
+    <div class="q-options">
+      <button class="opt" data-correct data-feedback="Yes. Built-up balsa + film is the lightest framework (≈ 6 g/dm²), but the film skin sags and can flutter, and the open structure is weak in torsion as aspect ratio rises.">Built-up balsa + film — lightest, but film sag and weak torsion at high AR</button>
+      <button class="opt" data-feedback="Foam-core is the tough, accurate choice, not the lightest — at ≈ 11 g/dm² it's the heaviest of the three. You'd pick it for durability, not minimum weight.">Hot-wire foam core — lightest, but too fragile to land</button>
+      <button class="opt" data-feedback="Moulded composite gives the best airfoil accuracy and torsional stiffness for thin high-AR wings, but it needs tooling and is hard to repair — and at ≈ 9 g/dm² it isn't the lightest.">Moulded composite — lightest, but it flutters badly</button>
+      <button class="opt" data-feedback="All three differ a lot: ≈ 6, 9 and 11 g/dm². The whole point of the weight budget is that the method you choose changes the wing's mass — and its loading — substantially.">Any of them — the method makes almost no difference to weight</button>
+    </div>
+    <div class="q-feedback"></div>
+  </div>
+
+  <div class="recap">
+    <h3>What you can now say</h3>
+    <ol>
+      <li>Structural materials are picked by <strong>specific stiffness (E/ρ)</strong> and <strong>specific
+      strength (σ/ρ)</strong>, not raw E or σ — which is why carbon dominates the caps and wood merely ties
+      aluminium.</li>
+      <li>Put the expensive carbon where the bending lives (the <strong>spar caps</strong>, from B1) and use
+      ultralight <strong>balsa or foam</strong> for the low-stress cores and ribs.</li>
+      <li>Three build routes, by representative areal density: built-up balsa <strong>≈ 6 g/dm²</strong>
+      (lightest, most fragile), moulded composite <strong>≈ 9</strong> (most accurate), foam-core skin
+      <strong>≈ 11</strong> (toughest).</li>
+      <li>The <strong>weight budget</strong>: wing mass = areal density × area; add payload for AUW; AUW ÷ area
+      = wing loading.</li>
+      <li>Every gram raises the loading, which forces faster flight and more power — so building light
+      <em>is</em> the endurance goal, the same north star (max C<sub>L</sub><sup>1.5</sup>/C<sub>D</sub>) the
+      course has chased since F1.</li>
+    </ol>
+  </div>
+
+  <div class="sourcebox">
+    <div class="icon">📖</div>
+    <div>
+      <div class="label">Primary source · read this next</div>
+      <div class="title"><a href="https://rc-soar.com/tech/perfanal.htm" target="_blank" rel="noopener">RC-Soar — Performance Analysis &amp; Wing Loading</a></div>
+      <div class="desc">A practical, numbers-first walk through wing loading for efficient model gliders — where the
+      floater / thermal / speed bands come from, and why the light end wins on time aloft. The source of this
+      lesson's reference loadings. ~15-minute read.</div>
+    </div>
+  </div>
+
+  <div class="ask-teacher">
+    💬 <b>I'm your teacher — ask me anything.</b> Want to know why a moulded wing can beat a foam-core wing on
+    weight despite both using foam, or how much endurance you actually lose per 100 g, or which method suits
+    <em>your</em> shop and skill level? Bring it to chat. Confused beats stuck.
+  </div>
+
+  <div class="crosslinks">
+    <b>Glossary:</b>
+    <a href="../reference/glossary.html#specific-stiffness">specific stiffness</a> ·
+    <a href="../reference/glossary.html#foam-core">foam core</a> ·
+    <a href="../reference/glossary.html#built-up">built-up</a> ·
+    <a href="../reference/glossary.html#composite">moulded composite</a> ·
+    <a href="../reference/glossary.html#wing-skin">wing skin</a> ·
+    <a href="../reference/glossary.html#wing-loading">wing loading</a> ·
+    <a href="../reference/glossary.html#endurance-parameter">endurance parameter</a>.
+    <b>Builds on →</b> <strong>B1</strong> (the wing as a beam) and <strong>T2</strong> (planform &amp; wing
+    loading). <b>Builds toward →</b> <strong>B3</strong> (build the wing).
+  </div>
+
+  <h2 id="refs"><span class="num">§</span>References</h2>
+  <ol style="font-family:var(--sans);font-size:.84rem;color:var(--ink-soft);line-height:1.5">
+    <li id="r-rcsoar">RC-Soar — <a href="https://rc-soar.com/tech/perfanal.htm" target="_blank" rel="noopener">Performance Analysis</a>. Wing-loading bands for efficient model gliders (floater / thermal / speed) and how loading sets flight speed and power. <b>Primary source.</b></li>
+    <li id="r-ashby">Ashby — <a href="https://dl.icdst.org/pdfs/files3/319da279b227abb7b415931e0594a983.pdf" target="_blank" rel="noopener">Materials Selection in Mechanical Design</a> (PDF). The reference for specific stiffness (E/ρ) and specific strength (σ/ρ) as the selection metrics for light, stiff structures.</li>
+    <li id="r-cst">CST — <a href="https://www.cstsales.com/vac_wing.html" target="_blank" rel="noopener">Vacuum-Bagged Composite Wing Guide</a>. Practical foam-core + glass/carbon skin construction, and why resin content drives finished weight.</li>
+    <li id="r-spruce">The Wood Database — <a href="https://www.wood-database.com/sitka-spruce/" target="_blank" rel="noopener">Sitka Spruce</a>. Density and mechanical properties for the classic light aircraft / spar wood.</li>
+    <li id="r-spar">Ciurpita — <a href="https://ciurpita.tripod.com/rc/notes/compositeSpar.html" target="_blank" rel="noopener">Carbon vs Spruce Spar Notes</a>. A hands-on comparison of carbon and spruce spar caps on a per-weight basis.</li>
+  </ol>
+
+  <nav class="lesson-nav">
+    <a href="0012-the-wing-as-a-beam.html">
+      <div class="dir">← Prev · B1</div>
+      <div class="ttl">The Wing as a Beam</div>
+    </a>
+    <a class="next" href="0014-build-the-wing.html">
+      <div class="dir">Next · B3</div>
+      <div class="ttl">Build the Wing →</div>
+    </a>
+  </nav>
+
+  <p class="pagefoot">Lesson B2 of the Wing Design course ·
+  <a href="../index.html">all lessons</a> ·
+  <a href="https://github.com/chrisfraser/wing-design">source on GitHub</a></p>
+</main>
+
+<script>
+/* ====================== Wing weight & loading estimator ====================== */
+(function(){
+  var GDM = 0.981;                 /* 1 g/dm² = 0.981 N/m² */
+  var METHODS = {
+    foam:    { areal:11, name:'Foam-core' },
+    builtup: { areal:6,  name:'Built-up' },
+    moulded: { areal:9,  name:'Moulded' }
+  };
+
+  var sel   = document.getElementById('methodSel');
+  var sR    = document.getElementById('sRange'),  sO  = document.getElementById('sOut');
+  var pR    = document.getElementById('pRange'),  pO  = document.getElementById('pOut');
+  var arealVal = document.getElementById('arealVal'), sVal = document.getElementById('sVal');
+  var wingVal  = document.getElementById('wingVal'),  payVal = document.getElementById('payVal');
+  var auwVal   = document.getElementById('auwVal'),   wlgVal = document.getElementById('wlgVal');
+  var wlnVal   = document.getElementById('wlnVal'),   chip   = document.getElementById('bandChip');
+  var status   = document.getElementById('status');
+  var pF = document.getElementById('presetFloat'), pT = document.getElementById('presetTherm'), pS = document.getElementById('presetSpeed');
+
+  var canvas = document.getElementById('budgetCanvas'), ctx = canvas ? canvas.getContext('2d') : null;
+  if(!ctx) return;
+  var W = canvas.width, H = canvas.height, padL = 22, padR = 22;
+
+  function draw(wingMass, payload, auw, loadingG){
+    ctx.clearRect(0,0,W,H);
+    ctx.fillStyle = '#0a1c30'; ctx.fillRect(0,0,W,H);
+    var usableW = W - padL - padR;
+
+    /* ---- mass-budget bar (scale: full ceiling = 3000 g) ---- */
+    ctx.font = 'bold 11px Inter, system-ui'; ctx.textAlign = 'left'; ctx.fillStyle = '#8fb9c6';
+    ctx.fillText('MASS BUDGET', padL, 24);
+    ctx.textAlign = 'right'; ctx.fillStyle = '#ffd479';
+    ctx.fillText('AUW = ' + Math.round(auw) + ' g', W - padR, 24);
+
+    var ppg = usableW / 3000, barY = 44, barH = 56;
+    var wW = wingMass * ppg, pW = payload * ppg;
+    ctx.fillStyle = '#e0843a'; ctx.fillRect(padL, barY, wW, barH);            /* structure */
+    ctx.fillStyle = '#4ea3da'; ctx.fillRect(padL + wW, barY, pW, barH);       /* payload   */
+    ctx.strokeStyle = 'rgba(143,185,198,.45)'; ctx.lineWidth = 1; ctx.strokeRect(padL, barY, wW + pW, barH);
+
+    ctx.textBaseline = 'middle'; ctx.textAlign = 'center'; ctx.font = 'bold 12px Inter, system-ui';
+    if(wW > 92){ ctx.fillStyle = '#1a212b'; ctx.fillText('wing ' + Math.round(wingMass) + ' g', padL + wW/2, barY + barH/2); }
+    if(pW > 110){ ctx.fillStyle = '#06243b'; ctx.fillText('payload ' + Math.round(payload) + ' g', padL + wW + pW/2, barY + barH/2); }
+    ctx.textBaseline = 'alphabetic';
+
+    /* legend */
+    ctx.textAlign = 'left'; ctx.font = '11px Inter, system-ui';
+    ctx.fillStyle = '#e0843a'; ctx.fillRect(padL, 118, 11, 11);
+    ctx.fillStyle = '#8fb9c6'; ctx.fillText('wing structure', padL + 16, 127);
+    ctx.fillStyle = '#4ea3da'; ctx.fillRect(padL + 130, 118, 11, 11);
+    ctx.fillStyle = '#8fb9c6'; ctx.fillText('payload + systems', padL + 146, 127);
+
+    /* ---- wing-loading gauge (scale 0..65 g/dm²) ---- */
+    var lmax = 65, gy = 186, gH = 22;
+    function lx(v){ return padL + Math.max(0, Math.min(v, lmax)) / lmax * usableW; }
+    ctx.fillStyle = 'rgba(63,191,99,.30)';  ctx.fillRect(lx(0),  gy, lx(30) - lx(0),  gH);
+    ctx.fillStyle = 'rgba(224,132,58,.32)'; ctx.fillRect(lx(30), gy, lx(50) - lx(30), gH);
+    ctx.fillStyle = 'rgba(193,73,43,.34)';  ctx.fillRect(lx(50), gy, lx(65) - lx(50), gH);
+    ctx.strokeStyle = 'rgba(143,185,198,.45)'; ctx.strokeRect(padL, gy, usableW, gH);
+
+    ctx.font = 'bold 11px Inter, system-ui'; ctx.textAlign = 'left'; ctx.fillStyle = '#8fb9c6';
+    ctx.fillText('WING LOADING  (g/dm²)', padL, 168);
+
+    /* band boundary numbers */
+    ctx.font = '10px Inter, system-ui'; ctx.textAlign = 'center'; ctx.fillStyle = '#8fb9c6';
+    [0,30,50,65].forEach(function(v){ ctx.fillText(v, lx(v), gy + gH + 13); });
+
+    /* reference craft ticks */
+    [[21,'floater'],[30,'thermal'],[49,'speed']].forEach(function(r){
+      var x = lx(r[0]);
+      ctx.strokeStyle = 'rgba(216,236,245,.55)'; ctx.beginPath();
+      ctx.moveTo(x, gy + gH + 18); ctx.lineTo(x, gy + gH + 24); ctx.stroke();
+      ctx.fillStyle = '#8fb9c6'; ctx.fillText(r[1] + ' ' + r[0], x, gy + gH + 36);
+    });
+
+    /* current-loading marker */
+    var mx = lx(loadingG);
+    ctx.fillStyle = '#ffd479'; ctx.beginPath();
+    ctx.moveTo(mx, gy - 2); ctx.lineTo(mx - 7, gy - 13); ctx.lineTo(mx + 7, gy - 13); ctx.closePath(); ctx.fill();
+    ctx.font = 'bold 12px Inter, system-ui'; ctx.fillStyle = '#ffd479';
+    var vx = Math.max(padL + 34, Math.min(mx, W - padR - 34));
+    ctx.fillText(loadingG.toFixed(1) + ' g/dm²', vx, gy - 18);
+  }
+
+  function update(){
+    var areal = METHODS[sel.value].areal;
+    var S = parseFloat(sR.value);
+    var payload = parseFloat(pR.value);
+    var wingMass = areal * S;
+    var auw = wingMass + payload;
+    var loadingG = auw / S;
+    var loadingN = loadingG * GDM;
+
+    sO.textContent = S + ' dm²';
+    pO.textContent = Math.round(payload) + ' g';
+    arealVal.textContent = areal;
+    sVal.textContent = S;
+    wingVal.textContent = Math.round(wingMass);
+    payVal.textContent = Math.round(payload);
+    auwVal.textContent = Math.round(auw);
+    wlgVal.textContent = loadingG.toFixed(1);
+    wlnVal.textContent = loadingN.toFixed(1);
+
+    /* constraint chip: green <30, amber 30–50, red >50 g/dm² (REP) */
+    if(loadingG < 30){ chip.className = 'chip ok';   chip.textContent = '✓ efficient-endurance band (<30 g/dm²)'; }
+    else if(loadingG <= 50){ chip.className = 'chip warn'; chip.textContent = '△ sport band (30–50 g/dm²) — flyable, not optimal'; }
+    else { chip.className = 'chip bad'; chip.textContent = '✗ fast band (>50 g/dm²) — short endurance'; }
+
+    /* status: comment on the method trade for this area */
+    var mFoam = 11*S, mBuilt = 6*S, mMould = 9*S, key = sel.value, s;
+    if(key === 'builtup'){
+      s = 'Built-up balsa is the lightest framework here (' + Math.round(mBuilt) + ' g) but the most fragile; foam-core adds ~' + Math.round(mFoam - mBuilt) + ' g for toughness and a cleaner airfoil.';
+    } else if(key === 'foam'){
+      s = 'Foam-core gives a tough, accurate airfoil at ' + Math.round(mFoam) + ' g — about ' + Math.round(mFoam - mBuilt) + ' g heavier than a built-up frame would weigh, the price of durability and resin.';
+    } else {
+      s = 'Moulded composite is the most accurate and torsionally stiff at ' + Math.round(mMould) + ' g — best for thin high-AR wings, but tooling is costly and field repairs are hard.';
+    }
+    status.className = 'status hint'; status.textContent = s;
+
+    draw(wingMass, payload, auw, loadingG);
+  }
+
+  function setActive(btn){ [pF,pT,pS].forEach(function(b){ b.classList.toggle('active', b === btn); }); }
+  function preset(method, S, payload, btn){ sel.value = method; sR.value = S; pR.value = payload; setActive(btn); update(); }
+
+  sel.addEventListener('change', function(){ setActive(null); update(); });
+  sR.addEventListener('input',  function(){ setActive(null); update(); });
+  pR.addEventListener('input',  function(){ setActive(null); update(); });
+  pF.addEventListener('click', function(){ preset('builtup', 25, 350, pF); });   /* ~20 g/dm² → green */
+  pT.addEventListener('click', function(){ preset('foam',    30, 800, pT); });   /* 37.7 g/dm² → amber (worked example) */
+  pS.addEventListener('click', function(){ preset('moulded', 12, 600, pS); });   /* ~59 g/dm² → red */
+
+  update();
+})();
+</script>
+</body>
+</html>

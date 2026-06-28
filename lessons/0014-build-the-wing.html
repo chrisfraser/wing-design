@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>B3 · Build the Wing</title>
+<link rel="stylesheet" href="../assets/styles.css">
+<script defer src="../assets/widgets.js"></script>
+<style>
+  /* Lesson-B3-specific: group labels inside the tools/materials checklist */
+  .cl-group { font-family:var(--sans); font-weight:700; font-size:.74rem; text-transform:uppercase; letter-spacing:.1em; color:var(--kelp); margin:.1rem 0 .55rem; display:flex; align-items:center; gap:.4rem; }
+  .cl-group.second { margin-top:1.2rem; }
+  .checklist .ck-spec { display:block; margin-top:.1rem; }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap-wide">
+    <a class="brand" href="../index.html"><span class="dot">✈</span> Wing Design</a>
+    <nav>
+      <a href="../index.html">Lessons</a>
+      <a href="../reference/glossary.html">Glossary</a>
+      <a href="https://github.com/chrisfraser/wing-design">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <p class="kicker">Phase 5 · Structures &amp; the Build · B3</p>
+  <h1 class="lesson-title">Build the Wing</h1>
+  <p class="lesson-sub">The last lesson. Every number you've computed now becomes a real object —
+  a foam-core composite panel you can hold, balance, and fly.</p>
+  <div class="lesson-meta">
+    <span>⏱ ~12 minutes</span><span class="sep">•</span>
+    <span>🔧 Hands-on — the build bench</span><span class="sep">•</span>
+    <span class="tag build">Final lesson · builds on B1 &amp; B2</span>
+  </div>
+
+  <div class="callout mission">
+    <div class="callout-label">◎ Why this lesson</div>
+    <p>In <a href="0013-materials-and-construction.html">B2</a> you chose a construction method and set a
+    <strong>weight budget</strong>; in <a href="0012-the-wing-as-a-beam.html">B1</a> you sized the spar
+    that carries the load. Now you actually <em>make it</em>. This lesson walks the consensus build
+    sequence for a vacuum-bagged foam-core composite wing — the method most long-endurance modellers
+    converge on because it's tough, repeatable, and light. By the end you'll have a step-by-step plan, a
+    tick-off shopping list, and the discipline to keep the finished wing as light as you designed it.</p>
+  </div>
+
+  <p class="lead">A wing is the one part of the aircraft you cannot fudge: it carries every gram into the
+  air and it is the first thing to fail if you get the loads — or the weight — wrong. The good news is
+  that the build is a recipe. Follow it in order, respect the two places it punishes carelessness, and a
+  first-time bagged wing comes out straight, stiff, and on budget.</p>
+
+  <h2><span class="num">1</span>The build sequence</h2>
+  <p>This is the order experienced builders settle on for a foam-core composite panel: cut the shape,
+  put the strength in, skin it, squeeze it under vacuum, join the halves, finish, and finally weigh and
+  balance against your plan.<span class="cite"><a href="#r-cst">1</a></span> Do them out of order and you
+  fight yourself — you can't slot a spar into a skinned core, and you can't bag a wing you've already
+  joined.</p>
+
+  <ol class="steps">
+    <li>
+      <div class="step-title">Hot-wire cut the cores</div>
+      <div class="step-detail">Bow a length of <a href="../reference/glossary.html#foam-core">nichrome
+      wire</a> taut on a wooden frame and clamp a <strong>root</strong> and a <strong>tip</strong> airfoil
+      template to your EPS or XPS foam block. A steady current melts the bow cleanly through both templates
+      at once, leaving an accurate, washed-out core. Keep the leftover foam “shucks” — those negative
+      offcuts become the cradle that supports the skin evenly under vacuum. Finish with a light sand.</div>
+    </li>
+    <li>
+      <div class="step-title">Cut the spar slot &amp; install the spar</div>
+      <div class="step-detail">Groove a straight channel with a Dremel cut-off disc, using strips of balsa
+      as depth-stops so you can't plunge too deep. Bed the carbon <a href="../reference/glossary.html#spar">spar</a>
+      — caps top <em>and</em> bottom, sized the way <a href="0012-the-wing-as-a-beam.html">B1</a> showed —
+      in epoxy thickened with microballoons. (Alternatively, lay unidirectional carbon caps directly inside
+      the skin during layup and skip the slot.)</div>
+    </li>
+    <li>
+      <div class="step-title">Skin / glass the cores</div>
+      <div class="step-detail">Wet out roughly <strong>0.7 oz (≈24 g/m²)</strong> glass cloth on
+      <a href="../reference/glossary.html#wing-skin">waxed Mylar</a> sheets, often laid on the
+      <strong>bias</strong> (45°) so the weave resists twist, i.e. torsion. Add a
+      <strong>doubler at the root</strong>, where the load is highest, and an extra layer over the leading
+      edge for hangar-rash and impact.<span class="cite"><a href="#r-crrc">2</a></span></div>
+    </li>
+    <li>
+      <div class="step-title">Vacuum bag</div>
+      <div class="step-detail">Fold the Mylar-and-glass skin over the core, then stack <strong>peel-ply +
+      perforated release film + breather</strong> and seal it all in the bag. Pull a <em>gentle</em>
+      vacuum — about <strong>6–8 inHg</strong> for soft white EPS, <strong>12–16 inHg</strong> for tougher
+      blue XPS — supporting the part on its shucks so it can't crush or warp. Leave it to cure 24 hours or
+      more.<span class="cite"><a href="#r-easy">3</a></span></div>
+    </li>
+    <li>
+      <div class="step-title">Joiner &amp; dihedral</div>
+      <div class="step-detail">Fit a ply or carbon <strong>joiner box</strong> at each root and epoxy it in.
+      Bring the two panels together on a flat reference table to set the
+      <a href="../reference/glossary.html#dihedral">dihedral</a> angle and lock the wing true — a twist set
+      now is a twist forever.</div>
+    </li>
+    <li>
+      <div class="step-title">Finish</div>
+      <div class="step-detail">Fill any pinholes with lightweight filler, block-sand through progressively
+      finer grit (80 → 400), and either leave the bare glass finish or cover and paint. Resist the urge to
+      pile on filler and paint — it's pure weight.</div>
+    </li>
+    <li>
+      <div class="step-title">Balance &amp; weigh</div>
+      <div class="step-detail">Weigh each panel and confirm the two sides match. Balance the assembled wing
+      to the design <a href="../reference/glossary.html#center-of-gravity">centre of gravity</a> — roughly
+      <strong>25–33% of the chord</strong> — and put the whole thing on the scale. Then
+      <strong>compare that number to the structural mass you budgeted in
+      <a href="0013-materials-and-construction.html">B2</a></strong>. This is the moment of truth.</div>
+    </li>
+  </ol>
+
+  <details class="panel">
+    <summary>Prefer balsa and film? The built-up alternative</summary>
+    <div class="panel-body">
+      <p>You don't have to bag composites. The traditional path is a
+      <a href="../reference/glossary.html#built-up">built-up</a> structure: cut a stack of ribs to the
+      airfoil shape, thread them onto the spars, sheet the leading-edge “D-box” for torsional stiffness,
+      then shrink heat-shrink film (Oracover, Monokote) over the frame with an iron. It's often the
+      <em>lightest</em> option for a given size and trivially repairable, but it's more fragile and less
+      stiff in torsion than a bagged composite skin, and an open structure needs careful jigging to come
+      out straight.<span class="cite"><a href="#r-lennon">5</a></span> The build <em>order</em> is the
+      same idea — shape, then strength, then skin, then join, then balance.</p>
+    </div>
+  </details>
+
+  <div class="callout warning">
+    <div class="callout-label">⚠ The weight thieves</div>
+    <p>Four mistakes quietly steal the endurance you designed for. Watch every one:</p>
+    <ul>
+      <li><strong>Excess epoxy / resin</strong> — the #1 avoidable mass. Cured resin beyond what wets the
+      cloth adds weight and <em>no</em> strength. Squeeze it out under vacuum.</li>
+      <li><strong>Warped cores</strong> — a twisted panel flies with built-in error you can never trim out.
+      Cut on a flat block; bag on the shucks; join on a flat table.</li>
+      <li><strong>A weak root / spar joint</strong> — the root is the highest-load region in the whole wing
+      (<a href="0012-the-wing-as-a-beam.html">B1</a>). Skimp here and the wing folds here.</li>
+      <li><strong>A nose-heavy CG</strong> — too much mass forward of ~25–33% chord forces extra trim drag
+      and dulls the handling. Balance it; don't hope.</li>
+    </ul>
+  </div>
+
+  <h2><span class="num">2</span>Closing the loop: weigh against your budget</h2>
+  <p>The build only counts as a success if it honours the plan. Two cheap checks — a scale and a balance
+  point — close the loop back to everything earlier in the course:</p>
+
+  <div class="formula">
+<span class="var">CG</span> <span class="op">@</span> 25–33 % chord     <span class="op">·</span>     <span class="var">m</span><sub>built</sub> <span class="op">≤</span> <span class="var">m</span><sub>budget</sub>     <span class="op">→</span>     endurance preserved
+<small>Balance the wing to a CG at roughly a quarter-to-a-third of the chord, and weigh the finished panels against the structural mass you set in <b>B2</b>. Over budget means higher wing loading, a faster flight speed, and an operating point that has drifted off your <b>C<sub>L</sub><sup>1.5</sup>/C<sub>D</sub></b> peak — the endurance you designed has quietly leaked away.</small>
+  </div>
+
+  <h2><span class="num">3</span>Tools &amp; materials — tick what you have</h2>
+  <p>Before you cut a single core, lay everything out. The checklist below is the full kit for a
+  vacuum-bagged foam wing; click an item to tick it off and watch the tally fill. Most jobs go wrong at
+  the bench, not the design desk — a missing release film or a cold pump mid-layup ruins a part.</p>
+
+  <div class="checklist-widget">
+    <div class="cl-group">🛠 Tools</div>
+    <ul class="checklist">
+      <li data-check><span class="ck-name">Hot-wire bow</span><span class="ck-spec">nichrome wire + variable PSU (current sets cut temperature)</span></li>
+      <li data-check><span class="ck-name">Root &amp; tip airfoil templates</span><span class="ck-spec">accurate, hard-edged — they define the section</span></li>
+      <li data-check><span class="ck-name">Vacuum pump + gauge</span><span class="ck-spec">electric, or a hand Mityvac for small panels</span></li>
+      <li data-check><span class="ck-name">Vacuum bag / tube + sealing tape</span><span class="ck-spec">airtight, with mastic tape</span></li>
+      <li data-check><span class="ck-name">Mylar skins</span><span class="ck-spec">~0.008–0.014″ — the glossy mould surface</span></li>
+      <li data-check><span class="ck-name">Squeegee / spreader</span><span class="ck-spec">to wet out and drive off excess resin</span></li>
+      <li data-check><span class="ck-name">Dremel + cut-off disc</span><span class="ck-spec">for the spar slot</span></li>
+      <li data-check><span class="ck-name">Sanding blocks</span><span class="ck-spec">grit 80 → 400</span></li>
+      <li data-check><span class="ck-name">Flat reference table</span><span class="ck-spec">to set dihedral and keep the wing true</span></li>
+      <li data-check><span class="ck-name">Gloves</span><span class="ck-spec">epoxy sensitises — protect your skin</span></li>
+    </ul>
+
+    <div class="cl-group second">🧱 Materials</div>
+    <ul class="checklist">
+      <li data-check><span class="ck-name">EPS or XPS foam</span><span class="ck-spec">white EPS or blue XPS for the cores</span></li>
+      <li data-check><span class="ck-name">Laminating epoxy</span><span class="ck-spec">e.g. West 105/206, or MGS</span></li>
+      <li data-check><span class="ck-name">Glass cloth</span><span class="ck-spec">0.7–3.2 oz, by panel size and load</span></li>
+      <li data-check><span class="ck-name">Carbon spar / UD caps</span><span class="ck-spec">sized in B1 — top &amp; bottom</span></li>
+      <li data-check><span class="ck-name">Microballoons</span><span class="ck-spec">to thicken epoxy for bedding the spar</span></li>
+      <li data-check><span class="ck-name">Peel-ply + perforated release + breather</span><span class="ck-spec">the bagging stack</span></li>
+      <li data-check><span class="ck-name">Mould release / wax</span><span class="ck-spec">so the part leaves the Mylar</span></li>
+      <li data-check><span class="ck-name">Kevlar hinge strip</span><span class="ck-spec">tough, live control-surface hinges</span></li>
+      <li data-check><span class="ck-name">Ply / carbon joiner stock</span><span class="ck-spec">for the root joiner box</span></li>
+      <li data-check><span class="ck-name">Lightweight filler</span><span class="ck-spec">pinholes only — it's weight</span></li>
+    </ul>
+
+    <div class="checklist-bar">
+      <span>Bench-ready kit</span>
+      <span data-checklist-progress></span>
+    </div>
+  </div>
+
+  <h2><span class="num">4</span>Check yourself</h2>
+  <p>Answer from memory — that effort is what turns a fact you just read into one you'll keep.</p>
+
+  <div class="quiz"
+       data-explain-right="Mass sets wing loading, and wing loading sets your endurance."
+       data-explain-wrong="Re-read §2 — weight feeds straight into wing loading and the C_L^1.5/C_D operating point.">
+    <div class="q-kicker">Question 1 of 3</div>
+    <div class="q-text">You finish the wing, step on the scale, and it's 18% over the structural mass you
+    budgeted in B2. Why does that matter?</div>
+    <div class="q-options">
+      <button class="opt" data-correct data-feedback="Right. Unplanned mass raises wing loading, which forces a faster flight speed and pushes you off the C_L^1.5/C_D peak — the endurance you designed for is the thing you lose.">Extra mass raises wing loading, forcing a faster flight off your endurance-optimal operating point</button>
+      <button class="opt" data-feedback="CG is a separate check. Total mass directly sets wing loading — it absolutely affects performance, not just balance.">It only affects the centre of gravity, not flight performance</button>
+      <button class="opt" data-feedback="Extra resin or wood rarely lands where the loads actually are — it's mostly dead weight, not useful strength, and it costs you endurance.">Over-budget weight makes the wing stronger, so it's a safe trade</button>
+      <button class="opt" data-feedback="Long before anything breaks, the added mass raises wing loading and erodes endurance. That's the everyday cost, not a failure-load issue.">Weight has no real effect until you exceed the spar's failure load</button>
+    </div>
+    <div class="q-feedback"></div>
+  </div>
+
+  <div class="quiz"
+       data-explain-right="Bending moment peaks at the root — that's where a wing fails."
+       data-explain-wrong="Look back at the B1 beam result: M is maximum at the root.">
+    <div class="q-kicker">Question 2 of 3</div>
+    <div class="q-text">As you epoxy the spar and fit the joiner, one region deserves the most care.
+    Which, and why?</div>
+    <div class="q-options">
+      <button class="opt" data-correct data-feedback="Exactly. M_root is the peak from the B1 cantilever-beam analysis. A weak root/spar joint is precisely where a wing folds in flight.">The root / spar joint — bending moment is maximum at the root, so it's the highest-load region</button>
+      <button class="opt" data-feedback="The tips carry almost no bending load. The root, built in like a cantilever, is where the moment peaks.">The wingtips, because they travel fastest through the air</button>
+      <button class="opt" data-feedback="The trailing edge is lightly loaded. The root spar joint carries the maximum bending moment — that's the joint to get right.">The trailing edge, because it's the thinnest part of the section</button>
+      <button class="opt" data-feedback="Bending load is far from even — it climbs from near-zero at the tip to a maximum at the root. Concentrate strength there.">Everywhere equally — the load spreads evenly along the span</button>
+    </div>
+    <div class="q-feedback"></div>
+  </div>
+
+  <div class="quiz"
+       data-explain-right="The fibres carry the load; resin past wet-out is just mass."
+       data-explain-wrong="See §1 step 4 and the weight-thieves callout — excess resin is dead weight.">
+    <div class="q-kicker">Question 3 of 3</div>
+    <div class="q-text">Your laminate looks shiny and wet after wet-out. Should you squeeze more resin
+    out before you bag it?</div>
+    <div class="q-options">
+      <button class="opt" data-correct data-feedback="Right. Resin is the #1 avoidable mass. The vacuum bag's whole job is to compact the laminate to the minimum resin that wets the fibres — excess cured resin is dead weight that cuts endurance.">Yes — excess cured resin adds weight but no strength, so bag down to the minimum that wets the cloth</button>
+      <button class="opt" data-feedback="Past full wet-out, extra resin adds mass without strength. The fibres carry the load, not the resin pooled around them.">No — more resin always means a stronger, stiffer skin</button>
+      <button class="opt" data-feedback="Air sealing is the bag and tape's job, not a flood of resin. A resin-rich surface is just extra weight.">No — a resin-rich surface is what stops the bag leaking air</button>
+      <button class="opt" data-feedback="Resin is the single biggest avoidable mass in a composite wing — far from negligible, and it comes straight off your endurance.">It doesn't matter — resin weight is negligible next to the foam</button>
+    </div>
+    <div class="q-feedback"></div>
+  </div>
+
+  <div class="recap">
+    <h3>The whole journey — F1 to B3</h3>
+    <p style="font-family:var(--sans);font-size:.9rem;color:var(--ink-soft);margin:.2rem 0 .9rem">
+    Step back and look at the arc you just walked, from “what does optimal even mean?” to a finished wing
+    on the bench:</p>
+    <ol>
+      <li><strong>F1–F4 · Foundations.</strong> You defined “better” as a single number —
+      <strong>max C<sub>L</sub><sup>1.5</sup>/C<sub>D</sub></strong> for endurance, not max L/D — learned how
+      a wing really turns flow into lift, split drag into parasitic and induced, and met the low-Reynolds
+      regime your small drone actually lives in.</li>
+      <li><strong>F5–T1 · The airfoil.</strong> You read camber and thickness off a section, compared real
+      low-Re foils on their polars, and ran a viscous polar in XFOIL at <em>your</em> Reynolds number.</li>
+      <li><strong>T2–T3 · The planform.</strong> You turned the aspect-ratio insight into a real chord,
+      span, area and wing loading, then checked the whole 3-D wing's span efficiency and
+      C<sub>L</sub><sup>1.5</sup>/C<sub>D</sub> in XFLR5.</li>
+      <li><strong>D1–D2 · The design.</strong> You synthesised it all into one endurance wing on a live
+      dashboard, and learned when CFD is worth reaching for — and when it would only mislead you.</li>
+      <li><strong>B1–B3 · The build.</strong> You sized the spar as a cantilever beam, chose materials
+      against a weight budget, and — in this lesson — actually built the wing and weighed it back against
+      that budget.</li>
+    </ol>
+    <p style="font-family:var(--sans);font-size:.95rem;color:var(--night);font-weight:600;margin:.9rem 0 0">
+    You understood lift and drag, picked a foil at your Reynolds number, sized a planform, designed the
+    wing, and built it. There's only one thing left to do — go fly it.</p>
+  </div>
+
+  <div class="sourcebox">
+    <div class="icon">📖</div>
+    <div>
+      <div class="label">Primary source · read this next</div>
+      <div class="title"><a href="https://www.cstsales.com/vac_wing.html" target="_blank" rel="noopener">CST — Vacuum-Bagging a Foam-Core Composite Wing (step-by-step guide)</a></div>
+      <div class="desc">The clearest practical walkthrough of the exact sequence in this lesson — cores,
+      spar, glass on Mylar, the bagging stack, and cure. Read it bench-side before your first layup; it'll
+      save you a ruined part. ~20-minute read.</div>
+    </div>
+  </div>
+
+  <div class="ask-teacher">
+    💬 <b>I'm your teacher — ask me anything.</b> First bagged wing and not sure how much vacuum to pull,
+    how to keep the core from crushing, or how to lay carbon caps on the bias? Want help reconciling your
+    finished weight with the B2 budget? Bring it to chat. Confused beats stuck.
+  </div>
+
+  <div class="crosslinks">
+    <b>Glossary:</b>
+    <a href="../reference/glossary.html#foam-core">foam core</a> ·
+    <a href="../reference/glossary.html#built-up">built-up</a> ·
+    <a href="../reference/glossary.html#spar">spar</a> ·
+    <a href="../reference/glossary.html#wing-skin">wing skin</a> ·
+    <a href="../reference/glossary.html#dihedral">dihedral</a> ·
+    <a href="../reference/glossary.html#center-of-gravity">centre of gravity</a>.
+    <b>Builds on →</b> <strong>B1</strong> (the spar that carries the load) and <strong>B2</strong>
+    (your materials &amp; weight budget). This is the <strong>final lesson</strong> of the course.
+  </div>
+
+  <h2 id="refs"><span class="num">§</span>References</h2>
+  <ol style="font-family:var(--sans);font-size:.84rem;color:var(--ink-soft);line-height:1.5">
+    <li id="r-cst">CST — <a href="https://www.cstsales.com/vac_wing.html" target="_blank" rel="noopener">Vacuum-Bagging a Foam-Core Composite Wing</a>. Step-by-step cores → spar → glass → bag → cure. <b>Primary source.</b></li>
+    <li id="r-crrc">Charles River RC — <a href="https://charlesriverrc.org/articles/design-and-construction/foam-cutting-and-vacuum-bagging/vacuum-bagging/composite-wing-layup/" target="_blank" rel="noopener">Composite Wing Layup</a>. Glass weight, bias layup for torsion, root doublers and leading-edge reinforcement.</li>
+    <li id="r-easy">Easy Composites — <a href="https://www.easycomposites.co.uk/learning/mouldless-carbon-fibre-aero-wing" target="_blank" rel="noopener">Mouldless Carbon Fibre Aero Wing</a> tutorial. The Mylar-and-bag method and sensible vacuum levels for foam.</li>
+    <li id="r-rcg">RCGroups — <a href="https://www.rcgroups.com/composites-fabrication-210/" target="_blank" rel="noopener">Composites &amp; Fabrication forum</a>. Builder threads on bagging pressures, resin discipline and joiner boxes.</li>
+    <li id="r-lennon">Lennon — <a href="https://www.amazon.com/Basics-Model-Aircraft-Design-Techniques/dp/0911295402" target="_blank" rel="noopener">Basics of R/C Model Aircraft Design</a>. Built-up structures, dihedral, balance and the CG range.</li>
+  </ol>
+
+  <nav class="lesson-nav">
+    <a href="0013-materials-and-construction.html">
+      <div class="dir">← Prev · B2</div>
+      <div class="ttl">Materials &amp; Construction</div>
+    </a>
+    <a class="next" href="../index.html">
+      <div class="dir">Course home</div>
+      <div class="ttl">Go fly it →</div>
+    </a>
+  </nav>
+
+  <p class="pagefoot">Lesson B3 of the Wing Design course · the final lesson ·
+  <a href="../index.html">all lessons</a> ·
+  <a href="https://github.com/chrisfraser/wing-design">source on GitHub</a></p>
+</main>
+
+</body>
+</html>

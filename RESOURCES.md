@@ -44,9 +44,21 @@ High-trust only. URLs verified June 2026. Drawn from these, not from guesswork.
 - [SU2](https://su2code.github.io/) — Stanford. Open-source RANS/Euler CFD + adjoint shape optimization.
 - [OpenFOAM](https://www.openfoam.com/) — general-purpose finite-volume CFD. **Caution:** low-Re needs a transition model (γ-Reθ) or it over-predicts drag.
 
+### Structures & the Build
+- [AeroToolbox — Wing Structure](https://aerotoolbox.com/wing-structure/) & [Wing Structural Design](https://aerotoolbox.com/wing-structural-design/) — clear treatment of the cantilever wing, root bending, spar caps vs shear web. **Spine for B1.**
+- [Megson, "Aircraft Structures for Engineering Students"](https://shop.elsevier.com/books/aircraft-structures-for-engineering-students/megson/978-0-08-048831-8) — the structural-idealisation method behind A = M/(σ·h).
+- [14 CFR 23.337 — limit load factors](https://www.risingup.com/fars/info/part23-337-FAR.shtml) — Normal 3.8 / Utility 4.4 / Acrobatic 6.0, ×1.5 to ultimate.
+- [Ashby — material selection (specific stiffness/strength)](https://dl.icdst.org/pdfs/files3/319da279b227abb7b415931e0594a983.pdf) — why E/ρ and σ/ρ pick carbon & wood for caps.
+- [RC-Soar — performance & wing loading](https://rc-soar.com/tech/perfanal.htm) — reference wing loadings for efficient/thermal/speed craft.
+- [CST — vacuum-bagged foam wing guide](https://www.cstsales.com/vac_wing.html) & [carbon spar tutorial (PDF)](https://www.cstsales.com/tutorials/buildcarbfiberspar.pdf) — **build spine for B3**; tapered carbon-cap spar over a foam/Rohacell web.
+- [Charles River RC — composite wing layup](https://charlesriverrc.org/articles/design-and-construction/foam-cutting-and-vacuum-bagging/vacuum-bagging/composite-wing-layup/) — club tutorial on hot-wiring, bagging, layup.
+- [Easy Composites — mouldless carbon wing tutorial](https://www.easycomposites.co.uk/learning/mouldless-carbon-fibre-aero-wing) — high-quality bagging/laminating walkthrough.
+- [Lennon, "Basics of R/C Model Aircraft Design"](https://www.amazon.com/Basics-Model-Aircraft-Design-Techniques/dp/0911295402) — airfoil/planform/CG/dihedral reference for builders.
+
 ## Wisdom (Communities)
 
 - [RCGroups — Aerodynamics](https://www.rcgroups.com/aerodynamics-181/) — large RC community; Drela's AGxx airfoil threads are archived here. **Most relevant to us.**
+- [RCGroups — Composites Fabrication](https://www.rcgroups.com/composites-fabrication-210/) — hot-wiring, vacuum bagging, moulds and spar layup; the place for build questions.
 - [RC Soaring Digest](https://www.rcsoaringdigest.com/) — curated articles bridging glider/low-Re theory and practice.
 - [CFD Online Forums](https://www.cfd-online.com/Forums/) — best for OpenFOAM/SU2/meshing/turbulence-model questions.
 - [r/RCPlanes](https://www.reddit.com/r/RCPlanes/) / [r/UAV](https://www.reddit.com/r/UAV/) — hands-on build & airfoil-selection advice.

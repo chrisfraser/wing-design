@@ -13,6 +13,8 @@ tools (XFOIL / XFLR5, escalating to CFD where needed).
 - We arrive at a concrete wing design (airfoil + planform + aspect ratio + wing loading)
   justified by numbers, not vibes.
 - We know when XFOIL is enough and when to escalate to full CFD (OpenFOAM/SU2).
+- We can size a spar to the wing's loads and choose a construction method, then **physically build
+  the wing** — keeping it light, since every gram costs endurance.
 
 ## Constraints
 - Drone: 1–2 m wingspan, battery-electric propulsion → endurance ≈ minimising power required.
@@ -22,6 +24,8 @@ tools (XFOIL / XFLR5, escalating to CFD where needed).
 
 ## Out of scope (for now)
 - Solar / combustion propulsion.
-- Structural/spar design, materials, and manufacturing.
 - Control surfaces, autopilot, stability & control (beyond what endurance demands).
 - Propeller design (treated as a given efficiency for now).
+
+_(Structural/spar design, materials, and manufacturing were out of scope originally; brought
+into scope 2026-06-27 with Phase 5 — see [[learning-records/0005-mission-expanded-to-structures]].)_
